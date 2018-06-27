@@ -158,7 +158,7 @@ gboolean initRobot()
 	}
 	isInitSuccessful &= initLCD;
 
-	gboolean initIMU = imu_initDefault(&robotIMU, &I2C_1, FALSE);
+	gboolean initIMU = imu_initDefault(&robotIMU, &I2C_1, TRUE);
 	if(!initIMU)
 	{
 		printf("Could not detect IMU\n");
@@ -363,7 +363,7 @@ int main(int argc, char **argv)
 	// Timeout functions to check on the infrared sensors.
 	robot_disableIROnStartup = TRUE;
 	g_timeout_add(10, checkInfrarouge, NULL);
-	g_timeout_add(1500, enableIR, NULL);
+	//~ g_timeout_add(1500, enableIR, NULL);
 	// Run glib main loop.
     g_main_loop_run(loop);
 	return 0;

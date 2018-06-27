@@ -35,7 +35,7 @@ void *localisation_start()
 	g_free(line);
 
 	g_io_channel_write_chars(logFile, "time,commandVelocityR,commandVelocityL,encoderR,encoderL,gyroZ,estimatedBias,"
-									  "mouseX,mouseY,currentX,currentY,currentTheta\n", -1, NULL, NULL);
+									  "mouseX,mouseY,currentX,currentY,currentTheta,magnetoX,magnetoY,intMouseX,intMouseY\n", -1, NULL, NULL);
 	g_io_channel_flush (logFile, NULL);
 
 	// Create metronome
@@ -48,6 +48,9 @@ void *localisation_start()
 	kalman_init(&kalmanFilter, robot_getPositionTheta());
 
 	int oldEncoder[2] = {0,0};
+
+	double intMouseX = 0;
+	double intMouseY = 0;
 
 	while(TRUE)
 	{
@@ -85,8 +88,16 @@ void *localisation_start()
 
 		double gyroZ = imu_gyroGetZAxis(robotIMU);
 		gyroZ -= GYRO_Z_BIAS;
+
+		double magnetoX = imu_magnetoGetXAxis(robotIMU);
+		double magnetoY = imu_magnetoGetYAxis(robotIMU);
+
+
 		double mouseX = 0, mouseY = 0;
-		//~ ADNS9800_getMotion(robotMouseSensor, &mouseX, &mouseY);
+		ADNS9800_getMotion(robotMouseSensor, &mouseX, &mouseY);
+
+		intMouseX += mouseX;
+		intMouseY += mouseY;
 
 		double dt = currentTime - lastTime;
 		// Estimate new position.
@@ -110,13 +121,15 @@ void *localisation_start()
 		robot_setPosition(currentPosition);
 
 		// Log data
-		gchar *line = g_strdup_printf("%f,%f,%f,%d,%d,%f,%f,%f,%f,%f,%f,%f\n",
+		gchar *line = g_strdup_printf("%f,%f,%f,%d,%d,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n",
 		                             currentTime,
 		                             motorSpeed[RIGHT], motorSpeed[LEFT],
 		                             encoder[RIGHT],  encoder[LEFT],
 		                             gyroZ, kalmanFilter.bias,
 		                             mouseX, mouseY,
-		                             currentPosition.x, currentPosition.y, currentPosition.theta);
+		                             currentPosition.x, currentPosition.y, currentPosition.theta,
+		                             magnetoX, magnetoY,
+		                             intMouseX, intMouseY);
 
 		g_io_channel_write_chars(logFile, line, -1, NULL, NULL);
 		g_io_channel_flush (logFile, NULL);

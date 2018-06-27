@@ -86,6 +86,16 @@ void *strategy_runMatch()
 	robot_setScore(robotScore);
 	servo_middleWaterTank();
 
+	//~ g_usleep(5000000);
+	//~ motion_translate(1000, TRUE);
+	//~ g_usleep(1000000);
+	//~ motion_rotate(G_PI_2);
+	//~ g_usleep(1000000);
+	//~ motion_rotate(-G_PI_2);
+	servo_startCannon();
+
+	while(TRUE) ;;
+
 	// Go turn on light swith.
 	targetPosition.x = 1130 + 30;
 	motion_goTo(targetPosition, FALSE, TRUE);
