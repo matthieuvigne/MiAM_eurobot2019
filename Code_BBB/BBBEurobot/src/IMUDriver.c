@@ -24,7 +24,7 @@ const double accelMultiplier[4] = {0.00478728,0.00239364,0.00119682,0.00059841};
 // Corresponding field: 16gauss, 12gauss, 8gauss, 4gauss
 #define MAGNETO_PRES 3
 const char magnetoReg[4] = {0b11, 0b10, 0b01, 0b00};
-const double magnetoMultiplier[4] = {0.64, 0.479,0.32,0.16};
+const double magnetoMultiplier[4] = {0.58445, 0.43840,0.29231,0.146156};
 
 // Initalize gyroscope
 gboolean initIMU(IMU i)
@@ -36,10 +36,13 @@ gboolean initIMU(IMU i)
 		return FALSE;
 	}
 
-	// Configure accelerometer to match ACCEL_PRES, anti-aliasing 400Hz, 1.6kHz output rate
-    i2c_writeRegister(i.adapter, i.imuAddress, 0x10, 0b10000000 | (accelReg[ACCEL_PRES] << 2));
-	// Configure gyroscope to match GYRO_PRES, 1.6kHz output rate
-    i2c_writeRegister(i.adapter, i.imuAddress, 0x11, 0b10000000 | (gyroReg[GYRO_PRES] << 1));
+	// Configure accelerometer to match ACCEL_PRES, anti-aliasing 100Hz, 416Hz output rate
+    i2c_writeRegister(i.adapter, i.imuAddress, 0x10, 0b01100010 | (accelReg[ACCEL_PRES] << 2));
+	// Configure gyroscope to match GYRO_PRES, 416kHz output rate
+    i2c_writeRegister(i.adapter, i.imuAddress, 0x11, 0b01100000 | (gyroReg[GYRO_PRES] << 1));
+    // CTRL4: set accelerometer anti-aliasing filter.
+    i2c_writeRegister(i.adapter, i.imuAddress, 0x13, 0b10000000);
+
 	return TRUE;
 }
 
@@ -181,11 +184,11 @@ gboolean initMagneto(IMU i)
 	}
 	//Configure magnetometer.
 
-    //CTRL1, ultra-high-performance, fast output
-	i2c_writeRegister(i.adapter, i.magnetoAddress, 0x20, 0b01111110);
-	//CTRL2, resolution
+    //CTRL1, ultra-high-performance, fast output (155 Hz)
+	i2c_writeRegister(i.adapter, i.magnetoAddress, 0x20, 0b01100010);
+	//CTRL2, resolution.
 	i2c_writeRegister(i.adapter, i.magnetoAddress, 0x21, magnetoReg[MAGNETO_PRES] << 5);
-	//CTRL3, enable
+	//CTRL3, enable in continuous conversion mode.
     i2c_writeRegister(i.adapter, i.magnetoAddress, 0x22, 0);
     //CTRL4, ultra-high-performance on z
     i2c_writeRegister(i.adapter, i.magnetoAddress, 0x23, 0b1100);
