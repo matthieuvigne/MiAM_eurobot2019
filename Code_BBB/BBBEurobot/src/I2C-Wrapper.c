@@ -14,7 +14,9 @@ gboolean i2c_open(I2CAdapter *adapter, const gchar *portName)
 	g_mutex_init(&(adapter->portMutex));
 	if(adapter->file < 0)
 	{
-		printf("Failed to open i2c bus %s: %s\n", portName, g_strerror(errno));
+		#ifdef DEBUG
+			printf("Failed to open i2c bus %s: %s\n", portName, g_strerror(errno));
+		#endif
 		return FALSE;
 	}
     return TRUE;
@@ -23,8 +25,11 @@ gboolean i2c_open(I2CAdapter *adapter, const gchar *portName)
 
 void changeSlave(int file, guint8 address)
 {
-	if (ioctl(file,I2C_SLAVE,address) < 0)
-        printf("I2C: failed to talk to slave %d : %s.\n", address, strerror(errno));
+	int result = ioctl(file,I2C_SLAVE,address);
+	#ifdef DEBUG
+		if(result < 0)
+			printf("I2C: failed to talk to slave %d : %s.\n", address, strerror(errno));
+	#endif
 }
 
 
@@ -32,7 +37,9 @@ gboolean i2c_writeRegister(I2CAdapter *adapter, guint8 address, guint8 reg, guin
 {
 	if(adapter->file < 0)
 	{
-		printf("Error writing to I2C port: invalid file descriptor.\n");
+		#ifdef DEBUG
+			printf("Error writing to I2C port: invalid file descriptor.\n");
+		#endif
 		return FALSE;
 	}
 	guint8 txbuf[2] = {reg, data};
@@ -42,7 +49,9 @@ gboolean i2c_writeRegister(I2CAdapter *adapter, guint8 address, guint8 reg, guin
 	g_mutex_unlock (&(adapter->portMutex));
 	if(result != 2)
 	{
-		printf("Error writing to slave %d: %s\n", address, g_strerror(errno));
+		#ifdef DEBUG
+			printf("Error writing to slave %d: %s\n", address, g_strerror(errno));
+		#endif
 		return FALSE;
 	}
 	return TRUE;
@@ -61,7 +70,9 @@ gboolean i2c_readRegisters(I2CAdapter *adapter, guint8 address, guint8 registerA
 {
 	if(adapter->file < 0)
 	{
-		printf("Error reading from I2C port: invalid file descriptor.\n");
+		#ifdef DEBUG
+			printf("Error reading from I2C port: invalid file descriptor.\n");
+		#endif
 		return FALSE;
 	}
 	gboolean returnValue = TRUE;
@@ -70,13 +81,17 @@ gboolean i2c_readRegisters(I2CAdapter *adapter, guint8 address, guint8 registerA
 	int result = write(adapter->file, &registerAddress, 1);
 	if(result < 0)
 	{
-		printf("Error writing to slave %d: %s\n", address, g_strerror(errno));
+		#ifdef DEBUG
+			printf("Error writing to slave %d: %s\n", address, g_strerror(errno));
+		#endif
 		returnValue = FALSE;
 	}
 	result = read(adapter->file, output, length);
 	if(result < 0)
 	{
-		printf("Error reading from slave %d: %s\n", address, g_strerror(errno));
+		#ifdef DEBUG
+			printf("Error reading from slave %d: %s\n", address, g_strerror(errno));
+		#endif
 		returnValue = FALSE;
 	}
 	g_mutex_unlock (&(adapter->portMutex));

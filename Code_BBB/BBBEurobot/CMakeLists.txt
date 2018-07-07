@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0)
 
 #Configure project
-project(BBBEurobot VERSION 1.3.0)
+project(BBBEurobot VERSION 1.3.2)
 set(PROJECT_DESCRIPTION "C utility library to use a Beaglebone Black for Eurobot - low-level drivers and some higher level utilities")
 
 # Set compiler to arm compiler (cross-compile)
@@ -9,6 +9,15 @@ set(CMAKE_C_COMPILER "arm-linux-gnueabihf-gcc")
 
 # Set C compiler flags.
 set(CMAKE_C_FLAGS "-std=gnu99 -Wall -fdiagnostics-color -lpthread -lm")
+
+# Set build-type specific flags
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+	message("Build mode: debug.")
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ggdb -DDEBUG")
+else (CMAKE_BUILD_TYPE STREQUAL "Debug")
+	message("Build mode: release build - optimization enabled.")
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3")
+endif (CMAKE_BUILD_TYPE STREQUAL "Debug")
 
 # Specify library content :
 # Recursively include all .c files

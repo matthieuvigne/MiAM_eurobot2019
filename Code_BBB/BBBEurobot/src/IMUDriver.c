@@ -32,7 +32,9 @@ gboolean initIMU(IMU i)
     // Verify it is the right gyroscope.
     if(i2c_readRegister(i.adapter, i.imuAddress, 0x0F) != 0x69)
     {
-		printf("Error : LSM6DS33 (IMU) not detected\n");
+		#ifdef DEBUG
+			printf("Error : LSM6DS33 (IMU) not detected\n");
+		#endif
 		return FALSE;
 	}
 

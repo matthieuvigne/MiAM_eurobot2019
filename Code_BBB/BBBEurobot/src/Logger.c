@@ -9,7 +9,9 @@ Logger logger_create(const gchar *filename, const gchar *logName, const gchar *d
 	logger.logFile = g_io_channel_new_file(filename, "w", &err);
 	if(logger.logFile == NULL)
 	{
-		printf("Logger error when creating log file: %s\n", err->message);
+		#ifdef DEBUG
+			printf("Logger error when creating log file: %s\n", err->message);
+		#endif
 		g_error_free(err);
 		return logger;
 	}

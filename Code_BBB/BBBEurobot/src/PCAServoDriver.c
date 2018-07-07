@@ -18,7 +18,9 @@ gboolean servoDriver_init(ServoDriver *driver, I2CAdapter *adapter, guint8 addre
 	// The first three bits are read only and shouldn't be checked.
 	if((i2c_readRegister(driver->adapter, driver->address, 0x00) & 0b01111111) != 0x10)
 	{
-		printf("Failed to init servo driver: slave responds but register was not set correclty\n");
+		#ifdef DEBUG
+			printf("Failed to init servo driver: slave responds but register was not set correclty\n");
+		#endif
 		return FALSE;
 	}
 	// Set mode2 register to 0x00000000

@@ -27,7 +27,9 @@ gboolean mpc_init(MPC *mpc, I2CAdapter *adapter, int address)
 	// Chech writing took effect (i.e chip is there, we hope it's the right one).
     if(i2c_readRegister(mpc->adapter, mpc->address, 0x00) != 0xFF)
     {
-		printf("Error : MPC23017 (IO expander) not detected\n");
+		#ifdef DEBUG
+			printf("Error : MPC23017 (IO expander) not detected\n");
+		#endif
 		return FALSE;
 	}
 	return TRUE;

@@ -52,9 +52,10 @@ uint32_t sendCommand(L6470 l, uint8_t command, uint32_t dataValue, uint8_t lengt
 	}
 
 	int result = spiReadWrite(l, data, length + 1);
-
-	if(result < 0)
-		printf("L6470 SPI error\n");
+	#ifdef DEBUG
+		if(result < 0)
+			printf("L6470 SPI error\n");
+	#endif
 	// Decode response.
 	uint32_t response = 0;
 	for(uint8_t i = 1; i <= length; i++)
@@ -234,32 +235,42 @@ uint32_t L6470_getError(L6470 l)
     if((status & dSPIN_STATUS_NOTPERF_CMD) != 0)
     {
 		error |= dSPIN_ERR_NOEXEC;
-		g_string_append(errorMessage, "Cmd no exec ");
+		#ifdef DEBUG
+			g_string_append(errorMessage, "Cmd no exec ");
+		#endif
 	}
 
 	// Wrong cmd is active high, not active low.
     if((status & dSPIN_STATUS_WRONG_CMD) != 0)
     {
 		error |= dSPIN_ERR_BADCMD;
-		g_string_append(errorMessage, "Bad cmd ");
+		#ifdef DEBUG
+			g_string_append(errorMessage, "Bad cmd ");
+		#endif
 	}
 
     if((status & dSPIN_STATUS_UVLO) == 0)
     {
 		error |= dSPIN_ERR_UVLO;
-		g_string_append(errorMessage, "Undervoltage ");
+		#ifdef DEBUG
+			g_string_append(errorMessage, "Undervoltage ");
+		#endif
 	}
 
     if((status & dSPIN_STATUS_TH_SD) == 0)
 	{
 		error |= dSPIN_ERR_THSHTD;
-		g_string_append(errorMessage, "Thermal shutdown ");
+		#ifdef DEBUG
+			g_string_append(errorMessage, "Thermal shutdown ");
+		#endif
 	}
 
     if((status & dSPIN_STATUS_OCD) == 0)
     {
 		error |= dSPIN_ERR_OVERC;
-		g_string_append(errorMessage, "Overcurrent ");
+		#ifdef DEBUG
+			g_string_append(errorMessage, "Overcurrent ");
+		#endif
 	}
 
     if((status & dSPIN_STATUS_STEP_LOSS_A) == 0)
@@ -276,8 +287,11 @@ uint32_t L6470_getError(L6470 l)
 		//~ g_string_append(errorMessage, "Stall B ");
 	}
 
-	if(error > 0)
-		printf("L6470 error: %s\n", errorMessage->str);
+
+	#ifdef DEBUG
+		if(error > 0)
+			printf("L6470 error: %s\n", errorMessage->str);
+	#endif
 
 	g_string_free(errorMessage, TRUE);
     return error;

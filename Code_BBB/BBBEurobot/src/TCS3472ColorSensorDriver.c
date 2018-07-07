@@ -18,7 +18,9 @@ gboolean colorSensor_init(ColorSensorTCS3472 *sensor, I2CAdapter *adapter)
 	guint8 chipIdentity = i2c_readRegister(sensor->adapter, TCS3472_ADDRESS, TCS3472_COMMAND_BIT | 0x12);
 	if(chipIdentity != 0x44 && chipIdentity != 0x4D)
 	{
-		printf("Error : TCS3472 not detected\n");
+		#ifdef DEBUG
+			printf("Error : TCS3472 not detected\n");
+		#endif
 		return FALSE;
 	}
 	// Configure chip.

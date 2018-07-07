@@ -22,12 +22,12 @@ int ax12_getRegister(Ax12 ax12, int motorID, int reg)
 	message[6] = 1;
 	message[7] = ~((motorID + 7 + reg)%256);
 	write(ax12.port, message,8);
-	
+
 	g_usleep(520);
 //	char reponse[6];
-	//if(read(port, reponse, 6) > 0) 
+	//if(read(port, reponse, 6) > 0)
 		//return reponse[5];
-	
+
 	return -1;
 }
 
@@ -39,7 +39,7 @@ void ax12SetRegister(Ax12 ax12, int motorID, int reg, int data)
 	fprintf(f,"0");
 	fclose(f);
 	g_usleep(100);
-	
+
     char message[8];
     message[0] = 0xFF;
 	message[1] = 0xFF;
@@ -50,7 +50,7 @@ void ax12SetRegister(Ax12 ax12, int motorID, int reg, int data)
 	message[6] = data&0xFF;
 	message[7] = ~((motorID + 7 + reg + message[6])%256);
 	write(ax12.port, message,8);
-	
+
 	g_usleep(100);
 	f = fopen(ax12.dir, "w");
 	fprintf(f,"1");
@@ -65,7 +65,7 @@ void ax12SetRegister2(Ax12 ax12, int motorID, int reg, int value)
 	fprintf(f,"0");
 	fclose(f);
 	g_usleep(100);
-	
+
     unsigned char message[9];
     message[0] = 0xFF;
 	message[1] = 0xFF;
@@ -91,7 +91,7 @@ void ax12SetRegister4(Ax12 ax12, int motorID, int reg, int data, int data2)
 	fprintf(f,"0");
 	fclose(f);
 	g_usleep(100);
-	
+
     unsigned char message[11];
     message[0] = 0xFF;
 	message[1] = 0xFF;
@@ -105,7 +105,7 @@ void ax12SetRegister4(Ax12 ax12, int motorID, int reg, int data, int data2)
 	message[9] = ((data2/256) % 256 );
 	message[10] = ~((motorID + 10 + reg + message[6] + message[7] + message[8] + message[9])%256);
 	write(ax12.port, message,11);
-	
+
 	g_usleep(100);
 	f = fopen(ax12.dir, "w");
 	fprintf(f,"1");
@@ -154,7 +154,7 @@ void ax12_torqueOn(Ax12 ax12, int motorID, gboolean on)
 }
 
 
-gboolean ax12_init(Ax12 *ax12, gchar *portName, int speed, int dirPin) 
+gboolean ax12_init(Ax12 *ax12, gchar *portName, int speed, int dirPin)
 {
 	// Open UART port
 	int fd;
@@ -162,10 +162,12 @@ gboolean ax12_init(Ax12 *ax12, gchar *portName, int speed, int dirPin)
 
 	fd = open(portName, O_RDWR | O_NDELAY);
 
-	if (fd == -1) 
+	if (fd == -1)
 	{
-	  printf("Ax 12 init error: cannot open %s\n", portName);
-	  return FALSE;
+		#ifdef DEBUG
+			printf("Ax 12 init error: cannot open %s\n", portName);
+		#endif
+		return FALSE;
 	}
 	// Nonblocking operation
 	//~ fcntl(fd, F_SETFL, FNDELAY);
@@ -183,32 +185,32 @@ gboolean ax12_init(Ax12 *ax12, gchar *portName, int speed, int dirPin)
 	options.c_cflag &= ~CSTOPB;
 	options.c_cflag &= ~CSIZE;
 	options.c_cflag |= CS8;
-	options.c_lflag &= ~ECHO; 
+	options.c_lflag &= ~ECHO;
 	tcsetattr(fd, TCSANOW, &options);
-	
+
 	//setup direction pin
 	FILE *f = fopen("/sys/class/gpio/export", "a");
 	gchar *dir= g_strdup_printf("%d", dirPin);
 	fprintf(f,dir);
 	fclose(f);
 	g_free(dir);
-	
+
 	dir = g_strdup_printf("/sys/class/gpio/gpio%d/direction", dirPin);
 	f = fopen(dir, "w");
 	g_free(dir);
 	fprintf(f, "out");
 	fclose(f);
-	
+
 	dir = g_strdup_printf("/sys/class/gpio/gpio%d/value", dirPin);
-	
+
 	f = fopen(dir, "w");
 	fprintf(f,"1");
 	fclose(f);
-	
+
 	ax12->port = fd;
 	ax12->dir = g_strdup(dir);
 	g_free(dir);
-	
+
 	// Setup all servos : use broadcast address.
 	int broadcast = 0xFE;
 	// Set return delay time to 10us.

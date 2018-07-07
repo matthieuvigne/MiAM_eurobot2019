@@ -77,7 +77,9 @@ void ADNS9800_write_register(ADNS9800 a, unsigned char address, unsigned char da
 	int error = ioctl(a.port, SPI_IOC_MESSAGE(1), &spiCtrl);
     if(error <0)
     {
-		printf("SPI error when writing: %d\n", error);
+		#ifdef DEBUG
+			printf("SPI error when writing: %d\n", error);
+		#endif
 	}
 	spi_close(a.port);
 	// 120us delay after read command
@@ -116,7 +118,9 @@ unsigned char ADNS9800_read_register(ADNS9800 a, unsigned char address)
 	int error = ioctl(a.port, SPI_IOC_MESSAGE(2), &spiCtrl);
     if(error <0)
     {
-		printf("SPI error when reading: %d\n", error);
+		#ifdef DEBUG
+			printf("SPI error when reading: %d\n", error);
+		#endif
 	}
 	spi_close(a.port);
 	// 20us delay after read command
@@ -159,7 +163,9 @@ gboolean ADNS9800_write_firmware(ADNS9800 a)
 	int error = ioctl(a.port, SPI_IOC_MESSAGE(1), &spiCtrl);
     if(error <0)
     {
-		printf("SPI error when reading: %d\n", error);
+		#ifdef DEBUG
+			printf("SPI error when reading: %d\n", error);
+		#endif
 	}
 	spi_close(a.port);
 	// Sleep 160us for SROM reboot
@@ -168,7 +174,9 @@ gboolean ADNS9800_write_firmware(ADNS9800 a)
 	// Check that firmware ID is not 0
 	if(ADNS9800_read_register(a, REG_SROM_ID) == 0)
 	{
-		printf("Error writting SROM firmware.\n");
+		#ifdef DEBUG
+			printf("Error writting SROM firmware.\n");
+		#endif
 		return FALSE;
 	}
 	return TRUE;
@@ -218,7 +226,9 @@ gboolean ANDS9800_init(ADNS9800 *a, const gchar *portName)
 	// Check that communication is working by reading the REG_Product_ID register
 	if(ADNS9800_read_register(*a, REG_Product_ID) != 0x33)
 	{
-		printf("Error reading data from ADNS9800.\n");
+		#ifdef DEBUG
+			printf("Error reading data from ADNS9800.\n");
+		#endif
 		return FALSE;
 	}
 
