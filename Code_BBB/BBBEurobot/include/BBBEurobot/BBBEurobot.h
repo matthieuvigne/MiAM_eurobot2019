@@ -13,6 +13,7 @@
 	#include <BBBEurobot/BBBGpio.h>
 	#include <BBBEurobot/BeagleboneCape.h>
 	#include <BBBEurobot/I2C-Wrapper.h>
+	#include <BBBEurobot/Logger.h>
 	#include <BBBEurobot/IMUDriver.h>
 	#include <BBBEurobot/LCDDriver.h>
 	#include <BBBEurobot/KalmanFilter.h>
