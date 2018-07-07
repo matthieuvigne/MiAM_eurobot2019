@@ -89,3 +89,33 @@ RobotPosition robot_getPosition()
 	g_mutex_unlock(&positionMutex);
 	return pos;
 }
+
+// Create header string.
+#define GENERATE_STRING(STRING) #STRING,
+static const char *LOGGER_HEADERS[] = {
+    LOGGER_VALUES(GENERATE_STRING)
+    NULL
+};
+
+
+gchar *getHeaderStringList()
+{
+	// "logger_" prefix to remove.
+	int const PREFIX_LENGTH = 7;
+	// Put first element in headerString.
+	gchar *lowercase = g_ascii_strdown(LOGGER_HEADERS[0], -1);
+	gchar *headerString = g_strdup(&lowercase[PREFIX_LENGTH]);
+	g_free(lowercase);
+	int i = 1;
+	while(LOGGER_HEADERS[i] != NULL)
+	{
+		// Put string in lowercase, remove prefix and append.
+		gchar *lowercase = g_ascii_strdown(LOGGER_HEADERS[i], -1);
+		gchar *concatenated = g_strjoin(",", headerString, &lowercase[PREFIX_LENGTH], NULL);
+		g_free(lowercase);
+		g_free(headerString);
+		headerString = concatenated;
+		i++;
+	}
+	return headerString;
+}

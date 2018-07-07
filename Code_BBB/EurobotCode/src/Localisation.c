@@ -17,6 +17,7 @@ void localisation_reset(RobotPosition resetPosition, gboolean resetX, gboolean r
 	g_usleep(1.1 * 1000000 * LOOP_PERIOD);
 }
 
+
 void *localisation_start()
 {
 	printf("Localisation thread started.\n");
@@ -25,18 +26,11 @@ void *localisation_start()
 	// Create log file
 	gchar *date = g_date_time_format(g_date_time_new_now_local(), "%Y%m%dT%H%M%SZ");
 	gchar *filename = g_strdup_printf("log%s.csv", date);
-	GIOChannel *logFile = g_io_channel_new_file(filename, "w", NULL);
-	gchar *line = g_strdup_printf("Robot Log: %s\n", date);
 	g_free(date);
+	gchar *headers = getHeaderStringList();
+	Logger logger = logger_create(filename, "MagnetometerTest", "", headers);
 	g_free(filename);
-
-	g_io_channel_write_chars(logFile, line, -1, NULL, NULL);
-	g_io_channel_flush (logFile, NULL);
-	g_free(line);
-
-	g_io_channel_write_chars(logFile, "time,commandVelocityR,commandVelocityL,encoderR,encoderL,gyroZ,estimatedBias,"
-									  "mouseX,mouseY,currentX,currentY,currentTheta,magnetoX,magnetoY,intMouseX,intMouseY\n", -1, NULL, NULL);
-	g_io_channel_flush (logFile, NULL);
+	g_free(headers);
 
 	// Create metronome
 	Metronome metronome = metronome_create(LOOP_PERIOD * 1e9);
@@ -120,20 +114,24 @@ void *localisation_start()
 		currentPosition.y -= linearIncrement * sin(currentPosition.theta);
 		robot_setPosition(currentPosition);
 
-		// Log data
-		gchar *line = g_strdup_printf("%f,%f,%f,%d,%d,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n",
-		                             currentTime,
-		                             motorSpeed[RIGHT], motorSpeed[LEFT],
-		                             encoder[RIGHT],  encoder[LEFT],
-		                             gyroZ, kalmanFilter.bias,
-		                             mouseX, mouseY,
-		                             currentPosition.x, currentPosition.y, currentPosition.theta,
-		                             magnetoX, magnetoY,
-		                             intMouseX, intMouseY);
-
-		g_io_channel_write_chars(logFile, line, -1, NULL, NULL);
-		g_io_channel_flush (logFile, NULL);
-		g_free(line);
+		// Log data.
+		logger_setData(&logger, LOGGER_TIME, currentTime);
+		logger_setData(&logger, LOGGER_COMMAND_VELOCITY_RIGHT, motorSpeed[RIGHT]);
+		logger_setData(&logger, LOGGER_COMMAND_VELOCITY_LEFT, motorSpeed[LEFT]);
+		logger_setData(&logger, LOGGER_ENCODER_RIGHT, encoder[RIGHT]);
+		logger_setData(&logger, LOGGER_ENCODER_LEFT, encoder[LEFT]);
+		logger_setData(&logger, LOGGER_GYRO_Z, gyroZ);
+		logger_setData(&logger, LOGGER_ESTIMATED_BIAS, kalmanFilter.bias);
+		logger_setData(&logger, LOGGER_MOUSE_X, mouseX);
+		logger_setData(&logger, LOGGER_MOUSE_Y, mouseY);
+		logger_setData(&logger, LOGGER_CURRENT_POSITION_X, currentPosition.x);
+		logger_setData(&logger, LOGGER_CURRENT_POSITION_Y, currentPosition.y);
+		logger_setData(&logger, LOGGER_CURRENT_POSITION_THETA, currentPosition.theta);
+		logger_setData(&logger, LOGGER_MAGNETO_X, magnetoX);
+		logger_setData(&logger, LOGGER_MAGNETO_Y, magnetoY);
+		logger_setData(&logger, LOGGER_INTEGRAL_MOUSE_X, intMouseX);
+		logger_setData(&logger, LOGGER_INTEGRAL_MOUSE_Y, intMouseY);
+		logger_writeLine(logger);
 	}
 	return 0;
 }

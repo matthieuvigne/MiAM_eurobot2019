@@ -17,14 +17,51 @@
 	#include <stdio.h>
 	#include <glib.h>
 
-     /// \brief Structure used to represent the position of the robot
-     /// \details The axes are defined according to the competition rules:
-     ///			- the origin is the upper right corner.
-     ///			- X is along the long table side, facing right.
-     ///			- Y is along the short table side, facing down.
-     ///			- Theta is computed as the angle from X to -Y - i.e. the classical trigonometric angle. Note that
-     ///			  this corresponds to an INDIRECT frame of reference.
-     typedef struct {
+
+	/// \brief List of values to log.
+	/// \details Elements of this list determine both the enum values and the header string.
+	/// \note Values should be uppercase and start with LOGGER_
+	#define LOGGER_VALUES(f) \
+		f(LOGGER_TIME)   \
+		f(LOGGER_COMMAND_VELOCITY_RIGHT)  \
+		f(LOGGER_COMMAND_VELOCITY_LEFT)   \
+		f(LOGGER_ENCODER_RIGHT)  \
+		f(LOGGER_ENCODER_LEFT)  \
+		f(LOGGER_GYRO_Z)  \
+		f(LOGGER_ESTIMATED_BIAS)  \
+		f(LOGGER_MOUSE_X)  \
+		f(LOGGER_MOUSE_Y)  \
+		f(LOGGER_CURRENT_POSITION_X)  \
+		f(LOGGER_CURRENT_POSITION_Y)  \
+		f(LOGGER_CURRENT_POSITION_THETA)  \
+		f(LOGGER_MAGNETO_X)  \
+		f(LOGGER_MAGNETO_Y)  \
+		f(LOGGER_INTEGRAL_MOUSE_X)  \
+		f(LOGGER_INTEGRAL_MOUSE_Y)
+
+	#define GENERATE_ENUM(ENUM) ENUM,
+
+	///< Logger field enum.
+	typedef enum{
+		LOGGER_VALUES(GENERATE_ENUM)
+	}LoggerFields;
+
+
+
+	/// \brief Create a comma-separated formated string list from LoggerFields enum.
+	/// \details This string is meant to be given to the Logger object. It consits of the LoggerFields names, lowercase
+	///          and without the LOGGER_ prefix.
+	/// \return A string of all headers, comma-separated. The returned string should be freed when no longer needed.
+	gchar *getHeaderStringList();
+
+	/// \brief Structure used to represent the position of the robot
+	/// \details The axes are defined according to the competition rules:
+	///			- the origin is the upper right corner.
+	///			- X is along the long table side, facing right.
+	///			- Y is along the short table side, facing down.
+	///			- Theta is computed as the angle from X to -Y - i.e. the classical trigonometric angle. Note that
+	///			  this corresponds to an INDIRECT frame of reference.
+	typedef struct {
 		double x;	///< X coordinate of the robot, in mm.
 		double y;	///< Y coordinate of the robot, in mm.
 		double theta;	///< Angle of the robot, in rad.
