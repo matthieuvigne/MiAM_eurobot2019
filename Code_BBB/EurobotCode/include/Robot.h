@@ -37,7 +37,13 @@
 		f(LOGGER_MAGNETO_X)  \
 		f(LOGGER_MAGNETO_Y)  \
 		f(LOGGER_INTEGRAL_MOUSE_X)  \
-		f(LOGGER_INTEGRAL_MOUSE_Y)
+		f(LOGGER_INTEGRAL_MOUSE_Y) \
+		f(LOGGER_IR_FRONT_RIGHT) \
+		f(LOGGER_IR_FRONT_LEFT) \
+		f(LOGGER_IR_BACK_RIGHT) \
+		f(LOGGER_IR_BACK_LEFT) \
+		f(LOGGER_IR_FRONT_DETECT) \
+		f(LOGGER_IR_BACK_DETECT)
 
 	#define GENERATE_ENUM(ENUM) ENUM,
 
@@ -81,6 +87,10 @@
 	void robot_setPosition(RobotPosition pos);	///< Set full robot position.
 	RobotPosition robot_getPosition();			///< Get full robot position.
 
+	/// \brief Check IR sensors, update corresponding global variables.
+	/// \param[in] logger Pointer to logger object to log to.
+	void robot_checkIRSensors(Logger *logger);
+
 	///< Definition of robot hardware.
 	IMU robotIMU;
 	ADNS9800 robotMouseSensor;
@@ -115,7 +125,9 @@
 
 	///< TRUE if we are playing on the right side of the field, false otherwise.
 	gboolean robot_isOnRightSide;
-	extern gboolean robot_disableIRWater;
+
+	extern gboolean robot_disableIRWater;	  ///< Disable back IR sensor when opening water tank, as this sensor sees the tank.
+	extern gboolean robot_disableIROnStartup; ///< Variable to disable IR sensor at match start, to be sure to leave starting zone.
 
 	///< TRUE to temporary disable IR.
 	extern gboolean robot_disableIR;

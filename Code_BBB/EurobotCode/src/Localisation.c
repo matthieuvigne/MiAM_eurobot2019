@@ -18,9 +18,9 @@ void localisation_reset(RobotPosition resetPosition, gboolean resetX, gboolean r
 }
 
 
-void *localisation_start()
+void *localisation_startSensorUpdate()
 {
-	printf("Localisation thread started.\n");
+	printf("Sensor update / localisation thread started.\n");
 	resetLocalisation = FALSE;
 
 	// Create log file
@@ -113,6 +113,9 @@ void *localisation_start()
 		// Minus sign: the frame is indirect.
 		currentPosition.y -= linearIncrement * sin(currentPosition.theta);
 		robot_setPosition(currentPosition);
+
+		// Check infrared sensors
+		robot_checkIRSensors(&logger);
 
 		// Log data.
 		logger_setData(&logger, LOGGER_TIME, currentTime);

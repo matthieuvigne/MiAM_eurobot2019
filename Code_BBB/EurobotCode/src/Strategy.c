@@ -80,11 +80,11 @@ void *strategy_runMatch()
 	strategyThread = pthread_self();
 	RobotPosition targetPosition = startingPosition;
 	RobotPosition resetPosition;
-	motion_stopMotorsHard();
-	g_usleep(50000);
+	//~ motion_stopMotorsHard();
+	//~ g_usleep(50000);
 	int robotScore = 10;
-	robot_setScore(robotScore);
-	servo_middleWaterTank();
+	//~ robot_setScore(robotScore);
+	//~ servo_middleWaterTank();
 
 	//~ g_usleep(5000000);
 	//~ motion_translate(1000, TRUE);
@@ -92,9 +92,10 @@ void *strategy_runMatch()
 	//~ motion_rotate(G_PI_2);
 	//~ g_usleep(1000000);
 	//~ motion_rotate(-G_PI_2);
-	servo_startCannon();
+	//~ servo_startCannon();
 
-	while(TRUE) ;;
+	while(TRUE)
+		g_usleep(500000);
 
 	// Go turn on light swith.
 	targetPosition.x = 1130 + 30;

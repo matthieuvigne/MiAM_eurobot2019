@@ -119,3 +119,94 @@ gchar *getHeaderStringList()
 	}
 	return headerString;
 }
+
+
+
+// Check IR sensors for an obstacle, updating global variables.
+
+gboolean robot_disableIRWater = FALSE;
+gboolean robot_disableIROnStartup = FALSE;
+
+// Sensor value threshold to consider a valid detection.
+const int IR_FRONT_THRESHOLD = 850;
+const int IR_BACK_THRESHOLD = 850;
+
+# define AVR_WIN 10
+int frontIR[2][AVR_WIN];
+int backIR[2][AVR_WIN];
+
+void robot_checkIRSensors(Logger *logger)
+{
+	if(robot_disableIROnStartup)
+	{
+		robot_IRDetectionBack = FALSE;
+		robot_IRDetectionFront = FALSE;
+		return;
+	}
+	// Get IR values, filter them using a moving average, then update variable and led status accordingly.
+	int backRight = gpio_analogRead(CAPE_ANALOG[3]);
+	int backLeft = gpio_analogRead(CAPE_ANALOG[4]);
+
+	for(int i = 1; i < AVR_WIN; i++)
+	{
+		backIR[0][i-1] = backIR[0][i];
+		backIR[1][i-1] = backIR[1][i];
+	}
+	backIR[0][AVR_WIN-1] = backRight;
+	backIR[1][AVR_WIN-1] = backLeft;
+	double backRightAverage = 0, backLeftAverage = 0;
+	for(int i = 0; i < AVR_WIN; i++)
+	{
+		backRightAverage += backIR[0][i];
+		backLeftAverage += backIR[1][i];
+	}
+	backRightAverage /= (float)(AVR_WIN);
+	backLeftAverage /= (float)(AVR_WIN);
+
+	gboolean sensorValue = backLeftAverage > IR_BACK_THRESHOLD;
+	// Disable this IR sensor given that the water-opening arm is in front of it in this position.
+	if(!robot_disableIRWater)
+		sensorValue |= backRightAverage > IR_BACK_THRESHOLD;
+
+	robot_IRDetectionBack = sensorValue;
+
+	int frontRight = gpio_analogRead(CAPE_ANALOG[2]);
+	int frontLeft = gpio_analogRead(CAPE_ANALOG[5]) * 1.1;
+
+
+	for(int i = 1; i < AVR_WIN; i++)
+	{
+		frontIR[0][i-1] = frontIR[0][i];
+		frontIR[1][i-1] = frontIR[1][i];
+	}
+	frontIR[0][AVR_WIN-1] = frontRight;
+	frontIR[1][AVR_WIN-1] = frontLeft;
+	double frontRightAverage = 0, frontLeftAverage = 0;
+	for(int i = 0; i < AVR_WIN; i++)
+	{
+		frontRightAverage += frontIR[0][i];
+		frontLeftAverage += frontIR[1][i];
+	}
+	frontRightAverage /= (float)(AVR_WIN);
+	frontLeftAverage /= (float)(AVR_WIN);
+
+	sensorValue = (frontRightAverage > IR_FRONT_THRESHOLD) ||
+	              (frontLeftAverage > IR_FRONT_THRESHOLD);
+
+	robot_IRDetectionFront = sensorValue;
+	// Turn on red led if we see something on any sensor.
+	if(robot_IRDetectionBack || robot_IRDetectionFront)
+		gpio_digitalWrite(CAPE_LED[1], 1);
+	else
+		gpio_digitalWrite(CAPE_LED[1], 0);
+
+	// Log results.
+	logger_setData(logger, LOGGER_IR_FRONT_RIGHT, frontRight);
+	logger_setData(logger, LOGGER_IR_FRONT_LEFT, frontLeft);
+	logger_setData(logger, LOGGER_IR_BACK_RIGHT, backRight);
+	logger_setData(logger, LOGGER_IR_BACK_LEFT, backLeft);
+	logger_setData(logger, LOGGER_IR_FRONT_DETECT, robot_IRDetectionFront);
+	logger_setData(logger, LOGGER_IR_BACK_DETECT, robot_IRDetectionBack);
+
+	return;
+}
