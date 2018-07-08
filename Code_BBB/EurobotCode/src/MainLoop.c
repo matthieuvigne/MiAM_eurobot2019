@@ -16,8 +16,8 @@
 #include "MotionController.h"
 #include "Localisation.h"
 #include "Strategy.h"
-#include "Strategy.h"
 
+#include <sys/resource.h>
 
 // Sensor value threshold to consider a valid detection.
 const int IR_FRONT_THRESHOLD = 850;
@@ -313,6 +313,9 @@ int main(int argc, char **argv)
 {
 	// Init beaglebone.
 	BBB_enableCape();
+	// Set process priority to 10 lower than standard process.
+	setpriority(PRIO_PROCESS, 0, -10);
+
 	// Create a GMainLoop
 	GMainLoop* loop = g_main_loop_new(0, 0);
 	// Start heartbeat thead.
@@ -320,8 +323,8 @@ int main(int argc, char **argv)
 	// Init robot hardware.
 	gboolean initDone = initRobot();
 	// Wait for match to start, redoing motor init if previously failed.
-	robot_isOnRightSide = waitForStart(initDone);
-	//~ robot_isOnRightSide = FALSE;
+	//~ robot_isOnRightSide = waitForStart(initDone);
+	robot_isOnRightSide = FALSE;
 	//~ servo_closeClaws();
 
 	// Start match, set timer to 100s.
