@@ -3,8 +3,9 @@
 // This code reads the following sensors, sending the result over uart:
 //  - wheel rotary encoder.
 
-// Read a single bit off a register
-#define READ_BIT(REG, BIT) (REG & (1 << BIT)) >> BIT;
+// Read a single bit off a register: return 0 if low, >0 if high.
+#define READ_BIT(REG, BIT) (REG & (1 << BIT))
+
 #define ENCODER_TO_REGISTER(ENCODER) (ENCODER ? PINB : PIND)
 
 // Encoder pin number: first encoder is in port D, second encoder is in port B.
@@ -17,6 +18,9 @@ bool oldB[2] = {0, 0};
 // Current encoder position.
 int encoderCount[2] = {0, 0};
 
+// Max and min values of an int_15 (2^14 - 1 and -2^14), for cropping int to 15 bits.
+#define INT15_MIN -16384
+#define INT15_MAX 16383
 
 // Interrupt function, called when an encoder interrupt is triggered.
 void handleEncoder(char encoderNumber)
@@ -29,10 +33,10 @@ void handleEncoder(char encoderNumber)
   oldB[encoderNumber] =  READ_BIT(ENCODER_TO_REGISTER(encoderNumber), encoderPinB[encoderNumber]);
   
   // Keep the number within 15 bits.
-  if(encoderCount[encoderNumber] > (1 << 14) - 1)
-    encoderCount[encoderNumber] = - 1 << 14;
-  else if(encoderCount[encoderNumber] < - (1 << 14))
-    encoderCount[encoderNumber] = (1 << 14) - 1;
+  if(encoderCount[encoderNumber] > INT15_MAX)
+    encoderCount[encoderNumber] = INT15_MIN ;
+  else if(encoderCount[encoderNumber] < INT15_MIN)
+    encoderCount[encoderNumber] = INT15_MAX;
   
 }
 
