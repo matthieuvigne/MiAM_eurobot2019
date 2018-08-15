@@ -79,7 +79,3 @@ An image with this config was created (with default password, network RaspberryP
 sudo dd bs=4M if=/dev/mmcblk0 | gzip > 20180813-Raspbian4-14.img.gz
 To restore, use:
 cat 20180813-Raspbian4-14.img.gz | gunzip | dd of=/dev/mmcblk0
-
-MiAM-Raspberry
-Current user password: MiAMpy
-Current wifi password: WifiMiAM

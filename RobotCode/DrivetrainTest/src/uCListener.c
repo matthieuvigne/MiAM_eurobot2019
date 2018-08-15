@@ -7,10 +7,10 @@
 
 // Length of the message to receive from the uC.
 // The message consists of two 0xFF 0xFF bytes, then n bytes.
-#define MESSAGE_LENGTH 2
+#define MESSAGE_LENGTH 4
 
 // Encoder resolution: ticks to rad.
-const double ENCODER_RESOLUTION = 2 * G_PI / (2048 * 4);
+const double ENCODER_RESOLUTION = 2 * G_PI / (1024 * 4);
 
 // Global variables: a uCData struct protected by a mutex.
 GMutex uCMutex;
@@ -22,14 +22,15 @@ int positionInMessage = -1;	// Where we are currently writting in the buffer.
 unsigned char buffer[MESSAGE_LENGTH];
 
 // For encoder: last value.
-int16_t lastEncoderValue = 0;
+int16_t lastEncoderValue[2] = {0, 0};
 // First read: take current value as 0.
 gboolean isFirstRead = TRUE;
 
 void *listenerThread(void *portName)
 {
 	// Init data structure.
-	listenerData.encoderValue = 0.0;
+	listenerData.encoderValues[0] = 0.0;
+	listenerData.encoderValues[1] = 0.0;
 
 	// Open communication
 	int port = uart_open((gchar*)portName, B115200);
@@ -70,27 +71,29 @@ void *listenerThread(void *portName)
 					// Decode message.
 
 					// Get current encoder value.
-					int16_t encoderValue = (1 << 15) - ((buffer[0] << 8) + buffer[1]);
-
-					if(isFirstRead)
+					for(int i = 0; i < 2; i++)
 					{
-						isFirstRead = FALSE;
-						lastEncoderValue = encoderValue;
+						int16_t encoderValue = (1 << 15) - ((buffer[0 + 2 * i] << 8) + buffer[1 + 2 * i]);
+
+						if(isFirstRead)
+						{
+							isFirstRead = FALSE || (i == 0);
+							lastEncoderValue[i] = encoderValue;
+						}
+						// Determine the direction of the encoder from the shortest travel possible (i.e. we assume
+						// that between two successive read, the encoder has turned by less than 16000 cournts, i.e. 2 turns).
+						int32_t deltaEncoder = encoderValue - lastEncoderValue[i];
+						while(deltaEncoder > (1 << 14) - 1)
+							deltaEncoder -= 2 * (1 << 14);
+						while(deltaEncoder < -(1 << 14))
+							deltaEncoder += 2 * (1 << 14);
+						lastEncoderValue[i] = encoderValue;
+
+						double encoderIncrement = deltaEncoder * ENCODER_RESOLUTION;
+						g_mutex_lock(&uCMutex);
+						listenerData.encoderValues[i] += encoderIncrement;
+						g_mutex_unlock(&uCMutex);
 					}
-					// Determine the direction of the encoder from the shortest travel possible (i.e. we assume
-					// that between two successive read, the encoder has turned by less than 16000 cournts, i.e. 2 turns).
-					int32_t deltaEncoder = encoderValue - lastEncoderValue;
-					while(deltaEncoder > (1 << 14) - 1)
-						deltaEncoder -= 2 * (1 << 14);
-					while(deltaEncoder < -(1 << 14))
-						deltaEncoder += 2 * (1 << 14);
-					lastEncoderValue = encoderValue;
-
-					double encoderIncrement = deltaEncoder * ENCODER_RESOLUTION;
-
-					g_mutex_lock(&uCMutex);
-					listenerData.encoderValue += encoderIncrement;
-					g_mutex_unlock(&uCMutex);
 				}
 			}
 		}

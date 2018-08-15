@@ -87,7 +87,7 @@ int main(int argc, char **argv)
 	{
 		// Get encoder position.
 		robot.microcontrollerData = uCListener_getData();
-		double encoderPosition = robot.microcontrollerData.encoderValue;
+		double encoderPosition = robot.microcontrollerData.encoderValues[0];
 		// Get motor position.
 		double motorPosition = L6470_getPosition(robot.motor) * MOTOR_TICK;
 
@@ -99,7 +99,7 @@ int main(int argc, char **argv)
 		L6470_setSpeed(robot.motor, command);
 		L6470_getError(robot.motor);
 
-		printf("\rEncoder: %0.2f motor: %0.2f command: %d", encoderPosition, motorPosition, command);
+		printf("\rEncoder: %0.2f motor: %0.2f command: %d second encoder %f", encoderPosition, motorPosition, command, robot.microcontrollerData.encoderValues[1]);
 		fflush(stdout);
 		g_usleep(1e6 * dt);
 	}

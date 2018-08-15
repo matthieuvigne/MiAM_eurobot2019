@@ -12,7 +12,7 @@
 	#include <MiAMEurobot/MiAMEurobot.h>
 
 	typedef struct {
-		double encoderValue; ///<< Current position of the encoder, in rad.
+		double encoderValues[2]; ///<< Current position of the two encoders, in rad.
 	}uCData;
 
 	/// \brief Start the listener thread.
