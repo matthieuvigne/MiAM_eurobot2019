@@ -16,4 +16,9 @@ void RPi_enablePorts()
 		printf("Could not open I2C port; perhaps I2C is not enabled? Exiting...\n");
 		exit(-1);
 	}
+	if(!RPi_enableGPIO())
+	{
+		printf("Error accessing GPIO ports. Exiting...\n");
+		exit(-1);
+	}
 }

@@ -6,6 +6,7 @@
 #define RPI_EUROBOT_DRIVER
 	#include <glib.h>
 	#include "MiAMEurobot/drivers/I2C-Wrapper.h"
+	#include "MiAMEurobot/raspberry_pi/RPiGPIO.h"
 
 	extern const gchar* RPI_SPI_00; ///<  First SPI port.
 	extern const gchar* RPI_SPI_01; ///<  Second SPI port.
