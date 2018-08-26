@@ -33,7 +33,7 @@ void *listenerThread(void *portName)
 	listenerData.encoderValues[1] = 0.0;
 
 	// Open communication
-	int port = uart_open((gchar*)portName, B115200);
+	int port = uart_open((gchar*)portName, B1000000);
 	if(port < 0)
 	{
 		printf("Failed to initialize listener port. Listener thread exiting.\n");

@@ -56,7 +56,7 @@ ISR(PCINT0_vect)
 void setup() 
 {
   // Enable serial port.
-  Serial.begin(115200);
+  Serial.begin(1000000);
   // Set encoder pins as input.
   DDRD &= ~(1 << encoderPinA[0]);
   DDRD &= ~(1 << encoderPinB[0]);
