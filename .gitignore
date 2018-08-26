@@ -23,3 +23,22 @@ wheels/
 .installed.cfg
 *.egg
 MANIFEST
+
+# Kicad temporary files.
+*.000
+*.bak
+*.bck
+*.kicad_pcb-bak
+*~
+*.tmp
+*-rescue.lib
+*-save.pro
+*-save.kicad_pcb
+*.dsn
+*.ses
+*.net
+*.rules
+*-cache.lib
+
+# Doxygen documentation directory.
+html/
