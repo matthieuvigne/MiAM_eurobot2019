@@ -29,23 +29,8 @@ int spi_open(const gchar *portName, const int frequency)
         return -1 ;
     }
 
-    if(ioctl(port, SPI_IOC_RD_MODE, &mode) < 0)
-    {
-		#ifdef DEBUG
-			printf("Error configuring port %s %d\n", portName, errno);
-		#endif
-        return -1 ;
-    }
 	int nBits = 8;
     if(ioctl(port, SPI_IOC_WR_BITS_PER_WORD, &nBits) < 0)
-    {
-		#ifdef DEBUG
-			printf("Error configuring port %s %d\n", portName, errno);
-        #endif
-        return -1 ;
-    }
-
-    if(ioctl(port, SPI_IOC_RD_BITS_PER_WORD, &nBits) < 0)
     {
 		#ifdef DEBUG
 			printf("Error configuring port %s %d\n", portName, errno);
@@ -60,14 +45,6 @@ int spi_open(const gchar *portName, const int frequency)
         #endif
         return -1 ;
     }
-
-    if(ioctl(port, SPI_IOC_RD_MAX_SPEED_HZ, &frequency)   < 0)
-    {
-		#ifdef DEBUG
-			printf("Error configuring port %s %d\n", portName, errno);
-        #endif
-        return -1 ;
-    }
     return port;
 }
 
@@ -75,5 +52,15 @@ int spi_open(const gchar *portName, const int frequency)
 void spi_close(const int port)
 {
 	if(port > 0)
+	{
+		// Release CS - for some reason this is needed for the raspberry pi, as CS is not automatically released.
+		int mode = SPI_MODE_0;
+		if(ioctl(port, SPI_IOC_WR_MODE, &mode) < 0)
+		{
+			#ifdef DEBUG
+				printf("Error closing SPI port: %d\n", errno);
+			#endif
+		}
 		close(port);
+	}
 }

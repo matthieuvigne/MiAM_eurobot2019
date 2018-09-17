@@ -340,7 +340,6 @@ int L6470_isBusy(L6470 l)
 void L6470_initStructure(L6470 *l, const gchar *portName)
 {
 	l->portName = g_strdup(portName);
-	// Set bus frequency: default 800kHz
-	//~ l->frequency = 800000;
-	l->frequency = 100000;
+	// Set bus frequency: default 4MHz. The Raspberry Pi can go up to 125MHz, the L6470 to 5MHz.
+	l->frequency = 4000000;
 }

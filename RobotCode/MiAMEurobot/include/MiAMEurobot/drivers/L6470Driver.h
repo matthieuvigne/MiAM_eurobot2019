@@ -1,8 +1,7 @@
 /// \file L6470Driver.h
 /// \brief Driver for the L6470 stepper motor driver.
 ///
-/// \details This file implements all the functions to talk to the stepper motor controller.
-/// 		 It is adapted from Sparkfun's driver for Arduino. All functions are thread-safe.
+/// \details This file implements all the functions to talk to the stepper motor controller. All functions are thread-safe.
 ///	\note	 All functions in this header should be prefixed with L6470_.
 #ifndef L6470_DRIVER
 #define L6470_DRIVER

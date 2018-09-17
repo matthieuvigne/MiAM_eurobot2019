@@ -13,6 +13,7 @@
 	#include <MiAMEurobot/Metronome.h>
 
 	#include <MiAMEurobot/drivers/ADNS9800Driver.h>
+	#include <MiAMEurobot/drivers/dualL6470Driver.h>
 	#include <MiAMEurobot/drivers/I2C-Wrapper.h>
 	#include <MiAMEurobot/drivers/IMUDriver.h>
 	#include <MiAMEurobot/drivers/L6470Driver.h>
