@@ -10,7 +10,7 @@
 // Internal functions: all functions accessible outside of this file are at the end.
 
 // Mutex : for thread safety
-GMutex mut;
+static GMutex mut;
 
 
 // Sends the data contained in the buffer to the bus and reads the incomming

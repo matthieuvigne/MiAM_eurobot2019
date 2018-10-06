@@ -1,4 +1,4 @@
-/// \file BBBGpio.h
+/// \file beaglebone/BBBGpio.h
 /// \brief Functions concerning the Beaglebone GPIOs.
 ///
 /// \details This file allows configuration and interface to the Beaglebone GPIOs.

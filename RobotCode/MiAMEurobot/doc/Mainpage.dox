@@ -7,13 +7,15 @@ Doxygen main page
 ///
 ///
 /// This library is a general purpose library, that cover many basic needs on the high-level code: interface with GPIO and serial port, sensor and motor drivers, some basic algorithms and features
-/// This library is written in C, and relies heavily on glib. This choice was made with one thing in many : get as many functionalities
+/// Historically, this library was written in C, but has now been extended to C++ (though many C parts remain).
+/// It relies heavily on glib: this choice was made with one thing in many : get as many functionalities
 /// as possible, with only one dependancy to handle. It also relies on the standard system tools on Linux (for things like SPI / I2C communication
 /// for example, where ioctl is used).
 ///
 ///
 /// The code is separated in four folders:
-///	- beaglebone: subfolder containing files specific to the Beaglebone Black: serial port definition, GPIO access. 
-///	- raspberry_pi: subfolder containing files specific to the Raspberry Pi: serial port definition, GPIO access. 
+///	- beaglebone: subfolder containing files specific to the Beaglebone Black: serial port definition, GPIO access.
+///	- raspberry_pi: subfolder containing files specific to the Raspberry Pi: serial port definition, GPIO access.
 ///	- drivers: sensor and motor drivers. Helpers for I2C and serial communication are also included.
+///	- trajectory: definition of a trajectory for the robot, and classes to generate specific ones: line, arc...
 ///	- root folder: this folder contains generic files and algorithms: a kalman-like filter for localisation, a timer handler, a logging interface...

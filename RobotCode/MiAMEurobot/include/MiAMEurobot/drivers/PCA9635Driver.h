@@ -1,4 +1,4 @@
-/// \file PCA9635Driver.h
+/// \file drivers/PCA9635Driver.h
 /// \brief Driver for the PCA9635 led driver.
 ///
 /// \details This file implements all the functions to work with the led driver.

@@ -1,4 +1,4 @@
-/// \file RPiGPIO.h
+/// \file raspberry_pi/RPiGPIO.h
 /// \brief Access to the Raspberry Pi 3 GPIOs.
 ///
 /// \details GPIO access is done through direct register access, for efficiency. Because the processor changed, this code

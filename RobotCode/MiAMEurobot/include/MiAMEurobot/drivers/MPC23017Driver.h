@@ -1,4 +1,4 @@
-/// \file MPC23017Driver.h
+/// \file drivers/MPC23017Driver.h
 /// \brief Driver for MPC23017 IO expander chip.
 ///
 /// \details This chip controls 16 digital I/O from a I2C signal. It is used in Adafruit LCD shield.

@@ -1,4 +1,4 @@
-/// \file BeagleboneBlack.h
+/// \file beaglebone/BeagleboneBlack.h
 /// \brief Master header file for Beaglebone Black.
 ///
 /// \details This header simply includes all the other headers from the library specific to the Beaglebone Black,

@@ -1,4 +1,4 @@
-/// \file dualL6470Driver.h
+/// \file drivers/dualL6470Driver.h
 /// \brief Driver for two L6470 stepper motor drivers daisy-chained on a single SPI port.
 ///
 /// \details Several L6470 drivers can be daisy chained together - this file implements communication

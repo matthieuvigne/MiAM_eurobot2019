@@ -1,4 +1,4 @@
-/// \file LCDDriver.h
+/// \file drivers/LCDDriver.h
 /// \brief Driver for Adafruit RBG LCD shield.
 ///
 /// \details This shield is made of an MCP23017 I2C IO expander, wired to an HD44780-compatible LCD screen.

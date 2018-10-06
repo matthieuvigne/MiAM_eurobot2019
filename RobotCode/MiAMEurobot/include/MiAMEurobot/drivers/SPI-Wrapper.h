@@ -1,4 +1,4 @@
-/// \file SPI-Wrapper.h
+/// \file drivers/SPI-Wrapper.h
 /// \brief Wrapper for SPI communication.
 ///
 /// \details This file implements SPI file opening and closing. Communication itself isn't handled yet,

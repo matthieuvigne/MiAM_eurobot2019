@@ -1,4 +1,4 @@
-/// \file BeagleboneCape.h
+/// \file beaglebone/BeagleboneCape.h
 /// \brief Code description of the PCB BeagleboneCape.
 ///
 /// \details This file defines constants to easily access the exposed ports of the Beaglebone through the

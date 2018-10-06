@@ -1,4 +1,4 @@
-/// \file UART-Wrapper.h
+/// \file drivers/UART-Wrapper.h
 /// \brief Helper for using UART serial port.
 ///
 /// \details This helper enables easy opening of a UART port.

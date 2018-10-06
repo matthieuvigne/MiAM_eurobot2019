@@ -1,4 +1,4 @@
-/// \file ADNS9800Driver.h
+/// \file drivers/ADNS9800Driver.h
 /// \brief Driver for the ADNS9800 mouse sensor.
 ///
 /// \details This file implements all the functions to talk to the stepper motor controller.

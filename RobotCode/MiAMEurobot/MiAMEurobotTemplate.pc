@@ -2,7 +2,7 @@ libdir=${CMAKE_INSTALL_PREFIX}/lib
 includedir=${CMAKE_INSTALL_PREFIX}/include
 
 Name: ${LIBRARY_NAME}.
-Description: C utility library for a Beaglebone Black / Raspberry Pi used in Eurobot.
+Description: C/C++ utility library for a Beaglebone Black / Raspberry Pi used in Eurobot.
 Version: ${PROJECT_VERSION}
 Requires.private:
 Libs: -L${CMAKE_INSTALL_PREFIX}/lib -l${LIBRARY_NAME}

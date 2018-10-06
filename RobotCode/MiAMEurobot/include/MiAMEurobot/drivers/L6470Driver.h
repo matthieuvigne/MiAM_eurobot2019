@@ -1,4 +1,4 @@
-/// \file L6470Driver.h
+/// \file drivers/L6470Driver.h
 /// \brief Driver for the L6470 stepper motor driver.
 ///
 /// \details This file implements all the functions to talk to the stepper motor controller. All functions are thread-safe.

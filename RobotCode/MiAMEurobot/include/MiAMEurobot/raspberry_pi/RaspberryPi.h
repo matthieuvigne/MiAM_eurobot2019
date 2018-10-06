@@ -1,4 +1,4 @@
-/// \file RaspberryPi.h
+/// \file raspberry_pi/RaspberryPi.h
 /// \brief Master header file for Raspberry Pi.
 ///
 /// \details This header declares Raspberry Pi serial ports and GPIOs, and include functions to access them.

@@ -1,4 +1,4 @@
-/// \file I2C-Wrapper.h
+/// \file drivers/I2C-Wrapper.h
 /// \brief Wrapper for I2C communication.
 ///
 /// \details This file implements helper functions to make I2C communication both easier and thread safe.

@@ -1,4 +1,4 @@
-/// \file MaestroServoDriver.h
+/// \file drivers/MaestroServoDriver.h
 /// \brief Driver for the maestro servo drivers, using UART.
 ///
 /// \details For now only target setting via pololu protocol is supported.

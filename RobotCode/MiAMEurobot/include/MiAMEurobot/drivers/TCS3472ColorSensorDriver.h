@@ -1,4 +1,4 @@
-/// \file TCS3472ColorSensorDriver.h
+/// \file drivers/TCS3472ColorSensorDriver.h
 /// \brief Driver for TCS3472x RGB/clear light sensor.
 ///
 /// \details This file implements all the functions to work with the TCS34725, mounted on Adafruit ADA1334.
