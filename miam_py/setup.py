@@ -11,5 +11,7 @@ setup(
     long_description=open('README.md').read(),
     packages=['miam_py'],
     package_dir={'': 'src'},
-    scripts=["scripts/miam_plot"],
+    scripts=["scripts/miam_plot",
+             "scripts/miam_analyse_tracking",],
+	data_files=[('images', ['images/table.png'])],
     zip_safe=False)

@@ -7,7 +7,9 @@ Aside from the package (miam_py) itself, the following script are provided:
 
  - miam_plot: a generic plotter script. Specify a space-separated list of headers to plot them. Separate headers by
  comma for plotting on the same axes. See script for full help.
-
+ - miam_analyse_tracking: performs specific plots aiming at helping understanding robot servoing on the table. This script
+ plots the robot position and target position on the table (with table image as background), as well as position, angle,
+ velocity and angular velocity values or errors.
 
 # Installing
 
@@ -34,3 +36,9 @@ A valid log simple is a simple csv (comma separated value) file. Two lines must 
    then be added to this line, with the usual comma-separation style, and aquired from the log_info variable.
  - the second line is called the header line. It defines a list of name for the following data column. Only columns with
    a name associated will be parsed: thus, header line should be the same length as the following data file.
+
+## Images
+
+```miam_analyse_plot``` uses an image of the table as background for showing the robot trajectory.
+This image is loaded from images/table.png: this file must contain an image such that 50cm of whitespace are added
+around the table (i.e. overage image size is 3x4m, with the tabled centered).
