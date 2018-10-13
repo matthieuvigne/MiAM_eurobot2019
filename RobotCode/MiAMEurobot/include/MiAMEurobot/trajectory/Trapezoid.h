@@ -10,13 +10,11 @@
 			struct TrapezoidState{
 				double position; ///< Current position in trapezoid.
 				double velocity; ///< Current velocity in trapezoid.
-				bool done; ///< True if the trapezoid has reached the target location.
 
 				/// \brief Default constructor.
 				TrapezoidState():
 					position(0.0),
-					velocity(0.0),
-					done(false)
+					velocity(0.0)
 				{}
 			};
 
@@ -42,8 +40,8 @@
 					Trapezoid(double const& distance,
 							  double const& startVelocity,
 							  double const& endVelocity,
-							  double maxVelocity = config::maxLinearVelocity,
-							  double maxAcceleration = config::maxLinearAcceleration);
+							  double maxVelocity = config::maxWheelVelocity,
+							  double maxAcceleration = config::maxWheelAcceleration);
 
 					/// \brief Get point along the trapezoid curve, at a given time.
 					///

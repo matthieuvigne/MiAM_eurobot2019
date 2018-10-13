@@ -1,4 +1,6 @@
 #include "MiAMEurobot/trajectory/Utilities.h"
+#include "MiAMEurobot/trajectory/StraightLine.h"
+#include "MiAMEurobot/trajectory/PointTurn.h"
 
 #include <cmath>
 #include <glib.h>
@@ -33,5 +35,19 @@ namespace miam{
 				angle -= 2 * G_PI;
 			return angle;
 		}
+
+		std::vector<std::shared_ptr<Trajectory>> computeTrajectoryStaightLineToPoint(RobotPosition const& startPosition,
+		                                                             RobotPosition const& endPosition,
+		                                                             bool const& backward)
+		{
+			std::vector<std::shared_ptr<Trajectory>> vector;
+			std::shared_ptr<StraightLine> line(new StraightLine(startPosition, endPosition, 0.0, 0.0, backward));
+
+			// Get angle from straight line as rotation target.
+			vector.push_back(std::shared_ptr<Trajectory>(new PointTurn(startPosition, line->getAngle())));
+			vector.push_back(std::shared_ptr<Trajectory>(line));
+			return vector;
+		}
+
 	}
 }

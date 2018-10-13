@@ -27,11 +27,15 @@
 							     double const& startVelocity,
 							     double const& endVelocity,
 							     bool const& backward = false,
-							     double maxVelocity=config::maxLinearVelocity,
-							     double maxAcceleration=config::maxLinearAcceleration);
+							     double maxVelocity=config::maxWheelVelocity,
+							     double maxAcceleration=config::maxWheelAcceleration);
 
 					TrajectoryPoint getCurrentPoint(double const& currentTime);
 
+					/// \brief Return line angle.
+					///
+					/// \return Line angle
+					double getAngle();
 				private:
 					RobotPosition startPoint_; ///< Point where the trajectory started.
 					int motionSign_; ///< 1 or -1, to indicate direction of motion.

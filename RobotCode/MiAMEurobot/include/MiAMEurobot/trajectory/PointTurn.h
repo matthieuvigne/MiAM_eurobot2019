@@ -15,17 +15,18 @@
 					///
 					/// \param[in] startPoint Trajectory starting point.
 					/// \param[in] endAngle Ending angle - it will be taken modulo 2 pi.
-					/// \param[in] maxVelocity Max velocity. Only absolute value is taken into account.
+					/// \param[in] maxVelocity Max wheel velocity. Only absolute value is taken into account.
 					/// \param[in] maxAcceleration Max acceleration. Only absolute value is taken into account.
 					PointTurn(RobotPosition const& startPoint,
 							  double const& endAngle,
-							  double maxVelocity=config::maxAngularVelocity,
-							  double maxAcceleration=config::maxAngularAcceleration);
+							  double maxVelocity=config::maxWheelVelocity,
+							  double maxAcceleration=config::maxWheelAcceleration);
 
 					TrajectoryPoint getCurrentPoint(double const& currentTime);
 
 				private:
 					RobotPosition startPoint_; ///< Point where the trajectory started.
+					int motionSign_; ///< 1 or -1, to indicate direction of motion (trapezoid is always positive).
 					Trapezoid trapezoid_; ///< Velocity trapezoid.
 			};
 		}

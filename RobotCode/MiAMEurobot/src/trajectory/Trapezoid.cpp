@@ -108,7 +108,6 @@ namespace miam{
 			if(currentTime >= duration_)
 			{
 				output.position = length_;
-				output.done = true;
 				return output;
 			}
 			else if(currentTime < timeToStopAccelerating_)

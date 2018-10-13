@@ -1,4 +1,4 @@
-/// \file IMUDriver.h
+/// \file drivers/IMUDriver.h
 /// \brief Driver for Pololu MiniIMU v5 (LSM6DS33 and LIS3MDL magnetometer).
 ///
 /// \details This file contains all the functions related to communication

@@ -15,11 +15,22 @@
 			// Config variables, used for trajectory generation.
 			namespace config
 			{
-				extern double maxLinearVelocity;	 ///< Maximum linear velocity along a trajectory, mm/s.
-				extern double maxLinearAcceleration; ///< Maximum linear acceleration of a trajectory, mm/s2.
-				extern double maxAngularVelocity;	 ///< Maximum angular velocity along a trajectory, rad/s.
-				extern double maxAngularAcceleration; ///< Maximum angular acceleration of a trajectory, rad/s2.
+				extern double maxWheelVelocity;	 ///< Maximum wheel velocity along a trajectory, mm/s.
+				extern double maxWheelAcceleration; ///< Maximum wheel acceleration of a trajectory, mm/s2.
+				extern double robotWheelSpacing;	 ///< Distance from wheel to robot center, in mm. Used to compute velocity of external wheel while along a curve.
 			}
+
+			/// \brief Set the velocity and dimension value of the config parameters.
+			/// \details The config parameters are used as default parameters for trajectory generation.
+			///          This function enables chaning these parameters.
+			///
+			/// \param[in] maxWheelVelocity Maximum wheel velocity, mm/s.
+			/// \param[in] maxWheelAcceleration Maximum wheel acceleration, mm/s2.
+			/// \param[in] robotWheelSpacing Distance from wheel to robot center, in mm.
+			void setTrajectoryGenerationConfig(double const& maxWheelVelocity,
+			                                   double const& maxWheelAcceleration,
+			                                   double const& robotWheelSpacing);
+
 
 			/// \brief Robot coordinates on the table.
 			struct RobotPosition
@@ -42,14 +53,12 @@
 				RobotPosition position; ///< Trajectory point in the table.
 				double linearVelocity; ///< Linear velocity along the trajectory, at the current point.
 				double angularVelocity; ///< Angular velocity along the trajectory, at the current point.
-				bool isTrajectoryDone; ///< If the trajectory is done playing at the current point.
 
 				/// \brief Default constructor.
 				TrajectoryPoint():
 			    position(),
 			    linearVelocity(0.0),
-			    angularVelocity(0.0),
-			    isTrajectoryDone(false)
+			    angularVelocity(0.0)
 				{}
 			};
 

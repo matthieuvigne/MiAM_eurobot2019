@@ -3,7 +3,6 @@
 
 #include <cmath>
 
-
 namespace miam{
 	namespace trajectory{
 		StraightLine::StraightLine(RobotPosition const& startPoint,
@@ -25,7 +24,7 @@ namespace miam{
 			duration_ = trapezoid_.getDuration();
 
 			// Compute angle.
-			startPoint_.theta = computeShortestAngle(startPoint, endPoint);
+			startPoint_.theta += computeShortestAngle(startPoint, endPoint);
 
 			if(backward)
 			{
@@ -43,15 +42,21 @@ namespace miam{
 			output.position = startPoint_;
 			TrapezoidState state = trapezoid_.getState(currentTime);
 
-			output.isTrajectoryDone = state.done;
 			output.linearVelocity = motionSign_ * state.velocity;
 
 			// Compute position, remember y is negative.
 			output.position.x += motionSign_ * state.position * std::cos(startPoint_.theta);
 			output.position.y -= motionSign_ * state.position * std::sin(startPoint_.theta);
+			//~ std::cout << "angle" << startPoint_.theta << std::endl;
+			//~ std::cout << "increment" << motionSign_ << std::endl;
 
 			return output;
 		}
 
+
+		double StraightLine::getAngle()
+		{
+			return startPoint_.theta;
+		}
 	}
 }
