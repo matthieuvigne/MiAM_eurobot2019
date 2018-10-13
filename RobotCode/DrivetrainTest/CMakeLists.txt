@@ -5,11 +5,10 @@ project(drivetrainTest)
 set(PROJECT_DESCRIPTION "Test code for 2019 drivetrain")
 
 # Set compiler to arm compiler (cross-compile)
-set(CMAKE_C_COMPILER "arm-linux-gnueabihf-gcc")
+set(CMAKE_CXX_COMPILER "arm-linux-gnueabihf-g++")
 
 # Set C compiler flags.
-set(CMAKE_C_FLAGS "-std=gnu99 -Wall -fdiagnostics-color -lpthread -lm -lrt -pg")
-
+set(CMAKE_CXX_FLAGS "-std=c++11 -Wall -fdiagnostics-color -lpthread -lm")
 
 # Use pkg-config to find external libraries : Glib (compiled for arm) and BBBEurobot.
 find_package(PkgConfig REQUIRED)
@@ -18,16 +17,19 @@ unset(ARMGLIB_FOUND CACHE)
 pkg_search_module(ARMGLIB REQUIRED armglib-2.0>=2.47.0)
 message(STATUS "Found armglib-2.0 v." ${ARMGLIB_VERSION})
 unset(MIAMLIB_FOUND CACHE)
-pkg_search_module(MIAMLIB REQUIRED MiAMEurobot>=1.0)
+pkg_search_module(MIAMLIB REQUIRED MiAMEurobot>=2.0)
 message(STATUS "Found MiAMEurobot v." ${MIAMLIB_VERSION})
 
 include_directories(${ARMGLIB_INCLUDE_DIRS} ${MIAMLIB_INCLUDE_DIRS})
 link_directories(${ARMGLIB_LIBRARY_DIRS} ${MIAMLIB_LIBRARY_DIRS})
 
 # Include source files from src directory.
-file(GLOB_RECURSE ${PROJECT_NAME}_SOURCES "src/*.c")
+file(GLOB_RECURSE ${PROJECT_NAME}_SOURCES "src/*.c" "src/*.cpp")
 # Add directory containing the headers.
 include_directories(include)
+
+set_source_files_properties(${${PROJECT_NAME}_SOURCES} PROPERTIES LANGUAGE CXX )
+
 
 # Set executable target and link libraries.
 add_executable(${PROJECT_NAME} ${${PROJECT_NAME}_SOURCES})

@@ -3,109 +3,89 @@
 ///
 
 #include "Robot.h"
-#include "Localisation.h"
+
+#include <iostream>
 
 Robot robot;
 
 // Motor values.
-const int MOTOR_KVAL_HOLD = 0x20;
-const int MOTOR_BEMF[4] = {0x30, 0x172E, 0xC, 0x20};
-const int MOTOR_MAX_SPEED = 1500;
-const int MOTOR_MAX_ACCELERATION = 5000;
+const int MOTOR_KVAL_HOLD = 0x30;
+const int MOTOR_BEMF[4] = {0x3B, 0x1430, 0x22, 0x53};
 
-const double MOTOR_TICK = 2 * G_PI / 200.0;
 
 // Stop motor before exit.
-void killCode()
+void killCode(int x)
 {
-    L6470_hardStop(robot.motors[0]);
-	L6470_highZ(robot.motors[0]);
+    dualL6470_hardStop(robot.stepperMotors_);
+	dualL6470_highZ(robot.stepperMotors_);
 	exit(0);
 }
 
-// Generic implementation of a PID controller.
-typedef struct{
-	double integral; 	///< Integral value.
-	double maxIntegral;	///< Maximum value of the integral feedback, i.e Ki * integral (to prevent windup).
-	double Kp;			///< Proportional gain.
-	double Kd;			///< Derivative gain.
-	double Ki;			///< Integral gain.
-}PID;
-
-gboolean stopOnSwitch = FALSE;
-
-// Compute next value of PID command, given the new error and the elapsed time.
-double PID_computeValue(PID *pid, double positionError, double velocityError, double dt)
+void *startLowLevelThread(void *)
 {
-	// Compute and saturate integral.
-	pid->integral += positionError * dt;
-	// Prevent division by 0.
-	if(ABS(pid->Ki) > 1e-6)
-	{
-		if(pid->Ki * pid->integral > pid->maxIntegral)
-			pid->integral = pid->maxIntegral / pid->Ki;
-		if(pid->Ki * pid->integral < -pid->maxIntegral)
-			pid->integral = -pid->maxIntegral / pid->Ki;
-	}
-	// Output PID command.
-	return pid->Kp * (positionError + pid->Kd * velocityError + pid->Ki * pid->integral);
+	robot.lowLevelThread();
+	return 0;
 }
-
 
 int main(int argc, char **argv)
 {
+	// Wire signals.
 	signal(SIGINT, killCode);
 	signal(SIGTERM, killCode);
 
 	// Init raspberry serial ports and GPIO.
-	RPi_enablePorts();
+	//~ RPi_enablePorts();
 
-	L6470_initStructure(&(robot.motors[0]), RPI_SPI_00);
-    L6470_initMotion(robot.motors[0], MOTOR_MAX_SPEED, MOTOR_MAX_ACCELERATION);
-    L6470_initBEMF(robot.motors[0], MOTOR_KVAL_HOLD, MOTOR_BEMF[0], MOTOR_BEMF[1], MOTOR_BEMF[2], MOTOR_BEMF[3]);
-	if(L6470_getParam(robot.motors[0], dSPIN_KVAL_HOLD) != MOTOR_KVAL_HOLD)
+	// Init robot - this only creates the log for now.
+	robot.init();
+
+	// Update trajectory config.
+	miam::trajectory::setTrajectoryGenerationConfig(robotdimensions::maxWheelSpeed,
+	                                                robotdimensions::maxWheelAcceleration,
+	                                                robotdimensions::wheelSpacing);
+
+	// Compute max stepper motor speed.
+	int maxSpeed = robotdimensions::maxWheelSpeed / robotdimensions::wheelRadius / robotdimensions::stepSize;
+	int maxAcceleration = robotdimensions::maxWheelAcceleration / robotdimensions::wheelRadius / robotdimensions::stepSize;
+
+	std::cout << "max speed:" << maxSpeed << std::endl;
+	std::cout << "max acceleration:" << maxAcceleration << std::endl;
+
+	// Initialize both motors.
+	dualL6470_initStructure(&robot.stepperMotors_, RPI_SPI_00);
+	uint32_t rightParam = 0;
+    uint32_t leftParam = 0;
+    dualL6470_getError(robot.stepperMotors_, &rightParam, &leftParam);
+
+    dualL6470_initMotion(robot.stepperMotors_, maxSpeed, maxAcceleration);
+	dualL6470_initBEMF(robot.stepperMotors_, MOTOR_KVAL_HOLD, MOTOR_BEMF[0], MOTOR_BEMF[1], MOTOR_BEMF[2], MOTOR_BEMF[3]);
+
+    dualL6470_getParam(robot.stepperMotors_, dSPIN_KVAL_HOLD, &rightParam, &leftParam);
+	if (rightParam != MOTOR_KVAL_HOLD || leftParam != MOTOR_KVAL_HOLD)
 	{
-		printf("Failed to init motor\n");
+		printf("Failed to init stepper motors: right %d, left %d, target %d.\n", rightParam, leftParam, MOTOR_KVAL_HOLD);
 		exit(0);
 	}
 
 	// Init communication with arduino.
-	robot.isOnRightSide = TRUE;
 	uCListener_startListener("/dev/arduinoUno");
-	localisation_startSensorUpdate();
+	g_usleep(2000000);
+
+	// Start low-level thread.
+	g_thread_new("LowLevel", startLowLevelThread, NULL);
+
+	// Servo along a trajectory.
+	RobotPosition endPosition = robot.getCurrentPosition();
+	endPosition.y += 500;
+	std::vector<std::shared_ptr<Trajectory>> traj;
+	traj = miam::trajectory::computeTrajectoryStaightLineToPoint(robot.getCurrentPosition(), endPosition);
+
+	robot.setTrajectoryToFollow(traj);
+	robot.waitForTrajectoryFinished();
 
 	g_usleep(2000000);
-	L6470_goToPosition(robot.motors[0], 1500);
-	L6470_getError(robot.motors[0]);
-
-	PID pid = {0.0,		// integral
-			   0.15,		// maxIntegral
-			   200.0,		// Kp
-			   0.0,		// Kd
-			   0.0};		// Ki
-
-	double dt = 0.01;
-
-	while(TRUE)
-	{
-		// Get encoder position.
-		robot.microcontrollerData = uCListener_getData();
-		double encoderPosition = robot.microcontrollerData.encoderValues[0];
-		// Get motor position.
-		double motorPosition = L6470_getPosition(robot.motors[0]) * MOTOR_TICK;
-
-		// Run PID.
-		double error = encoderPosition - motorPosition;
-		if(error < 0.2 && error > -0.2)
-			error = 0;
-		int command = PID_computeValue(&pid, error, 0.0, dt);
-		//~ L6470_setSpeed(robot.motors[0], command);
-		L6470_getError(robot.motors[0]);
-
-		printf("\rEncoder: %0.2f motor: %0.2f command: %d second encoder %f", encoderPosition, motorPosition, command, robot.microcontrollerData.encoderValues[1]);
-		fflush(stdout);
-		g_usleep(1e6 * dt);
-	}
+	printf("done\n");
+	while(TRUE) ;;
 	return 0;
 }
 

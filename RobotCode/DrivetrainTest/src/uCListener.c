@@ -36,8 +36,8 @@ void *listenerThread(void *portName)
 	int port = uart_open((gchar*)portName, B1000000);
 	if(port < 0)
 	{
-		printf("Failed to initialize listener port. Listener thread exiting.\n");
-		return 0;
+		printf("Failed to initialize listener port. Terminating.\n");
+		exit(0);
 	}
 	while(TRUE)
 	{
