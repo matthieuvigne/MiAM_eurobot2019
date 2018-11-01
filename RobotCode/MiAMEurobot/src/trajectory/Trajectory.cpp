@@ -32,5 +32,10 @@ namespace miam{
 		{
 			return duration_;
 		}
+
+		TrajectoryPoint Trajectory::getEndPoint()
+		{
+			return getCurrentPoint(getDuration());
+		}
 	}
 }

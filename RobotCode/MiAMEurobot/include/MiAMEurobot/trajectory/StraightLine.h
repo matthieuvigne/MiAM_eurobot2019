@@ -24,8 +24,8 @@
 					/// \param[in] maxAcceleration Max acceleration. Only absolute value is taken into account.
 					StraightLine(RobotPosition const& startPoint,
 							     RobotPosition const& endPoint,
-							     double const& startVelocity,
-							     double const& endVelocity,
+							     double const& startVelocity = 0.0,
+							     double const& endVelocity = 0.0,
 							     bool const& backward = false,
 							     double maxVelocity=config::maxWheelVelocity,
 							     double maxAcceleration=config::maxWheelAcceleration);

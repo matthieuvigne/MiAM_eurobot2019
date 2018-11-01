@@ -47,8 +47,6 @@ namespace miam{
 			// Compute position, remember y is negative.
 			output.position.x += motionSign_ * state.position * std::cos(startPoint_.theta);
 			output.position.y -= motionSign_ * state.position * std::sin(startPoint_.theta);
-			//~ std::cout << "angle" << startPoint_.theta << std::endl;
-			//~ std::cout << "increment" << motionSign_ << std::endl;
 
 			return output;
 		}

@@ -8,6 +8,7 @@
 #define MIAM_TRAJECTORY_TRAJECTORY
 
 	#include <glib.h>
+	#include "RobotPosition.h"
 
 	namespace miam{
 		namespace trajectory{
@@ -31,23 +32,6 @@
 			                                   double const& maxWheelAcceleration,
 			                                   double const& robotWheelSpacing);
 
-
-			/// \brief Robot coordinates on the table.
-			struct RobotPosition
-			{
-				double x;	///< X coordinate of the robot, in mm.
-				double y;	///< Y coordinate of the robot, in mm. Notice that y axis is taken positive when pointing downward.
-				double theta;	///< Angle of the robot, in rad.
-
-				/// \brief Default constructor.
-				RobotPosition():
-					x(0.0),
-					y(0.0),
-					theta(0.0)
-				{}
-			};
-
-
 			/// \brief A trajectory point, containing everything for servoing along this trajectory.
 			struct TrajectoryPoint{
 				RobotPosition position; ///< Trajectory point in the table.
@@ -61,7 +45,6 @@
 			    angularVelocity(0.0)
 				{}
 			};
-
 
 			class Trajectory
 			{
@@ -77,6 +60,10 @@
 					/// \brief Get trajectory duration, in seconds.
 					/// \return Trajectory duration.
 					double getDuration();
+
+					/// \brief Get final point of the trajectory.
+					/// \return Position at duration_
+					TrajectoryPoint getEndPoint();
 
 				protected:
 					double duration_; ///< Trajectory duration.

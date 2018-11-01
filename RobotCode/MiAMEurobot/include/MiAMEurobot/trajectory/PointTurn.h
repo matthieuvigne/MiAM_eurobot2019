@@ -12,6 +12,8 @@
 			{
 				public:
 					/// \brief Constructor.
+					/// \details Note: only zero-velocity transitions is supported, due to the singular configuration
+					///          of this trajectory.
 					///
 					/// \param[in] startPoint Trajectory starting point.
 					/// \param[in] endAngle Ending angle - it will be taken modulo 2 pi.
