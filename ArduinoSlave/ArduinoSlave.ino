@@ -77,12 +77,17 @@ void setup()
 void loop() {
  Serial.write(0xFF);
  Serial.write(0xFF);
+ // Compute checksum
+ uint8_t checksum = 0;
  for(int i = 0; i < 2; i++)
  {
   // Take encoderCount, use its 2s complement with 2^15
   int encoderComp = (1 << 15) - encoderCount[i];
   Serial.write((encoderComp >> 8) & 0xFF);
   Serial.write(encoderComp & 0xFF);
+  checksum += (encoderComp >> 8) & 0xFF;
+  checksum += encoderComp & 0xFF;
  }
- delayMicroseconds(100);
+  Serial.write(checksum);
+ delayMicroseconds(2000);
 }
