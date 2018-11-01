@@ -7,6 +7,7 @@
 
 from miam_py import LogLoader
 import argparse
+import os
 
 import sys
 import numpy as np
@@ -20,13 +21,19 @@ if __name__ == "__main__":
 	                  "Extra values: timeDiffs plots dt between two log lines."
 
 	parser = argparse.ArgumentParser(description = description_str, formatter_class = argparse.RawTextHelpFormatter)
-	parser.add_argument("input", help = "Input csv log file.")
+	parser.add_argument("input", help = "Input csv log file, or keyword 'latest'.")
 	parser.add_argument("-nt", "--notime", required = False, default = False, action = "store_true",
 	                    help = "If set, using index number for X axis instead of time.")
 	main_arguments, plotting_commands = parser.parse_known_args()
 
 	# Load log file.
-	logfile = LogLoader(main_arguments.input)
+	# Process latest argument.
+	logname = main_arguments.input
+	if logname == 'latest':
+		logfiles = [i for i in os.listdir('.') if 'log' in i]
+		logname = sorted(logfiles)[-1]
+		print("Loading log: {}".format(logname))
+	logfile = LogLoader(logname)
 
 	if len(plotting_commands) == 0:
 		print("Available data:")

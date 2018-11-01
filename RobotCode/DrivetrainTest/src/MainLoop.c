@@ -16,8 +16,9 @@ const int MOTOR_BEMF[4] = {0x3B, 0x1430, 0x22, 0x53};
 // Stop motor before exit.
 void killCode(int x)
 {
-    dualL6470_hardStop(robot.stepperMotors_);
-	dualL6470_highZ(robot.stepperMotors_);
+	robot.stepperMotors_.hardStop();
+	g_usleep(50000);
+	robot.stepperMotors_.highZ();
 	exit(0);
 }
 
@@ -52,18 +53,14 @@ int main(int argc, char **argv)
 	std::cout << "max acceleration:" << maxAcceleration << std::endl;
 
 	// Initialize both motors.
-	dualL6470_initStructure(&robot.stepperMotors_, RPI_SPI_00);
-	uint32_t rightParam = 0;
-    uint32_t leftParam = 0;
-    dualL6470_getError(robot.stepperMotors_, &rightParam, &leftParam);
 
-    dualL6470_initMotion(robot.stepperMotors_, maxSpeed, maxAcceleration);
-	dualL6470_initBEMF(robot.stepperMotors_, MOTOR_KVAL_HOLD, MOTOR_BEMF[0], MOTOR_BEMF[1], MOTOR_BEMF[2], MOTOR_BEMF[3]);
+	robot.stepperMotors_ = miam::L6470(RPI_SPI_00, 2);
+	bool areMotorsInit = robot.stepperMotors_.init(maxSpeed, maxAcceleration, MOTOR_KVAL_HOLD,
+	                                         MOTOR_BEMF[0], MOTOR_BEMF[1], MOTOR_BEMF[2], MOTOR_BEMF[3]);
 
-    dualL6470_getParam(robot.stepperMotors_, dSPIN_KVAL_HOLD, &rightParam, &leftParam);
-	if (rightParam != MOTOR_KVAL_HOLD || leftParam != MOTOR_KVAL_HOLD)
+	if(!areMotorsInit)
 	{
-		printf("Failed to init stepper motors: right %d, left %d, target %d.\n", rightParam, leftParam, MOTOR_KVAL_HOLD);
+		printf("Failed to init stepper motors.\n");
 		exit(0);
 	}
 
@@ -71,15 +68,19 @@ int main(int argc, char **argv)
 	uCListener_startListener("/dev/arduinoUno");
 	g_usleep(2000000);
 
+
 	// Start low-level thread.
 	g_thread_new("LowLevel", startLowLevelThread, NULL);
 
 	// Servo along a trajectory.
-	RobotPosition endPosition = robot.getCurrentPosition();
-	endPosition.y += 500;
+	//~ RobotPosition endPosition = robot.getCurrentPosition();
+	//~ endPosition.y += 500;
+	//~ endPosition.x += 500;
 	std::vector<std::shared_ptr<Trajectory>> traj;
-	traj = miam::trajectory::computeTrajectoryStaightLineToPoint(robot.getCurrentPosition(), endPosition);
+	//~ traj = miam::trajectory::computeTrajectoryStaightLineToPoint(robot.getCurrentPosition(), endPosition);
 
+	std::shared_ptr<Trajectory> t = std::shared_ptr<Trajectory>(new miam::trajectory::PointTurn(robot.getCurrentPosition(), G_PI_2));
+	traj.push_back(t);
 	robot.setTrajectoryToFollow(traj);
 	robot.waitForTrajectoryFinished();
 

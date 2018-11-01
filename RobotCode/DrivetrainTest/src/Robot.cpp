@@ -28,6 +28,9 @@ const double LOOP_PERIOD = 0.010;
 	f(LOGGER_TARGET_POSITION_THETA) \
 	f(LOGGER_TARGET_LINEAR_VELOCITY) \
 	f(LOGGER_TARGET_ANGULAR_VELOCITY) \
+	f(LOGGER_TRACKING_LONGITUDINAL_ERROR) \
+	f(LOGGER_TRACKING_TRANSVERSE_ERROR) \
+	f(LOGGER_TRACKING_ANGLE_ERROR) \
 
 #define GENERATE_ENUM(ENUM) ENUM,
 
@@ -83,6 +86,10 @@ static inline std::string getHeaderStringList()
 Robot::Robot():
 	currentTime_(0.0)
 {
+	motorSpeed_.push_back(0.0);
+	motorSpeed_.push_back(0.0);
+	motorPosition_.push_back(0);
+	motorPosition_.push_back(0);
 }
 
 bool Robot::init()
@@ -108,6 +115,10 @@ bool Robot::init()
 	initialPosition.y = 0;
 	initialPosition.theta = 0;
 	currentPosition_.set(initialPosition);
+
+	// Set PIDs.
+	PIDLinear_ = miam::PID(0.0, 0.0, 0.0, 0.0);
+	PIDAngular_ = miam::PID(0.0, 0.0, 0.0, 0.0);
 
 	return true;
 }
@@ -157,21 +168,24 @@ bool Robot::followTrajectory(Trajectory *traj, double const& timeInTrajectory, d
 
 	// Compute error.
 	RobotPosition currentPosition = currentPosition_.get();
-	RobotPosition error;
-	error.x = currentPosition.x - trajectoryPoint_.position.x;
-	// Minus sign to put everything back in "standard" frame.
-	error.y = -(currentPosition.y - trajectoryPoint_.position.y);
+	RobotPosition error = currentPosition - trajectoryPoint_.position;
+
+	// Minus of y error to work back in a "standard" frame.
+	error.y = -error.y;
 
 	// Project along line of slope theta.
-	double longitudinalError = error.x * std::cos(trajectoryPoint_.position.theta) - error.y * std::sin(trajectoryPoint_.position.theta);
-	double transverseError = error.x * std::sin(trajectoryPoint_.position.theta) + error.y * std::cos(trajectoryPoint_.position.theta);
+	RobotPosition tangent(std::cos(trajectoryPoint_.position.theta), std::sin(trajectoryPoint_.position.theta), 0.0);
+	RobotPosition colinear, normal;
+	error.projectOnto(tangent, colinear, normal);
 
-	double angleError = currentPosition.theta - trajectoryPoint_.position.theta;
+	trackingLongitudinalError_ = colinear.norm();
+	trackingTransverseError_ = normal.norm();
+	trackingAngleError_ = currentPosition.theta - trajectoryPoint_.position.theta;
 
 	// If we are beyon trajector end, look to see if we are close enough to the target point to stop.
 	if(traj->getDuration() <= timeInTrajectory)
 	{
-		if(longitudinalError < 3 && angleError < 0.02 && motorSpeed_[RIGHT] < 100 && motorSpeed_[LEFT] < 100)
+		if(trackingLongitudinalError_ < 3 && trackingAngleError_ < 0.02 && motorSpeed_[RIGHT] < 100 && motorSpeed_[LEFT] < 100)
 		{
 			// Just stop the robot.
 			motorSpeed_[0] = 0.0;
@@ -181,6 +195,13 @@ bool Robot::followTrajectory(Trajectory *traj, double const& timeInTrajectory, d
 	}
 
 	// Compute correction terms.
+	translationMotor += PIDLinear_.computeValue(trackingLongitudinalError_, dt);
+	// Modify angular PID target based on transverse error, if we are going fast enough.
+	double angularPIDError = trackingAngleError_;
+	if(std::abs(trajectoryPoint_.linearVelocity) > 0.1 * robotdimensions::maxWheelSpeed)
+		angularPIDError += trajectoryPoint_.linearVelocity / robotdimensions::maxWheelSpeed * controller::transverseKp * trackingTransverseError_;
+	rotationMotor += PIDAngular_.computeValue(angularPIDError, dt);
+
 
 	// Compute the resulting velocity of each wheel, in mm/s.
 	double wheelVelocity[2];
@@ -210,7 +231,6 @@ void Robot::updateTrajectoryFollowingTarget(double const& dt)
 	{
 		motorSpeed_[0] = 0.0;
 		motorSpeed_[1] = 0.0;
-		std::cout << "No trajectory to follow" << std::endl;
 	}
 	else
 	{
@@ -255,7 +275,7 @@ void Robot::updateTrajectoryFollowingTarget(double const& dt)
 	}
 
 	// Send target to motors.
-	dualL6470_setSpeed(stepperMotors_, motorSpeed_[RIGHT], motorSpeed_[LEFT]);
+	stepperMotors_.setSpeed(motorSpeed_);
 }
 
 
@@ -281,7 +301,7 @@ void Robot::lowLevelThread()
 		microcontrollerData_ = uCListener_getData();
 
 		// Update motor position.
-		dualL6470_getPosition(robot.stepperMotors_, &motorPosition_[RIGHT], &motorPosition_[LEFT]);
+		motorPosition_ = stepperMotors_.getPosition();
 
 		double dt = currentTime_ - lastTime;
 
@@ -327,5 +347,9 @@ void Robot::updateLog()
 	logger_setData(&logger_, LOGGER_TARGET_POSITION_THETA, trajectoryPoint_.position.theta);
 	logger_setData(&logger_, LOGGER_TARGET_LINEAR_VELOCITY, trajectoryPoint_.linearVelocity);
 	logger_setData(&logger_, LOGGER_TARGET_ANGULAR_VELOCITY, trajectoryPoint_.angularVelocity);
+
+	logger_setData(&logger_, LOGGER_TRACKING_LONGITUDINAL_ERROR, trackingLongitudinalError_);
+	logger_setData(&logger_, LOGGER_TRACKING_TRANSVERSE_ERROR, trackingTransverseError_);
+	logger_setData(&logger_, LOGGER_TRACKING_ANGLE_ERROR, trackingAngleError_);
 	logger_writeLine(logger_);
 }

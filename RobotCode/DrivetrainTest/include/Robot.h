@@ -11,6 +11,7 @@
 	///< Global includes
 	#include <MiAMEurobot/MiAMEurobot.h>
 	#include <MiAMEurobot/raspberry_pi/RaspberryPi.h>
+	#include <MiAMEurobot/trajectory/PointTurn.h>
 	#include <MiAMEurobot/trajectory/Utilities.h>
 	#include <math.h>
 	#include <stdlib.h>
@@ -27,7 +28,7 @@
 	#define RIGHT 0
 	#define LEFT 1
 
-	using miam::trajectory::RobotPosition;
+	using miam::RobotPosition;
 	using miam::trajectory::Trajectory;
 
 
@@ -64,15 +65,21 @@
 	// Dimensions of the robot
 	namespace robotdimensions
 	{
-		double const wheelRadius = 50.8; ///< Wheel radius, in mm.
+		double const wheelRadius = 51.0; ///< Wheel radius, in mm.
 		double const wheelSpacing = 106.0; ///< Wheel spacing from robot center, in mm.
-		double const encoderWheelRadius = 26.5; ///< Radius of encoder wheels, in mm.
+		double const encoderWheelRadius = 26.0; ///< Radius of encoder wheels, in mm.
 		double const encoderWheelSpacing = 133.0; ///< Encoder wheel spacing from robot center, in mm.
 
 		double const stepSize = 2 * G_PI / 600.0; ///< Size of a motor step, in rad.
 
-		double const maxWheelSpeed = 700; ///< Maximum wheel speed, in mm/s.
-		double const maxWheelAcceleration = 1000; ///< Maximum wheel acceleration, in mm/s^2.
+		double const maxWheelSpeed = 600; ///< Maximum wheel speed, in mm/s.
+		double const maxWheelAcceleration = 800; ///< Maximum wheel acceleration, in mm/s^2.
+	}
+
+	// Controller parameters
+	namespace controller
+	{
+		double const transverseKp = 0.1;
 	}
 
 	/// \brief Class representing the robot wheeled base.
@@ -82,7 +89,7 @@
 	class Robot
 	{
 		public:
-			dualL6470 stepperMotors_; ///< Robot driving motors.
+			miam::L6470 stepperMotors_; ///< Robot driving motors.
 
 			/// \brief Constructor: do nothing for now.
 			Robot();
@@ -149,8 +156,8 @@
 			std::mutex positionMutex_;	///< Mutex for writing to currentPosition_
 			miam::trajectory::TrajectoryPoint trajectoryPoint_; ///< Current trajectory point.
 			double currentTime_; ///< Current robot time, counted by low-level thread.
-			double motorSpeed_[2]; ///< Current motor speed.
-			int motorPosition_[2]; ///< Current motor position.
+			std::vector<double> motorSpeed_; ///< Current motor speed.
+			std::vector<int> motorPosition_; ///< Current motor position.
 			uCData microcontrollerData_; ///< Data structure containing informations from the arduino board.
 			Logger logger_; ///< Logger object.
 
@@ -161,6 +168,15 @@
 			// Trajectory following timing.
 			double trajectoryStartTime_; ///< Time at which the last trajectory following started.
 			double lastTrajectoryFollowingCallTime_; ///< Time at which the last trajectory following started.
+
+			// Traking errors.
+			double trackingLongitudinalError_; ///< Tracking error along tangent to trajectory.
+			double trackingTransverseError_; ///< Tracking error along normal to trajectory.
+			double trackingAngleError_; ///< Tracking angle error.
+
+			// Tracking PIDs
+			miam::PID PIDLinear_; ///< Longitudinal PID.
+			miam::PID PIDAngular_; ///< Angular PID.
 	};
 
 	extern Robot robot;	///< The robot instance, representing the current robot.

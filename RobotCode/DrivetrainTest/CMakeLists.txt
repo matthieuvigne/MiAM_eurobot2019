@@ -6,6 +6,7 @@ set(PROJECT_DESCRIPTION "Test code for 2019 drivetrain")
 
 # Set compiler to arm compiler (cross-compile)
 set(CMAKE_CXX_COMPILER "arm-linux-gnueabihf-g++")
+set(CMAKE_CXX_FLAGS_DEBUG "-DDEBUG")
 
 # Set C compiler flags.
 set(CMAKE_CXX_FLAGS "-std=c++11 -Wall -fdiagnostics-color -lpthread -lm")
