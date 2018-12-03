@@ -14,5 +14,5 @@
     /// \param portName Serial port file name ("/dev/ttyOx")
     /// \param speed Communication speed (i.e. B115200, or one of the constants defined in termios.h
     /// \return The open port file descriptor (positive int), or -1 on failure.
-	int uart_open(gchar *portName, int speed);
+	int uart_open(gchar const *portName, int speed);
 #endif

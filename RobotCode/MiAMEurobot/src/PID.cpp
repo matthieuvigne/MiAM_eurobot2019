@@ -41,8 +41,8 @@ namespace miam{
 			if(Ki_ * integral_ < -maxIntegral_)
 				integral_ = -maxIntegral_ / Ki_;
 		}
-
-		return Kp_ * (error + Kd_ * derivative + Ki_ * integral_);
+		// Return result - minus because error is defined as current - target.
+		return -Kp_ * (error + Kd_ * derivative + Ki_ * integral_);
 	}
 
 

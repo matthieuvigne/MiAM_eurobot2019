@@ -3,7 +3,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 // Open a uart port.
-int uart_open(gchar *portName, int speed)
+int uart_open(gchar const *portName, int speed)
 {
 	// Open in read-write mode.
 	int port = open(portName, O_RDWR);

@@ -13,6 +13,11 @@
 	#include <MiAMEurobot/Metronome.h>
 	#include <MiAMEurobot/PID.h>
 
+	#include <MiAMEurobot/trajectory/ArcCircle.h>
+	#include <MiAMEurobot/trajectory/PointTurn.h>
+	#include <MiAMEurobot/trajectory/StraightLine.h>
+	#include <MiAMEurobot/trajectory/Utilities.h>
+
 	#include <MiAMEurobot/drivers/ADNS9800Driver.h>
 	#include <MiAMEurobot/drivers/L6470Driver.h>
 	#include <MiAMEurobot/drivers/I2C-Wrapper.h>
