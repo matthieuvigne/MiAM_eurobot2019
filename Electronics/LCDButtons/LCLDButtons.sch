@@ -1,39 +1,6 @@
-EESchema Schematic File Version 2
-LIBS:power
-LIBS:device
-LIBS:switches
-LIBS:relays
-LIBS:motors
-LIBS:transistors
-LIBS:conn
-LIBS:linear
-LIBS:regul
-LIBS:74xx
-LIBS:cmos4000
-LIBS:adc-dac
-LIBS:memory
-LIBS:xilinx
-LIBS:microcontrollers
-LIBS:dsp
-LIBS:microchip
-LIBS:analog_switches
-LIBS:motorola
-LIBS:texas
-LIBS:intel
-LIBS:audio
-LIBS:interface
-LIBS:digital-audio
-LIBS:philips
-LIBS:display
-LIBS:cypress
-LIBS:siliconi
-LIBS:opto
-LIBS:atmel
-LIBS:contrib
-LIBS:valves
-LIBS:MiAM
+EESchema Schematic File Version 4
 LIBS:LCLDButtons-cache
-EELAYER 25 0
+EELAYER 26 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
@@ -48,7 +15,7 @@ Comment3 ""
 Comment4 ""
 $EndDescr
 $Comp
-L Conn_01x08 J1
+L Connector_Generic:Conn_01x08 J1
 U 1 1 5BEDEA58
 P 2750 1800
 F 0 "J1" H 2750 2200 50  0000 C CNN
@@ -59,7 +26,7 @@ F 3 "" H 2750 1800 50  0001 C CNN
 	-1   0    0    -1  
 $EndComp
 $Comp
-L LED D1
+L Device:LED D1
 U 1 1 5BEDEAD4
 P 4450 2150
 F 0 "D1" H 4450 2250 50  0000 C CNN
@@ -70,7 +37,7 @@ F 3 "" H 4450 2150 50  0001 C CNN
 	-1   0    0    1   
 $EndComp
 $Comp
-L LED D2
+L Device:LED D2
 U 1 1 5BEDEB2F
 P 4450 2450
 F 0 "D2" H 4450 2550 50  0000 C CNN
@@ -81,7 +48,7 @@ F 3 "" H 4450 2450 50  0001 C CNN
 	-1   0    0    1   
 $EndComp
 $Comp
-L LED D3
+L Device:LED D3
 U 1 1 5BEDEB4E
 P 4450 2750
 F 0 "D3" H 4450 2850 50  0000 C CNN
@@ -92,7 +59,7 @@ F 3 "" H 4450 2750 50  0001 C CNN
 	-1   0    0    1   
 $EndComp
 $Comp
-L GND #PWR01
+L power:GND #PWR01
 U 1 1 5BEDEBAC
 P 3150 2250
 F 0 "#PWR01" H 3150 2000 50  0001 C CNN
@@ -135,7 +102,7 @@ Wire Wire Line
 Wire Wire Line
 	3150 1900 2950 1900
 $Comp
-L GND #PWR02
+L power:GND #PWR02
 U 1 1 5BEDED76
 P 4700 2850
 F 0 "#PWR02" H 4700 2600 50  0001 C CNN
@@ -148,7 +115,7 @@ $EndComp
 Wire Wire Line
 	4700 2750 4600 2750
 Wire Wire Line
-	4700 2150 4700 2850
+	4700 2150 4700 2450
 Wire Wire Line
 	4600 2450 4700 2450
 Connection ~ 4700 2750
@@ -162,7 +129,7 @@ TX
 Text Label 3750 2150 2    60   ~ 0
 PB0
 $Comp
-L R R3
+L Device:R R3
 U 1 1 5BEDEF39
 P 4050 2750
 F 0 "R3" V 4130 2750 50  0000 C CNN
@@ -177,7 +144,7 @@ Wire Wire Line
 Wire Wire Line
 	3750 2750 3900 2750
 $Comp
-L R R2
+L Device:R R2
 U 1 1 5BEDF056
 P 4050 2450
 F 0 "R2" V 4130 2450 50  0000 C CNN
@@ -188,7 +155,7 @@ F 3 "" H 4050 2450 50  0001 C CNN
 	0    1    1    0   
 $EndComp
 $Comp
-L R R1
+L Device:R R1
 U 1 1 5BEDF086
 P 4050 2150
 F 0 "R1" V 4130 2150 50  0000 C CNN
@@ -207,7 +174,7 @@ Wire Wire Line
 Wire Wire Line
 	4200 2150 4300 2150
 $Comp
-L SW_SPST SW1
+L Switch:SW_SPST SW1
 U 1 1 5BEDF233
 P 4350 1000
 F 0 "SW1" H 4350 1125 50  0000 C CNN
@@ -219,7 +186,7 @@ F 4 "135-9534" H 4350 1000 60  0001 C CNN "RS"
 	1    0    0    -1  
 $EndComp
 $Comp
-L SW_SPST SW3
+L Switch:SW_SPST SW3
 U 1 1 5BEDEBF5
 P 4350 1700
 F 0 "SW3" H 4350 1825 50  0000 C CNN
@@ -231,7 +198,7 @@ F 4 "135-9534" H 4350 1700 60  0001 C CNN "RS"
 	1    0    0    -1  
 $EndComp
 $Comp
-L SW_SPST SW2
+L Switch:SW_SPST SW2
 U 1 1 5BEDEC2C
 P 4350 1350
 F 0 "SW2" H 4350 1475 50  0000 C CNN
@@ -255,7 +222,7 @@ Wire Wire Line
 Wire Wire Line
 	3700 1000 4150 1000
 $Comp
-L GND #PWR03
+L power:GND #PWR03
 U 1 1 5BEDEF56
 P 4700 1800
 F 0 "#PWR03" H 4700 1550 50  0001 C CNN
@@ -268,7 +235,7 @@ $EndComp
 Wire Wire Line
 	4550 1700 4700 1700
 Wire Wire Line
-	4700 1000 4700 1800
+	4700 1000 4700 1350
 Wire Wire Line
 	4550 1350 4700 1350
 Connection ~ 4700 1700
@@ -276,7 +243,7 @@ Wire Wire Line
 	4550 1000 4700 1000
 Connection ~ 4700 1350
 $Comp
-L Hole_3mm_PTH H1
+L MiAM:Hole_3mm_PTH H1
 U 1 1 5BEDF56F
 P 2350 2750
 F 0 "H1" H 2200 2850 60  0000 C CNN
@@ -287,4 +254,23 @@ F 3 "" H 2250 2750 60  0001 C CNN
 	1    0    0    -1  
 $EndComp
 NoConn ~ 3150 2100
+Wire Wire Line
+	4700 2750 4700 2850
+Wire Wire Line
+	4700 2450 4700 2750
+Wire Wire Line
+	4700 1700 4700 1800
+Wire Wire Line
+	4700 1350 4700 1700
+$Comp
+L MiAM:Hole_3mm_PTH H2
+U 1 1 5BFF0559
+P 2350 3150
+F 0 "H2" H 2200 3250 60  0000 C CNN
+F 1 "Hole_3mm_PTH" H 2350 3000 60  0000 C CNN
+F 2 "MiAM:NPTH_3mm_ID" H 2250 3150 60  0001 C CNN
+F 3 "" H 2250 3150 60  0001 C CNN
+	1    2350 3150
+	1    0    0    -1  
+$EndComp
 $EndSCHEMATC

@@ -2,11 +2,11 @@
 
   (general
     (thickness 1.6)
-    (drawings 5)
+    (drawings 4)
     (tracks 43)
     (zones 0)
-    (modules 11)
-    (nets 11)
+    (modules 12)
+    (nets 12)
   )
 
   (page A4)
@@ -34,7 +34,7 @@
   )
 
   (setup
-    (last_trace_width 0.75)
+    (last_trace_width 0.25)
     (user_trace_width 0.4)
     (user_trace_width 0.5)
     (user_trace_width 0.75)
@@ -105,6 +105,7 @@
   (net 8 /PB0)
   (net 9 /TX)
   (net 10 /RX)
+  (net 11 /RST)
 
   (net_class Default "This is the default net class."
     (clearance 0.25)
@@ -117,6 +118,7 @@
     (add_net /PC2)
     (add_net /PC4)
     (add_net /PC7)
+    (add_net /RST)
     (add_net /RX)
     (add_net /TX)
     (add_net GND)
@@ -287,7 +289,8 @@
       (net 9 /TX))
     (pad 6 thru_hole oval (at 0 12.7 90) (size 1.7 1.7) (drill 1) (layers *.Cu *.Mask)
       (net 10 /RX))
-    (pad 7 thru_hole oval (at 0 15.24 90) (size 1.7 1.7) (drill 1) (layers *.Cu *.Mask))
+    (pad 7 thru_hole oval (at 0 15.24 90) (size 1.7 1.7) (drill 1) (layers *.Cu *.Mask)
+      (net 11 /RST))
     (pad 8 thru_hole oval (at 0 17.78 90) (size 1.7 1.7) (drill 1) (layers *.Cu *.Mask)
       (net 1 GND))
     (model ${KISYS3DMOD}/Pin_Headers.3dshapes/Pin_Header_Straight_1x08_Pitch2.54mm.wrl
@@ -564,10 +567,22 @@
     )
   )
 
-  (gr_line (start 96.25 104) (end 160 104) (angle 90) (layer Dwgs.User) (width 0.2))
-  (gr_line (start 160 115) (end 96 115) (angle 90) (layer Edge.Cuts) (width 0.15))
-  (gr_line (start 160 89) (end 160 115) (angle 90) (layer Edge.Cuts) (width 0.15))
-  (gr_line (start 96 89) (end 160 89) (angle 90) (layer Edge.Cuts) (width 0.15))
+  (module MiAM:NPTH_3mm_ID locked (layer F.Cu) (tedit 58E34364) (tstamp 5BFF007A)
+    (at 175.4 100)
+    (path /5BFF0559)
+    (fp_text reference H2 (at 0.06 0.09) (layer F.SilkS)
+      (effects (font (size 1 1) (thickness 0.15)))
+    )
+    (fp_text value Hole_3mm_PTH (at 0 -2.7) (layer F.Fab)
+      (effects (font (size 1 1) (thickness 0.15)))
+    )
+    (pad "" np_thru_hole circle (at 0 0) (size 3 3) (drill 2.75) (layers *.Cu *.Mask)
+      (clearance 1.6))
+  )
+
+  (gr_line (start 179 115) (end 96 115) (angle 90) (layer Edge.Cuts) (width 0.15))
+  (gr_line (start 179 89) (end 179 115) (angle 90) (layer Edge.Cuts) (width 0.15))
+  (gr_line (start 96 89) (end 179 89) (angle 90) (layer Edge.Cuts) (width 0.15))
   (gr_line (start 96 89) (end 96 115) (angle 90) (layer Edge.Cuts) (width 0.15))
 
   (segment (start 101.75 112) (end 108.25 112) (width 0.75) (layer B.Cu) (net 1))
