@@ -6,7 +6,7 @@
 #ifndef MAESTROSERVO_DRIVER
 	#define MAESTROSERVO_DRIVER
 
-	#include <glib.h>
+	#include <string>
 
 	/// MaestroDriver structure: a simple int representing the board communication port.
 	typedef struct{
@@ -20,10 +20,10 @@
     /// \param driver MaestroDriver structure to initialize.
     /// \param portName Serial port file name ("/dev/ttyOx")
     /// \param deviceID Maestro device ID.
-    /// \returns   TRUE on success, FALSE otherwise.
-	gboolean maestro_init(MaestroDriver *driver, gchar *portName, int deviceID);
+    /// \returns   true on success, false otherwise.
+	bool maestro_init(MaestroDriver *driver, std::string const& portName, int deviceID);
 
-	static inline gboolean maestro_initDefault(MaestroDriver *driver, gchar *portName)
+	static inline bool maestro_initDefault(MaestroDriver *driver, std::string const& portName)
 	{
 		return maestro_init(driver, portName, 12);
 	}

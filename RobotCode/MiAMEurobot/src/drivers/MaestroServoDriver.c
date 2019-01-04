@@ -25,16 +25,16 @@ int sendMaestroCommand(MaestroDriver driver, int commandID, char *parameters, in
 }
 
 
-gboolean maestro_init(MaestroDriver *driver, gchar *portName, int deviceID)
+bool maestro_init(MaestroDriver *driver, std::string const& portName, int deviceID)
 {
 	// Open port
 	driver->port = uart_open(portName, B115200);
 	driver->deviceID = deviceID;
 
 	if(driver->port == -1)
-		return FALSE;
+		return false;
 
-	return TRUE;
+	return true;
 }
 
 

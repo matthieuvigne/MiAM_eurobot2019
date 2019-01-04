@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <sys/ioctl.h>
 #include <linux/spi/spidev.h>
+#include <unistd.h>
 
 // Registers
 #define REG_Product_ID                           0x00
@@ -72,7 +73,7 @@ void ADNS9800_write_register(ADNS9800 a, unsigned char address, unsigned char da
     spiCtrl.speed_hz = a.frequency;
     spiCtrl.bits_per_word = 8;
     spiCtrl.delay_usecs = 0;
-    spiCtrl.cs_change = TRUE;
+    spiCtrl.cs_change = true;
 	// Send the data over spi.
 	int error = ioctl(a.port, SPI_IOC_MESSAGE(1), &spiCtrl);
     if(error <0)
@@ -83,7 +84,7 @@ void ADNS9800_write_register(ADNS9800 a, unsigned char address, unsigned char da
 	}
 	spi_close(a.port);
 	// 120us delay after read command
-	g_usleep(120);
+	usleep(120);
 }
 
 unsigned char ADNS9800_read_register(ADNS9800 a, unsigned char address)
@@ -105,7 +106,7 @@ unsigned char ADNS9800_read_register(ADNS9800 a, unsigned char address)
     spiCtrl[0].speed_hz = a.frequency;
     spiCtrl[0].bits_per_word = 8;
     spiCtrl[0].delay_usecs = 150;
-    spiCtrl[0].cs_change = FALSE;
+    spiCtrl[0].cs_change = false;
 	// Second element: read the slave response.
 	spiCtrl[1].tx_buf = (unsigned long)&address;
 	spiCtrl[1].rx_buf = (unsigned long)&response;
@@ -113,7 +114,7 @@ unsigned char ADNS9800_read_register(ADNS9800 a, unsigned char address)
     spiCtrl[1].speed_hz = a.frequency;
     spiCtrl[1].bits_per_word = 8;
     spiCtrl[1].delay_usecs = 0;
-    spiCtrl[1].cs_change = TRUE;
+    spiCtrl[1].cs_change = true;
 	// Send the data over spi.
 	int error = ioctl(a.port, SPI_IOC_MESSAGE(2), &spiCtrl);
     if(error <0)
@@ -124,11 +125,11 @@ unsigned char ADNS9800_read_register(ADNS9800 a, unsigned char address)
 	}
 	spi_close(a.port);
 	// 20us delay after read command
-	g_usleep(20);
+	usleep(20);
 	return response;
 }
 
-gboolean ADNS9800_write_firmware(ADNS9800 a)
+bool ADNS9800_write_firmware(ADNS9800 a)
 {
 	// Write firmware over SPI, cf p.18 of the datasheet
 
@@ -137,7 +138,7 @@ gboolean ADNS9800_write_firmware(ADNS9800 a)
 	ADNS9800_write_register(a, REG_SROM_Enable, 0x1d);
 
 	// Wait for more than one frame period
-	g_usleep(10000);
+	usleep(10000);
 
 	// Write 0x18 to SROM_enable to start SROM download
 	ADNS9800_write_register(a, REG_SROM_Enable, 0x18);
@@ -158,7 +159,7 @@ gboolean ADNS9800_write_firmware(ADNS9800 a)
     spiCtrl.speed_hz = a.frequency;
     spiCtrl.bits_per_word = 8;
     spiCtrl.delay_usecs = 15;
-    spiCtrl.cs_change = FALSE;
+    spiCtrl.cs_change = false;
 	// Send the data over spi.
 	int error = ioctl(a.port, SPI_IOC_MESSAGE(1), &spiCtrl);
     if(error <0)
@@ -169,7 +170,7 @@ gboolean ADNS9800_write_firmware(ADNS9800 a)
 	}
 	spi_close(a.port);
 	// Sleep 160us for SROM reboot
-	g_usleep(160);
+	usleep(160);
 
 	// Check that firmware ID is not 0
 	if(ADNS9800_read_register(a, REG_SROM_ID) == 0)
@@ -177,9 +178,9 @@ gboolean ADNS9800_write_firmware(ADNS9800 a)
 		#ifdef DEBUG
 			printf("Error writting SROM firmware.\n");
 		#endif
-		return FALSE;
+		return false;
 	}
-	return TRUE;
+	return true;
 }
 
 void ADNS9800_getMotionCounts(ADNS9800 a, int *deltaX, int *deltaY)
@@ -217,9 +218,9 @@ void ADNS9800_getMotion(ADNS9800 a, double *deltaX, double *deltaY)
 	*deltaY = a.resolution* dy;
 }
 
-gboolean ANDS9800_init(ADNS9800 *a, const gchar *portName)
+bool ANDS9800_init(ADNS9800 *a, std::string const& portName)
 {
-	a->portName = g_strdup(portName);
+	a->portName = portName;
 	// Set bus frequency: default 800kHz
 	a->frequency = 800000;
 
@@ -229,14 +230,14 @@ gboolean ANDS9800_init(ADNS9800 *a, const gchar *portName)
 		#ifdef DEBUG
 			printf("Error reading data from ADNS9800.\n");
 		#endif
-		return FALSE;
+		return false;
 	}
 
 	//Reste ADNS9800, see datasheet p21
 	ADNS9800_write_register(*a, REG_Power_Up_Reset, 0x5a);
-	g_usleep(50000);
+	usleep(50000);
 	ADNS9800_write_register(*a, REG_Observation, 0x00);
-	g_usleep(10000);
+	usleep(10000);
 	ADNS9800_read_register(*a, REG_Observation);
 	ADNS9800_read_register(*a, REG_Motion);
 	ADNS9800_read_register(*a, REG_Delta_X_L);
@@ -245,8 +246,8 @@ gboolean ANDS9800_init(ADNS9800 *a, const gchar *portName)
 	ADNS9800_read_register(*a, REG_Delta_Y_H);
 
 	// upload the firmware
-	if(ADNS9800_write_firmware(*a) == FALSE)
-		return FALSE;
+	if(ADNS9800_write_firmware(*a) == false)
+		return false;
 
 	//enable laser(bit 0 = 0b), in normal mode (bits 3,2,1 = 000b)
 	// reading the actual value of the register is important because the real
@@ -258,5 +259,5 @@ gboolean ANDS9800_init(ADNS9800 *a, const gchar *portName)
 
 	// Compute sensor resolution: 200dpi * REG_Configuration_I.
 	a->resolution = 25.4 / (200.0 * (ADNS9800_read_register(*a, REG_Configuration_I) & 0b00111111));
-	return TRUE;
+	return true;
 }

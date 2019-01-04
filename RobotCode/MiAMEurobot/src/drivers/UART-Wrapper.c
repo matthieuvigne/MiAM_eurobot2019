@@ -3,10 +3,10 @@
 #include <fcntl.h>
 #include <unistd.h>
 // Open a uart port.
-int uart_open(gchar const *portName, int speed)
+int uart_open(std::string const& portName, int speed)
 {
 	// Open in read-write mode.
-	int port = open(portName, O_RDWR);
+	int port = open(portName.c_str(), O_RDWR);
 	if(port == -1)
 		return port;
 
@@ -28,7 +28,7 @@ int uart_open(gchar const *portName, int speed)
 	cfmakeraw(&options);
 
 	tcsetattr(port, TCSAFLUSH, &options);
-	g_usleep(100000);
+	usleep(100000);
 	tcflush(port, TCIOFLUSH);
 
 	return port;

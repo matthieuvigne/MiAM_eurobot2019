@@ -1,5 +1,6 @@
 #include "MiAMEurobot/drivers/IMUDriver.h"
 #include <stdio.h>
+#include <math.h>
 
 // Note: all three components can work with different resolution: a greater
 // 		 precision can be achieved, at the cost of a smaller working range.
@@ -12,7 +13,7 @@
 #define GYRO_PRES 4
 const char gyroReg[5] = {0b110,0b100,0b010, 0b000, 0b001};
 const double gyroMultiplier[5] = {0.070, 0.035, 0.0175, 0.00875, 0.004375};
-const double degToRad = G_PI / 180.0;
+const double degToRad = M_PI / 180.0;
 
 // Choose accelerometer precision: 0 (least precise) - 4 (maximum precision, but smaller max acceleration)
 // Corresponding acceleration: 16g, 8g, 4g, 2g
@@ -27,7 +28,7 @@ const char magnetoReg[4] = {0b11, 0b10, 0b01, 0b00};
 const double magnetoMultiplier[4] = {0.58445, 0.43840,0.29231,0.146156};
 
 // Initalize gyroscope
-gboolean initIMU(IMU i)
+bool initIMU(IMU i)
 {
     // Verify it is the right gyroscope.
     if(i2c_readRegister(i.adapter, i.imuAddress, 0x0F) != 0x69)
@@ -35,7 +36,7 @@ gboolean initIMU(IMU i)
 		#ifdef DEBUG
 			printf("Error : LSM6DS33 (IMU) not detected\n");
 		#endif
-		return FALSE;
+		return false;
 	}
 
 	// Configure accelerometer to match ACCEL_PRES, anti-aliasing 100Hz, 416Hz output rate
@@ -45,7 +46,7 @@ gboolean initIMU(IMU i)
     // CTRL4: set accelerometer anti-aliasing filter.
     i2c_writeRegister(i.adapter, i.imuAddress, 0x13, 0b10000000);
 
-	return TRUE;
+	return true;
 }
 
 double imu_gyroGetXAxis(IMU i)
@@ -176,7 +177,7 @@ void imu_accelGetValues(IMU i, double *x, double *y, double *z)
 }
 
 // Initialize magnetometer
-gboolean initMagneto(IMU i)
+bool initMagneto(IMU i)
 {
     // Verify it is the right accelerometer.
     if(i2c_readRegister(i.adapter, i.magnetoAddress, 0x0F) != 0x3D)
@@ -264,18 +265,18 @@ void imu_magnetoGetValues(IMU i, double *x, double *y, double *z)
 }
 
 
-gboolean imu_init(IMU *i, I2CAdapter *adapter, int imuAddress, int magnetoAddress, gboolean enableMagneto)
+bool imu_init(IMU *i, I2CAdapter *adapter, int imuAddress, int magnetoAddress, bool enableMagneto)
 {
 	if(adapter->file < 0)
-		return FALSE;
+		return false;
 	i->adapter = adapter;
 	i->imuAddress=imuAddress;
 	i->magnetoAddress=magnetoAddress;
 	i->magnetoEnabled=enableMagneto;
-	if(initIMU(*i) == -1)
-		return FALSE;
+	if(!initIMU(*i))
+		return false;
 	if(enableMagneto)
-		if(initMagneto(*i) == -1)
-			return FALSE;
-	return TRUE;
+		if(!initMagneto(*i))
+			return false;
+	return true;
 }

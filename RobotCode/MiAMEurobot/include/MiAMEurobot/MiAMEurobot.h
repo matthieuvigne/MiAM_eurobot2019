@@ -1,12 +1,10 @@
-/// \file BBBEurobot.h
+/// \file MiAMEurobot.h
 /// \brief Master header file.
 ///
 /// \details This header simply includes all the other headers from the library, as well as the glib header,
 ///          in order to ease library loading.
-#ifndef BBB_EUROBOT_DRIVER
-#define BBB_EUROBOT_DRIVER
-
-	#include <glib.h>
+#ifndef MIAM_EUROBOT
+#define MIAM_EUROBOT
 
 	#include <MiAMEurobot/KalmanFilter.h>
 	#include <MiAMEurobot/Logger.h>

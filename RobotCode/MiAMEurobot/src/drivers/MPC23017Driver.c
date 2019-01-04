@@ -1,10 +1,10 @@
 #include "MiAMEurobot/drivers/MPC23017Driver.h"
 #include <stdio.h>
 
-gboolean mpc_init(MPC *mpc, I2CAdapter *adapter, int address)
+bool mpc_init(MPC *mpc, I2CAdapter *adapter, unsigned int const& address)
 {
 	if(adapter->file < 0)
-		return FALSE;
+		return false;
 	mpc->adapter = adapter;
 	mpc->address=address;
 	// Test communication and chip.
@@ -30,12 +30,12 @@ gboolean mpc_init(MPC *mpc, I2CAdapter *adapter, int address)
 		#ifdef DEBUG
 			printf("Error : MPC23017 (IO expander) not detected\n");
 		#endif
-		return FALSE;
+		return false;
 	}
-	return TRUE;
+	return true;
 }
 
-void mpc_pinMode(MPC mpc, int pin, MPCPinState state)
+void mpc_pinMode(MPC mpc, unsigned int pin, MPCPinState state)
 {
 	if(pin < 0 || pin > 15)
 		return;
@@ -61,7 +61,7 @@ void mpc_pinMode(MPC mpc, int pin, MPCPinState state)
 	}
 }
 
-int mpc_digitalRead(MPC mpc, int pin)
+int mpc_digitalRead(MPC mpc, unsigned int pin)
 {
 	if(pin < 0 || pin > 15)
 		return 0;
@@ -78,7 +78,7 @@ int mpc_digitalRead(MPC mpc, int pin)
 		return 0;
 }
 
-void mpc_digitalWrite(MPC mpc, int pin, int value)
+void mpc_digitalWrite(MPC mpc, unsigned int pin, unsigned int const& value)
 {
 	if(pin < 0 || pin > 15)
 		return;
@@ -95,15 +95,15 @@ void mpc_digitalWrite(MPC mpc, int pin, int value)
 		i2c_writeRegister(mpc.adapter, mpc.address, 0x12 + port, currentState | (1 << pin));
 }
 
-void mpc_writeAll(MPC mpc, guint16 value)
+void mpc_writeAll(MPC mpc, unsigned int const& value)
 {
 	i2c_writeRegister(mpc.adapter, mpc.address, 0x12, value & 0xFF);
 	i2c_writeRegister(mpc.adapter, mpc.address, 0x13, (value >> 8));
 }
 
-guint16 mpc_readAll(MPC mpc)
+unsigned int mpc_readAll(MPC mpc)
 {
-	guint8 abValue[2];
+	unsigned char abValue[2];
 	i2c_readRegisters(mpc.adapter, mpc.address, 0x12, 2, abValue);
 	return (abValue[1] << 8) + abValue[0];
 }

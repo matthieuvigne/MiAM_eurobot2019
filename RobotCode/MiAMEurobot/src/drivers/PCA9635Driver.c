@@ -18,10 +18,10 @@ void setPinState(PCA9635 *d, int pin, char ledState)
 }
 
 
-gboolean ledDriver_init(PCA9635 *d, I2CAdapter *adapter, guint8 address)
+bool ledDriver_init(PCA9635 *d, I2CAdapter *adapter, unsigned char address)
 {
 	if(adapter->file < 0)
-		return FALSE;
+		return false;
 	d->adapter = adapter;
 	d->address = address;
 	// At startup, all leds are turned off.

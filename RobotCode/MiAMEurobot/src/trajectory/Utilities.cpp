@@ -5,7 +5,6 @@
 
 #include <iostream>
 #include <cmath>
-#include <glib.h>
 
 namespace miam{
 	namespace trajectory{
@@ -13,12 +12,12 @@ namespace miam{
 		RobotPosition computeCircleCenter(RobotPosition const& startingPosition, double const& radius, rotationside const& side)
 		{
 			RobotPosition circleCenter;
-			double centerAngle = startingPosition.theta + G_PI / 2.0;
+			double centerAngle = startingPosition.theta + M_PI / 2.0;
 			if(side == rotationside::RIGHT)
-				centerAngle -= G_PI;
+				centerAngle -= M_PI;
 			circleCenter.x = startingPosition.x + std::abs(radius) * std::cos(centerAngle);
 			circleCenter.y = startingPosition.y - std::abs(radius) * std::sin(centerAngle);
-			circleCenter.theta = centerAngle - G_PI;
+			circleCenter.theta = centerAngle - M_PI;
 			return circleCenter;
 		}
 
@@ -44,10 +43,10 @@ namespace miam{
 
 		double moduloTwoPi(double angle)
 		{
-			while(angle <= - G_PI)
-				angle += 2 * G_PI;
-			while(angle > G_PI)
-				angle -= 2 * G_PI;
+			while(angle <= - M_PI)
+				angle += 2 * M_PI;
+			while(angle > M_PI)
+				angle -= 2 * M_PI;
 			return angle;
 		}
 
@@ -130,12 +129,12 @@ namespace miam{
 				double endAngle = std::atan2(-secondVector.y, secondVector.x);
 				if(side == rotationside::LEFT)
 				{
-					endAngle -= G_PI_2;
+					endAngle -= M_PI_2;
 					std::cout << "right side" << std::endl;
 				}
 				else
 				{
-					endAngle += G_PI_2;
+					endAngle += M_PI_2;
 					std::cout << "right side" << std::endl;
 				}
 				// Compute trajectory.

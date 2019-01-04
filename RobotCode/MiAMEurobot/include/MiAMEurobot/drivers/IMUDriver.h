@@ -12,9 +12,9 @@
 	/// IMU structure.
 	typedef struct {
 		I2CAdapter *adapter; ///< Pointer to the I2C port being used.
-		guint8 imuAddress;	///< IMU (accel + gyro) I2C address.
-		guint8 magnetoAddress;	///< Magnetometer I2C address.
-		gboolean magnetoEnabled;	///< If the magnetometer is enabled or not.
+		unsigned char imuAddress;	///< IMU (accel + gyro) I2C address.
+		unsigned char magnetoAddress;	///< Magnetometer I2C address.
+		bool magnetoEnabled;	///< If the magnetometer is enabled or not.
 	}IMU;
 
 	/// \brief Initialize IMU structure.
@@ -28,12 +28,12 @@
     /// \param[in] magnetoAddress I2C address of the magnetometer.
     /// \param[in] enableMagneto If false, the magnetometer chip will remain in standby mode. Calling any getMagneto...
     ///            function will then return 0
-    /// \returns   TRUE on success, FALSE otherwise.
-	gboolean imu_init(IMU *imu, I2CAdapter *port, int imuAddress, int magnetoAddress, gboolean enableMagneto);
+    /// \returns   true on success, false otherwise.
+	bool imu_init(IMU *imu, I2CAdapter *port, int imuAddress, int magnetoAddress, bool enableMagneto);
 
 	/// \brief Calls imu_init with the default sensor I2C addresses.
     ///
-	static inline gboolean imu_initDefault(IMU *imu, I2CAdapter *adapter, gboolean enableMagneto)
+	static inline bool imu_initDefault(IMU *imu, I2CAdapter *adapter, bool enableMagneto)
 	{
 		return imu_init(imu, adapter, 0b1101011, 0b00011110, enableMagneto);
 	}

@@ -10,7 +10,6 @@
 ///          corresponding port.
 #ifndef RPI_GPIO
 #define RPI_GPIO
-	#include <glib.h>
 
 	typedef enum
 	{
@@ -22,8 +21,8 @@
 	PiGPIOMode;
 
 	/// Defines for pin direction.
-	#define LOW FALSE
-	#define HIGH TRUE
+	#define LOW false
+	#define HIGH true
 
 	/// \brief Access the GPIO registers.
 	///
@@ -31,14 +30,14 @@
 	///          Failing to do so would cause the code to crash with a segmentation fault (trying to access undefined memory).
 	///
 	/// \return TRUE if memory access was successful, false otherwise.
-	gboolean RPi_enableGPIO();
+	bool RPi_enableGPIO();
 
 	/// \brief Setup a GPIO pin as input or output.
 	///
 	/// \details If gpioPin does not correspond to one of the Raspberry Pi exposed GPIO, this function has no effect.
 	/// \param[in] gpioPin A valid GPIO pin number.
 	/// \param[in] direction The mode of the GPIO (input, output, with pull resistor settings.
-	void RPi_setupGPIO(uint gpioPin, PiGPIOMode direction);
+	void RPi_setupGPIO(unsigned int const& gpioPin, PiGPIOMode const& direction);
 
 	/// \brief Write to a GPIO output.
 	///
@@ -46,12 +45,12 @@
 	///          If the pin is not an output, this function has no effect.
 	/// \param[in] gpioPin A valid GPIO pin number.
 	/// \param[in] value FALSE (0) for low, TRUE for high.
-	void RPi_writeGPIO(uint gpioPin, gboolean value);
+	void RPi_writeGPIO(unsigned int const& gpioPin, bool const& value);
 
 	/// \brief Read current GPIO status.
 	///
 	/// \details If gpioPin does not correspond to one of the Raspberry Pi exposed GPIO, this function has no effect.
 	/// \param[in] gpioPin A valid GPIO pin number.
 	/// \return The current pin status.
-	gboolean RPi_readGPIO(uint gpioPin);
+	bool RPi_readGPIO(unsigned int const& gpioPin);
 #endif

@@ -6,95 +6,97 @@
 #include <linux/i2c-dev.h>
 #include <sys/ioctl.h>
 #include <errno.h>
-#include <string.h>
 
-gboolean i2c_open(I2CAdapter *adapter, const gchar *portName)
+#include <iostream>
+#include <cstring>
+
+bool i2c_open(I2CAdapter *adapter, std::string const& portName)
 {
-	adapter->file = open(portName, O_RDWR);
-	g_mutex_init(&(adapter->portMutex));
+	adapter->file = open(portName.c_str(), O_RDWR);
 	if(adapter->file < 0)
 	{
 		#ifdef DEBUG
-			printf("Failed to open i2c bus %s: %s\n", portName, g_strerror(errno));
+			std::cout << "Failed to open i2c bus " << portName << ": " << std::strerror(errno) << std::endl;
 		#endif
-		return FALSE;
+		return false;
 	}
-    return TRUE;
+    return true;
 }
 
 
-void changeSlave(int file, guint8 address)
+void changeSlave(int file, unsigned char address)
 {
 	int result = ioctl(file, I2C_SLAVE, address);
 	#ifdef DEBUG
 		if(result < 0)
-			printf("I2C: failed to talk to slave %d : %s.\n", address, strerror(errno));
+			std::cout << "I2C: failed to talk to slave " << address << ": " << std::strerror(errno) << std::endl;
 	#endif
 }
 
 
-gboolean i2c_writeRegister(I2CAdapter *adapter, guint8 address, guint8 reg, guint8 data)
+bool i2c_writeRegister(I2CAdapter *adapter, unsigned char const& address, unsigned char const& reg, unsigned char const& data)
 {
 	if(adapter->file < 0)
 	{
 		#ifdef DEBUG
 			printf("Error writing to I2C port: invalid file descriptor.\n");
 		#endif
-		return FALSE;
+		return false;
 	}
-	guint8 txbuf[2] = {reg, data};
-	g_mutex_lock (&(adapter->portMutex));
+	unsigned char txbuf[2] = {reg, data};
+
+	adapter->portMutex.lock();
 	changeSlave(adapter->file, address);
 	int result = write(adapter->file, txbuf, 2);
-	g_mutex_unlock (&(adapter->portMutex));
+	adapter->portMutex.unlock();
 	if(result != 2)
 	{
 		#ifdef DEBUG
-			printf("Error writing to slave %d: %s\n", address, g_strerror(errno));
+			std::cout << "Error writing to slave " << address << ": " << std::strerror(errno) << std::endl;
 		#endif
-		return FALSE;
+		return false;
 	}
-	return TRUE;
+	return true;
 }
 
 
-guint8 i2c_readRegister(I2CAdapter *adapter, guint8 address, guint8 registerAddress)
+unsigned char i2c_readRegister(I2CAdapter *adapter, unsigned char const& address, unsigned char const& registerAddress)
 {
-	guint8 registerValue;
+	unsigned char registerValue;
 	i2c_readRegisters(adapter, address, registerAddress, 1, &registerValue);
 	return registerValue;
 }
 
 
-gboolean i2c_readRegisters(I2CAdapter *adapter, guint8 address, guint8 registerAddress, int length, guint8 *output)
+bool i2c_readRegisters(I2CAdapter *adapter, unsigned char const& address, unsigned char const& registerAddress, int const& length, unsigned char *output)
 {
 	if(adapter->file < 0)
 	{
 		#ifdef DEBUG
 			printf("Error reading from I2C port: invalid file descriptor.\n");
 		#endif
-		return FALSE;
+		return false;
 	}
-	gboolean returnValue = TRUE;
-	g_mutex_lock (&(adapter->portMutex));
+	bool returnValue = true;
+	adapter->portMutex.lock();
 	changeSlave(adapter->file, address);
 	int result = write(adapter->file, &registerAddress, 1);
 	if(result < 0)
 	{
 		#ifdef DEBUG
-			printf("Error writing to slave %d: %s\n", address, g_strerror(errno));
+			std::cout << "Error writing to slave " << address << ": " << std::strerror(errno) << std::endl;
 		#endif
-		returnValue = FALSE;
+		returnValue = false;
 	}
 	result = read(adapter->file, output, length);
 	if(result < 0)
 	{
 		#ifdef DEBUG
-			printf("Error reading from slave %d: %s\n", address, g_strerror(errno));
+			std::cout << "Error reading from slave " << address << ": " << std::strerror(errno) << std::endl;
 		#endif
-		returnValue = FALSE;
+		returnValue = false;
 	}
-	g_mutex_unlock (&(adapter->portMutex));
+	adapter->portMutex.unlock();
 
 	return returnValue;
 }

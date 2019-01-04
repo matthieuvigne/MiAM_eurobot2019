@@ -30,9 +30,9 @@ namespace miam{
 			{
 				// Add or remove pi if going backward.
 				if(startPoint_.theta < 0)
-					startPoint_.theta += G_PI;
+					startPoint_.theta += M_PI;
 				else
-					startPoint_.theta -= G_PI;
+					startPoint_.theta -= M_PI;
 			}
 		}
 

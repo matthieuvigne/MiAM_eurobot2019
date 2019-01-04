@@ -1,13 +1,14 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <fstream>
 
 #include "MiAMEurobot/beaglebone/BeagleboneCape.h"
 #include "MiAMEurobot/beaglebone/BBBGpio.h"
 
 // See header directly for documentation of these constants.
-const gchar* SPI_0 = "/dev/spidev1.0";
-const gchar* SPI_10 = "/dev/spidev2.0";
-const gchar* SPI_11 = "/dev/spidev2.1";
+const std::string SPI_0 = "/dev/spidev1.0";
+const std::string SPI_10 = "/dev/spidev2.0";
+const std::string SPI_11 = "/dev/spidev2.1";
 I2CAdapter I2C_1;
 I2CAdapter I2C_2;
 const int CAPE_ANALOG[CAPE_N_ANALOG] = {0, 1, 2, 3, 4, 5, 6};
@@ -15,33 +16,29 @@ const int CAPE_DIGITAL[CAPE_N_DIGITAL] = {66, 67, 69, 68, 45, 44, 26};
 const int CAPE_LED[CAPE_N_LED] = {47, 46};
 
 // Internal function : access the cape manager to check if Eurobot cape is enabled. Exits if file access is not granted.
-gboolean isEurobotEnabled()
+bool isEurobotEnabled()
 {
 	// Look in slots file if the Eurobot overlay is already enabled.
-	GError *error = NULL;
-	GIOChannel *slot = g_io_channel_new_file ("/sys/devices/bone_capemgr.9/slots", "r", &error);
-	if(error != NULL)
+	std::ifstream file("/sys/devices/bone_capemgr.9/slots");
+	if(!file.is_open())
 	{
 		printf("Enabling serial ports failed: cannot open cape manager (/sys/devices/bone_capemgr.9/slots).\n");
 		exit(0);
 	}
 
-	gboolean isEurobotEnabled = FALSE;
-	gchar *line= NULL;
-
+	bool isEurobotEnabled = false;
 	// Check if the overlay is already enabled
-	while ( g_io_channel_read_line (slot, &line, NULL, NULL, NULL )!= G_IO_STATUS_EOF)
+	while (!file.eof())
 	{
-		if(g_strstr_len (line, -1, "Eurobot")!= NULL)
+		std::string line;
+		getline(file, line);
+		if(line.find("Eurobot") != std::string::npos)
 		{
-			isEurobotEnabled = TRUE;
+			isEurobotEnabled = true;
 			break;
 		}
-		g_free(line);
 	}
-	g_free(line);
-	g_io_channel_shutdown(slot, TRUE, NULL);
-	g_io_channel_unref(slot);
+	file.close();
 	return isEurobotEnabled;
 }
 
@@ -51,14 +48,14 @@ void BBB_enableCape()
 	// Check if the overlay is already enabled.
 	if(!isEurobotEnabled())
 	{
+		std::string overlayFile = "/lib/firmware/Eurobot-00A0.dtbo";
 		// Else, let us first check that the overlay file exists.
-		gchar *overlayFile = g_strdup_printf("/lib/firmware/Eurobot-00A0.dtbo");
-		if(g_file_test(overlayFile, G_FILE_TEST_EXISTS) == FALSE)
+		std::ifstream f(overlayFile);
+		if (!f.good())
 		{
 			printf("Enabling serial ports failed: cannot find overlay (%s).\n", overlayFile);
 			exit(-1);
 		}
-		g_free(overlayFile);
 		// Enable the overlay.
 		system("echo Eurobot > /sys/devices/bone_capemgr.9/slots");
 
@@ -71,7 +68,7 @@ void BBB_enableCape()
 	}
 
 	// Open file descriptors for I2C interfaces.
-	gboolean i2cStarted = i2c_open(&I2C_1, "/dev/i2c-1");
+	bool i2cStarted = i2c_open(&I2C_1, "/dev/i2c-1");
 	i2cStarted &= i2c_open(&I2C_2, "/dev/i2c-2");
 	if(!i2cStarted)
 	{

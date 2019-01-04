@@ -7,7 +7,7 @@
 #define BBBGPIO_H
 
 	#include <stdint.h>
-	#include <glib.h>
+	#include <string>
 
 	/// \brief Export a gpio pin, setting the direction.
 	/// \details Exporting a gpio pin maks it available in user-space. In practice, this create a folder in
@@ -22,7 +22,7 @@
 	/// \param[in] direction gpio direction, either "in" or "out"
 	///
 	/// \return 0 on success, -1 on file access error.
-	int gpio_exportPin(int pin, gchar *direction);
+	int gpio_exportPin(int const& pin, std::string const& direction);
 
 	/// \brief Read a digital input.
 	/// \details The pin must be configured as an input for the return value to make sense.
@@ -31,7 +31,7 @@
 	///
 	/// \return Positive value on success : 0 for low, 1 for high.
 	///			Negative value on failure: -1: reading error (probably pin not enabled). -2: pin enabled but not an input.
-	int gpio_digitalRead(int pin);
+	int gpio_digitalRead(int const& pin);
 
 
 	/// \brief Write to a digital output.
@@ -42,7 +42,7 @@
 	///
 	/// \return 0 on success
 	///			Negative value on failure: -1: reading error (probably pin not enabled). -2: pin enabled but not an output.
-	int gpio_digitalWrite(int pin, int value);
+	int gpio_digitalWrite(int const& pin, int const& value);
 
 	/// \brief Init reader for analog port.
 	///
@@ -56,5 +56,5 @@
 	///
 	/// \return port voltage, between 0 and 4095 on success.
 	///         Negative value on failre: -1 on invalid pin number, -2 on any other failure.
-	int gpio_analogRead(int pin);
+	int gpio_analogRead(int const& pin);
 #endif

@@ -6,10 +6,10 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-int spi_open(const gchar *portName, const int frequency)
+int spi_open(std::string const& portName, int const& frequency)
 {
 
-    int port = open(portName, O_RDWR) ;
+    int port = open(portName.c_str(), O_RDWR) ;
     if(port < 0)
     {
 		#ifdef DEBUG
@@ -49,7 +49,7 @@ int spi_open(const gchar *portName, const int frequency)
 }
 
 
-void spi_close(const int port)
+void spi_close(int const& port)
 {
 	if(port > 0)
 	{

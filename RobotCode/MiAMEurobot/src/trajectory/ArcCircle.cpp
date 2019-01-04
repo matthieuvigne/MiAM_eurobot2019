@@ -37,12 +37,12 @@ namespace miam{
 			if(motionSign_ < 0)
 			{
 				if(travelAngle > 0)
-					travelAngle -=2 * G_PI;
+					travelAngle -=2 * M_PI;
 			}
 			else
 			{
 				if(travelAngle < 0)
-					travelAngle +=2 * G_PI;
+					travelAngle +=2 * M_PI;
 			}
 
 			// Compute trapezoid.
@@ -63,11 +63,11 @@ namespace miam{
 			// Compute point along circle.
 			output.position.x += radius_ * std::cos(circleCenter_.theta + motionSign_ * state.position);
 			output.position.y -= radius_ * std::sin(circleCenter_.theta + motionSign_ * state.position);
-			output.position.theta = circleCenter_.theta + motionSign_ * G_PI_2 + motionSign_ * state.position;
+			output.position.theta = circleCenter_.theta + motionSign_ * M_PI_2 + motionSign_ * state.position;
 			if(motionSign_ == -1.0)
-				output.position.theta += 2 * G_PI;
+				output.position.theta += 2 * M_PI;
 			if(movingBackward_ == -1.0)
-				output.position.theta -= G_PI;
+				output.position.theta -= M_PI;
 			// Compute linear and angular velocity
 			output.linearVelocity = movingBackward_ * state.velocity * radius_;
 			output.angularVelocity = motionSign_ * state.velocity;

@@ -4,12 +4,12 @@
 /// \details This header declares Raspberry Pi serial ports and GPIOs, and include functions to access them.
 #ifndef RPI_EUROBOT_DRIVER
 #define RPI_EUROBOT_DRIVER
-	#include <glib.h>
 	#include "MiAMEurobot/drivers/I2C-Wrapper.h"
 	#include "MiAMEurobot/raspberry_pi/RPiGPIO.h"
+	#include <string>
 
-	extern const gchar* RPI_SPI_00; ///<  First SPI port.
-	extern const gchar* RPI_SPI_01; ///<  Second SPI port.
+	extern const std::string RPI_SPI_00; ///<  First SPI port.
+	extern const std::string RPI_SPI_01; ///<  Second SPI port.
 	extern I2CAdapter RPI_I2C; ///<  I2C port.
 
 	/// \brief Enable the Raspberry Pi serial ports.

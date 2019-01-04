@@ -27,7 +27,7 @@
 			/// \brief Initialize communication with the screen.
 			///
 			/// \param[in] fileName Name of the USB file to open.
-			/// \return TRUE if init went fine, false otherwise.
+			/// \return true if init went fine, false otherwise.
 			bool init(std::string const& fileName);
 
 			/// \brief Set the text of a given LCD line, left-aligned.

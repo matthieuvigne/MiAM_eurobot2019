@@ -4,6 +4,10 @@
 #include <sys/ioctl.h>
 #include <linux/spi/spidev.h>
 #include <errno.h>
+#include <unistd.h>
+
+#include <iostream>
+#include <cstring>
 
 // Register definition and utility function for parameter length.
 #include "L6470Registers.h"
@@ -193,7 +197,7 @@ namespace miam
 		sendCommand(dSPIN_SOFT_HIZ);
 
 		// Wait for motor to fully stop.
-		g_usleep(100000);
+		usleep(100000);
 
 		// Set max speed
 		float temp = maxSpeed * 0.065536;
@@ -225,14 +229,14 @@ namespace miam
 		for(uint i = 0; i < numberOfDevices_; i++)
 		{
 			uint32_t error = 0.0;
-			GString *errorMessage = g_string_new("");
+			std::string errorMessage = "";
 
 			// Not perf cmd is active high, not active low.
 			if((status[i] & dSPIN_STATUS_NOTPERF_CMD) != 0)
 			{
 				error |= dSPIN_ERR_NOEXEC;
 				#ifdef DEBUG
-					g_string_append(errorMessage, "Cmd no exec ");
+					errorMessage += "Cmd no exec ";
 				#endif
 			}
 
@@ -241,7 +245,7 @@ namespace miam
 			{
 				error |= dSPIN_ERR_BADCMD;
 				#ifdef DEBUG
-					g_string_append(errorMessage, "Bad cmd ");
+					errorMessage += "Bad cmd ";
 				#endif
 			}
 
@@ -249,7 +253,7 @@ namespace miam
 			{
 				error |= dSPIN_ERR_UVLO;
 				#ifdef DEBUG
-					g_string_append(errorMessage, "Undervoltage ");
+					errorMessage += "Undervoltage ";
 				#endif
 			}
 
@@ -257,7 +261,7 @@ namespace miam
 			{
 				error |= dSPIN_ERR_THSHTD;
 				#ifdef DEBUG
-					g_string_append(errorMessage, "Thermal shutdown ");
+					errorMessage += "Thermal shutdown ";
 				#endif
 			}
 
@@ -265,7 +269,7 @@ namespace miam
 			{
 				error |= dSPIN_ERR_OVERC;
 				#ifdef DEBUG
-					g_string_append(errorMessage, "Overcurrent ");
+					errorMessage += "Overcurrent ";
 				#endif
 			}
 
@@ -273,23 +277,21 @@ namespace miam
 			{
 				//~ // Stall is non-verbose as too frequent.
 				error |= dSPIN_ERR_STALLA;
-				g_string_append(errorMessage, "Stall A ");
+				errorMessage += "Stall A ";
 			}
 
 			if((status[i] & dSPIN_STATUS_STEP_LOSS_B) == 0)
 			{
 				//~ // Stall is non-verbose as too frequent.
 				error |= dSPIN_ERR_STALLB;
-				g_string_append(errorMessage, "Stall B ");
+				errorMessage += "Stall B ";
 			}
 
 
 			#ifdef DEBUG
 				if(error > 0)
-					printf("dualL6470: %d controller error: %s\n", i, errorMessage->str);
+					std::cout <<  "dualL6470: " << i << " controller error: " << errorMessage << std::endl;
 			#endif
-
-			g_string_free(errorMessage, TRUE);
 			errors.push_back(error);
 		}
 		return errors;
@@ -346,7 +348,7 @@ namespace miam
 		// len represent total message size: split it in packets of numberOfDevices_
 		uint8_t nPackets = len / numberOfDevices_;
 		mutex_.lock();
-		int port = spi_open(portName_.c_str(), frequency_);
+		int port = spi_open(portName_, frequency_);
 
 		struct spi_ioc_transfer spiCtrl[nPackets];
 		// Transmit data in blocks of 2, since two controllers are daisy-chained.
@@ -359,7 +361,7 @@ namespace miam
 			spiCtrl[x].delay_usecs   = 1;
 			spiCtrl[x].speed_hz      = frequency_;
 			spiCtrl[x].bits_per_word = 8;
-			spiCtrl[x].cs_change = TRUE;
+			spiCtrl[x].cs_change = true;
 			spiCtrl[x].pad = 0;
 			spiCtrl[x].tx_nbits = 0;
 			spiCtrl[x].rx_nbits = 0;
@@ -400,7 +402,7 @@ namespace miam
 		int result = spiReadWrite(data, numberOfDevices_ * (1 + paramLength));
 		#ifdef DEBUG
 			if(result < 0)
-				printf("L6470 SPI error: %d %s\n", errno, strerror(errno));
+				std::cout << "L6470 SPI error: " << errno << " " << std::strerror(errno) << std::endl;
 		#endif
 		// Decode response.
 

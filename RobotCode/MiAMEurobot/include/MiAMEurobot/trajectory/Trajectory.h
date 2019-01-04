@@ -7,7 +7,6 @@
 #ifndef MIAM_TRAJECTORY_TRAJECTORY
 #define MIAM_TRAJECTORY_TRAJECTORY
 
-	#include <glib.h>
 	#include "RobotPosition.h"
 
 	namespace miam{

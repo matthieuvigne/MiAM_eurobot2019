@@ -39,8 +39,8 @@
     /// \param[out] driver The ColorSensorTCS3472 structure, to be used whenever communication with the sensor.
     /// \param[in] adapter Pointer to a valid I2CAdapter to choose the I2C port (as returned by the i2c_open function,
     ///                    see I2C-Wrapper.h).
-    /// \returns   TRUE on success, FALSE otherwise.
-	gboolean colorSensor_init(ColorSensorTCS3472 *sensor, I2CAdapter *adapter);
+    /// \returns   true on success, false otherwise.
+	bool colorSensor_init(ColorSensorTCS3472 *sensor, I2CAdapter *adapter);
 
 	/// \brief Set sensor integration time.
     ///
@@ -50,15 +50,15 @@
     /// \param[in] sensor The ColorSensorTCS3472 structure.
     /// \param[in] integrationTime Duration of integration, in ms. Values are clamped between 2.4ms and 700ms,
     ///            in 2.4ms increment.
-    /// \returns   TRUE on success, FALSE otherwise.
-	gboolean colorSensor_setIntegrationTime(ColorSensorTCS3472 sensor, int integrationTime);
+    /// \returns   true on success, false otherwise.
+	bool colorSensor_setIntegrationTime(ColorSensorTCS3472 sensor, int integrationTime);
 
 	/// \brief Set ADC gain.
     ///
     /// \param[in] sensor The ColorSensorTCS3472 structure.
     /// \param[in] gain The gain of the ADC, as an element of the TCS34725Gain_t enum.
-    /// \returns   TRUE on success, FALSE otherwise.
-	gboolean colorSensor_setGain(ColorSensorTCS3472 sensor, TCS34725Gain_t gain);
+    /// \returns   true on success, false otherwise.
+	bool colorSensor_setGain(ColorSensorTCS3472 sensor, TCS34725Gain_t gain);
 
 	/// \brief Get sensor data.
     ///

@@ -1,160 +1,94 @@
 #include "MiAMEurobot/beaglebone/BBBGpio.h"
 
+#include <fstream>
+#include <string>
+
 // Internal function : get the content of the first line of the file. Returns TRUE on success, FALSE on error.
-gboolean getFileContent(gchar *fileName, gchar **output)
+bool getFileContent(std::string const& filename, std::string& output)
 {
-	GError *error = NULL;
-	GIOChannel *slot = g_io_channel_new_file (fileName, "r", &error);
-	if(error != NULL)
-	{
-		g_error_free(error);
-		return FALSE;
-	}
-	g_io_channel_read_line (slot, output, NULL, NULL, &error);
-	g_io_channel_shutdown(slot, TRUE, NULL);
-	g_io_channel_unref(slot);
-	if(error != NULL)
-	{
-		g_error_free(error);
-		return FALSE;
-	}
-	return TRUE;
+	std::ifstream file(filename);
+	if(!file.is_open())
+		return false;
+
+	getline(file, output);
+	return true;
 }
 
-int gpio_digitalRead(int pin)
+int gpio_digitalRead(int const& pin)
 {
 	// Get path to gpio direction file.
-	gchar *directionFile = g_strdup_printf("/sys/class/gpio/gpio%d/direction", pin);
-	gchar *direction = "";
-	gboolean returnCode = getFileContent(directionFile, &direction);
-	g_free(directionFile);
-
-	if(returnCode == FALSE)
+	std::string filename = "/sys/class/gpio/gpio" + std::to_string(pin) + "/direction";
+	std::string filecontent;
+	bool returnCode = getFileContent(filename, filecontent);
+	if(returnCode == false)
 		return -1;
+
 	// Check file is an input.
-	if(g_strcmp0 (direction, "in\n") != 0)
-	{
-		g_free(direction);
+	if (filecontent != "in\n")
 		return -2;
-	}
-	g_free(direction);
 
 	// Read gpio value.
-	gchar *valueFile = g_strdup_printf("/sys/class/gpio/gpio%d/value", pin);
-	gchar *value = NULL;
-	returnCode = getFileContent(valueFile, &value);
-	g_free(valueFile);
-
-	if(returnCode == FALSE)
-	{
-		g_free(value);
+	filename = "/sys/class/gpio/gpio" + std::to_string(pin) + "/value";
+	returnCode = getFileContent(filename, filecontent);
+	if(returnCode == false)
 		return -1;
-	}
-	int pinValue = g_ascii_strtoll(value, NULL, 10);
-	g_free(value);
-	return pinValue;
+
+	return std::stoi(filecontent);
 }
 
-int gpio_digitalWrite(int pin, int value)
+int gpio_digitalWrite(int const& pin, int const& value)
 {
-	// Get path to gpio direction file.
-	gchar *directionFile = g_strdup_printf("/sys/class/gpio/gpio%d/direction", pin);
-	gchar *direction = "";
-	gboolean returnCode = getFileContent(directionFile, &direction);
-	g_free(directionFile);
-
-	if(returnCode == FALSE)
+	std::string filename = "/sys/class/gpio/gpio" + std::to_string(pin) + "/direction";
+	std::string filecontent;
+	bool returnCode = getFileContent(filename, filecontent);
+	if(returnCode == false)
 		return -1;
-	// Check file is an input.
-	if(g_strcmp0 (direction, "out\n") != 0)
-	{
-		g_free(direction);
+
+	// Check file is an output.
+	if (filecontent != "out\n")
 		return -2;
-	}
-	g_free(direction);
 
-	// Write gpio value.
-	gchar *valueFile = g_strdup_printf("/sys/class/gpio/gpio%d/value", pin);
-	GError *error = NULL;
-	GIOChannel *slot = g_io_channel_new_file (valueFile, "w", &error);
-	g_free(valueFile);
-	if(error != NULL)
-	{
-		g_error_free(error);
+	filename = "/sys/class/gpio/gpio" + std::to_string(pin) + "/value";
+	std::ofstream file;
+	file.open(filename);
+	if(!file.is_open())
 		return -1;
-	}
-	gchar *valueString = g_strdup_printf("%d\n", (value == 0 ? 0 : 1));
-	g_io_channel_write_chars(slot, valueString, -1, NULL, &error);
-	g_io_channel_shutdown(slot, TRUE, NULL);
-	g_free(valueString);
-	g_io_channel_unref(slot);
-	if(error != NULL)
-	{
-		g_error_free(error);
-		return -1;
-	}
+	file << (value == 0 ? 0 : 1) << std::endl;
+	file.close();
 	return 0;
 }
 
 
-int gpio_exportPin(int pin, gchar *direction)
+int gpio_exportPin(int pin, std::string const& direction)
 {
 	// Export pin value.
-	gchar *exportFile = g_strdup_printf("/sys/class/gpio/export");
-	GError *error = NULL;
-	GIOChannel *slot = g_io_channel_new_file (exportFile, "a", &error);
-	g_free(exportFile);
-	if(error != NULL)
-	{
-		g_error_free(error);
+	std::ofstream file;
+	file.open("/sys/class/gpio/export", std::fstream::app);
+	if(!file.is_open())
 		return -1;
-	}
-	gchar *valueString = g_strdup_printf("%d\n", pin);
-	g_io_channel_write_chars(slot, valueString, -1, NULL, &error);
-	g_io_channel_shutdown(slot, TRUE, NULL);
-	g_free(valueString);
-	g_io_channel_unref(slot);
-	if(error != NULL)
-	{
-		g_error_free(error);
-		return -1;
-	}
+	file << pin << std::endl;
+	file.close();
 
 	// Set gpio direction.
-	gchar *directionFile = g_strdup_printf("/sys/class/gpio/gpio%d/direction", pin);
-	slot = g_io_channel_new_file (directionFile, "w", &error);
-	g_free(directionFile);
-	if(error != NULL)
-	{
-		g_error_free(error);
+	file.open("/sys/class/gpio/gpio" + std::to_string(pin) + "/direction");
+	if(!file.is_open())
 		return -1;
-	}
-	g_io_channel_write_chars(slot, direction, -1, NULL, &error);
-	g_io_channel_shutdown(slot, TRUE, NULL);
-	g_io_channel_unref(slot);
-	if(error != NULL)
-	{
-		g_error_free(error);
-		return -1;
-	}
+	file << direction << std::endl;
+	file.close();
 	return 0;
 }
 
 
-int gpio_analogRead(int pin)
+int gpio_analogRead(int const& pin)
 {
 	if(pin < 0 || pin > 6)
 		return -2;
 
-	gchar *fileName = g_strdup_printf("/sys/bus/iio/devices/iio:device0/in_voltage%d_raw", pin);
-
-	gchar *portValue = "";
-	gboolean returnCode = getFileContent(fileName, &portValue);
-	g_free(fileName);
-	if(returnCode == FALSE)
+	std::string filename = "/sys/bus/iio/devices/iio:device0/in_voltage" + std::to_string(pin) + "_raw";
+	std::string filecontent;
+	bool returnCode = getFileContent(filename, filecontent);
+	if(returnCode == false)
 		return -1;
 
-	int value = g_ascii_strtoll(portValue, NULL, 10);
-	g_free(portValue);
-	return value;
+	return std::stoi(filecontent);
 }

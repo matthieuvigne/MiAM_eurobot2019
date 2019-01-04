@@ -7,7 +7,6 @@
 ///	\note	 All functions in this header should be prefixed with mpc_.
 #ifndef MPC_DRIVER_H
 	#define MPC_DRIVER_H
-	#include <glib.h>
 	#include "MiAMEurobot/drivers/I2C-Wrapper.h"
 
 	/// MPC structure.
@@ -30,13 +29,13 @@
     /// \param[in] adapter Pointer to a valid I2CAdapter to choose the I2C port (as returned by the i2c_open function,
     ///                    see I2C-Wrapper.h).
     /// \param[in] slaveAddress Address of the I2C slave.
-    /// \returns   TRUE on success, FALSE otherwise.
-	gboolean mpc_init(MPC *mpc, I2CAdapter *adapter, int slaveAddress);
+    /// \returns   true on success, false otherwise.
+	bool mpc_init(MPC *mpc, I2CAdapter *adapter, unsigned int const& slaveAddress);
 
 
 	/// \brief Calls mpc_init with the default sensor I2C addresses.
     ///
-	static inline gboolean mpc_initDefault(MPC *mpc, I2CAdapter *adapter){return mpc_init(mpc, adapter, 0x20);}
+	static inline bool mpc_initDefault(MPC *mpc, I2CAdapter *adapter){return mpc_init(mpc, adapter, 0x20);}
 
 
 	/// \brief Set specified pin mode.
@@ -45,7 +44,7 @@
     /// \param[in] mpc The MPC chip to talk to.
     /// \param[in] pin Pin number, between 0 and 15. Values outside of this range do nothing.
     /// \param[in] state State of the pin (MPCPinState enum).
-	void mpc_pinMode(MPC mpc, int pin, MPCPinState state);
+	void mpc_pinMode(MPC mpc, unsigned int pin, MPCPinState state);
 
 
 	/// \brief Read state of specified pin.
@@ -53,7 +52,7 @@
     /// \param[in] mpc The MPC chip to talk to.
     /// \param[in] pin Pin number, between 0 and 15. Values outside of this range return 0.
     /// \return 0 on low, 1 on high.
-	int mpc_digitalRead(MPC mpc, int pin);
+	int mpc_digitalRead(MPC mpc, unsigned int pin);
 
 
 	/// \brief Set state of specified pin.
@@ -61,7 +60,7 @@
     /// \param[in] mpc The MPC chip to talk to.
     /// \param[in] pin Pin number, between 0 and 15. Values outside of this range return 0.
     /// \param[in] value Value to write: 0 for low, else high.
-	void mpc_digitalWrite(MPC mpc, int pin, int value);
+	void mpc_digitalWrite(MPC mpc, unsigned int pin, unsigned int const& value);
 
 
 	/// \brief Write to all output pins at once.
@@ -69,12 +68,12 @@
 	///
     /// \param[in] mpc The MPC chip to talk to.
     /// \param[in] value Value to give to each pin. Note that writing to an input pin has no effect.
-	void mpc_writeAll(MPC mpc, guint16 value);
+	void mpc_writeAll(MPC mpc, unsigned int const& value);
 
 	/// \brief Read all pins at once.
 	/// \details This enables for much faster communication.
 	///
     /// \param[in] mpc The MPC chip to talk to.
     /// \returns The value of all the pins of the device
-	guint16 mpc_readAll(MPC mpc);
+	unsigned int mpc_readAll(MPC mpc);
 #endif

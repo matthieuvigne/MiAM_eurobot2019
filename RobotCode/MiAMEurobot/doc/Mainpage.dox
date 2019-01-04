@@ -8,9 +8,6 @@ Doxygen main page
 ///
 /// This library is a general purpose library, that cover many basic needs on the high-level code: interface with GPIO and serial port, sensor and motor drivers, some basic algorithms and features
 /// Historically, this library was written in C, but has now been extended to C++ (though many C parts remain).
-/// It relies heavily on glib: this choice was made with one thing in many : get as many functionalities
-/// as possible, with only one dependancy to handle. It also relies on the standard system tools on Linux (for things like SPI / I2C communication
-/// for example, where ioctl is used).
 ///
 ///
 /// The code is separated in four folders:

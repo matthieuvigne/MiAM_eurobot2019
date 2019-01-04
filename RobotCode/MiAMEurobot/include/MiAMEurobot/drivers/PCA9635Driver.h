@@ -23,8 +23,8 @@
     /// \param[in] adapter Pointer to a valid I2CAdapter to choose the I2C port (as returned by the i2c_open function,
     ///                    see I2C-Wrapper.h).
     /// \param[in] address I2C address of the PCA9635.
-    /// \returns   TRUE on success, FALSE otherwise.
-	gboolean ledDriver_init(PCA9635 *driver, I2CAdapter *adapter, guint8 address);
+    /// \returns   true on success, false otherwise.
+	bool ledDriver_init(PCA9635 *driver, I2CAdapter *adapter, unsigned char address);
 
 	/// \brief Set brightness of a single LED.
     ///

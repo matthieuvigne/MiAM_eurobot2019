@@ -7,14 +7,14 @@
 	#define UART_WRAPPER
 
 	#include <termios.h>
-	#include <glib.h>
+	#include <string>
 
 	/// \brief Open a serial communication for the given file name, at the given speed.
 	///
     /// \param portName Serial port file name ("/dev/ttyOx")
     /// \param speed Communication speed (i.e. B115200, or one of the constants defined in termios.h
     /// \return The open port file descriptor (positive int), or -1 on failure.
-	int uart_open(gchar const *portName, int speed);
+	int uart_open(std::string const& portName, int speed);
 
 	/// \brief Wrapper around read function with a timeout.
 	///
