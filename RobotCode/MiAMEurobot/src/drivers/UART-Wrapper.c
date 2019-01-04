@@ -33,3 +33,17 @@ int uart_open(gchar const *portName, int speed)
 
 	return port;
 }
+
+int read_timeout(int const& file, unsigned char *buffer, size_t const& size, uint const& timeoutMs)
+{
+	struct timeval timeout;
+	timeout.tv_sec = 0;
+	timeout.tv_usec = 1000 * timeoutMs;
+	fd_set set;
+	FD_ZERO(&set);
+	FD_SET(file, &set);
+
+	if(select(file + 1, &set, NULL, NULL, &timeout) > 0)
+		return read(file, buffer, size);
+	return -1;
+}
