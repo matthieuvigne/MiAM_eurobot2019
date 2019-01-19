@@ -23,13 +23,13 @@ FIND_PACKAGE( ACADO REQUIRED )
 #
 # Include directories
 #
-INCLUDE_DIRECTORIES( . ${ACADO_INCLUDE_DIRS} include )
+INCLUDE_DIRECTORIES( . ${ACADO_INCLUDE_DIRS} include ../../RobotCode/MiAMEurobot/include )
 FILE( GLOB_RECURSE ${PROJECT_NAME}_HEADERS include/*.hpp )
 
 #
 # Set library up
 #
-FILE( GLOB LIB_SOURCES src/*.cpp )
+FILE( GLOB LIB_SOURCES src/*.cpp ../../RobotCode/MiAMEurobot/src/trajectory/*.cpp )
 FILE( GLOB LIB_HEADERS include/*.hpp )
 ADD_LIBRARY( PathPlanner ${LIB_SOURCES} ${LIB_HEADERS} )
 

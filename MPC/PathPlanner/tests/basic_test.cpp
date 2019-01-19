@@ -3,82 +3,47 @@
 
 #include <miam_pp.hpp>
 
+#include <MiAMEurobot/trajectory/RobotPosition.h>
+#include <MiAMEurobot/trajectory/Trajectory.h>
+#include <MiAMEurobot/trajectory/Utilities.h>
 
 int main( ){
     
+    // Some calculus tests
+    
+    miam::RobotPosition test = miam::RobotPosition(1.0, 2.0, 0.0);
+    miam::RobotPosition test2 = miam::RobotPosition(3.0, 2.0, 0.0);
+    
+    std::cout << "RobotPosition: " << test << std::endl;
+    std::cout << "RobotPosition: " << test-test2 << std::endl;
+    std::cout << "RobotPosition: " << test2-test << std::endl;
+    std::cout << "RobotPosition: " << 2.0*test << std::endl;
+    std::cout << "RobotPosition: " << test*2.0 << std::endl;
+    std::cout << "RobotPosition: " << test/3.0 << std::endl;
+    
+    miam::RobotPosition test3 = 2.0*test;
+    
+    std::cout << "RobotPosition: " << test3 << std::endl;
+    std::cout << "RobotPosition: " << test3*2.0/3.0 << std::endl;
+    
+    std::cout << "Distance: " << miam::trajectory::distance(test, test3) << std::endl;
+    
     miam_pp::Hello_World();
     
-    miam_pp::get_planned_trajectory_main_robot(
-        miam_pp::State(),
-        miam_pp::WayPointList(),
-        0
+    // Computing the solution of a simple waypoint problem
+    
+    miam_pp::WayPointList waypoint_list = miam_pp::WayPointList();
+    waypoint_list.push_back(miam::RobotPosition(0.0, 0.0, 0.0));
+    waypoint_list.push_back(miam::RobotPosition(1000.0, 200.0, 1.0));
+
+    miam_pp::TrajectoryVector trajectory_vector = miam_pp::get_planned_trajectory_main_robot(
+        waypoint_list
     );
-
-	USING_NAMESPACE_ACADO
-
-
-	DifferentialState        x,y,theta, v ;     // the differential states
-	Control                  u, a     ;     // the control input u
-	Parameter                T          ;     // the time horizon T
-	DifferentialEquation     f( 0.0, T );     // the differential equation
-
-	//  -------------------------------------
-
-	// Number of time steps
-	int N = 100;
     
-    std::cout << "1" << std::endl;
-    
-	OCP ocp( 0.0, T, N );                        // time horizon of the OCP: [0,T]
-	ocp.minimizeMayerTerm( T );               // the time T should be optimized
-
-    std::cout << "2" << std::endl;
-
-	f << dot(x) == v * cos(theta);                         // an implementation
-	f << dot(y) == v * sin(theta);                         // an implementation
-	f << dot(theta) == u;                 // for the rocket.
-	f << dot(v) == a;                 // for the rocket.
-
-	ocp.subjectTo( f                   );     // minimize T s.t. the model,
-	ocp.subjectTo( AT_START, x ==  0.0 );     // the initial values for s,
-	ocp.subjectTo( AT_START, y ==  0.0 );     // v,
-	ocp.subjectTo( AT_START, theta ==  0.0 );     // and m,
-	ocp.subjectTo( AT_START, v ==  0.1 );     // and m,
-
-	ocp.subjectTo( AT_END  , x == 10.0 );     // the terminal constraints for s
-	ocp.subjectTo( AT_END  , y ==  1.0 );     // and v,
-	ocp.subjectTo( AT_END  , theta ==  1.5 );     // and v,
-	ocp.subjectTo( AT_END  , v ==  0.0 );     // and v,
-
-	//ocp.subjectTo( -1.0 <= v <=  1.0   );     // as well as the bounds on v
-	ocp.subjectTo( -1.1 <= u <=  1.1   );     // the control input u,
-	ocp.subjectTo( -1.1 <= a <=  1.1   );     // the control input u,
-	ocp.subjectTo(  5.0 <= T <= 100.0   );     // and the time horizon T.
-	//  -------------------------------------
-
-	GnuplotWindow window;
-	window.addSubplot( x, "x"      );
-	window.addSubplot( y, "y"      );
-	window.addSubplot( theta, "theta"          );
-	window.addSubplot( v, "v" );
-	window.addSubplot( u, "u" );
-	window.addSubplot( a, "a" );
-    
-    std::cout << "3" << std::endl;
-    
-	OptimizationAlgorithm algorithm(ocp);     // the optimization algorithm
-	algorithm << window;
-    
-    std::cout << "4" << std::endl;
-    
-	algorithm.solve();                        // solves the problem.
-    
-    std::cout << "5" << std::endl;
-
-	algorithm.getDifferentialStates("outputs/states.txt"    );
-	algorithm.getParameters        ("outputs/parameters.txt");
-	algorithm.getControls          ("outputs/controls.txt"  );
-
+    for (miam::trajectory::TrajectoryPoint _tp : trajectory_vector)
+    {
+        std::cout << _tp.position << ", v=" << _tp.linearVelocity << ", w=" << _tp.angularVelocity << std::endl;
+    }
 
 	return 0;
 }
