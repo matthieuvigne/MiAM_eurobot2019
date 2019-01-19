@@ -34,10 +34,14 @@ int main( ){
     
     miam_pp::WayPointList waypoint_list = miam_pp::WayPointList();
     waypoint_list.push_back(miam::RobotPosition(0.0, 0.0, 0.0));
+    waypoint_list.push_back(miam::RobotPosition(500.0, 100.0, 0.5));
+    waypoint_list.push_back(miam::RobotPosition(800.0, 125.0, 0.5));
     waypoint_list.push_back(miam::RobotPosition(1000.0, 200.0, 1.0));
 
     miam_pp::TrajectoryVector trajectory_vector = miam_pp::get_planned_trajectory_main_robot(
-        waypoint_list
+        waypoint_list,
+        true, // Plot output
+        true  // Print output
     );
     
     for (miam::trajectory::TrajectoryPoint _tp : trajectory_vector)

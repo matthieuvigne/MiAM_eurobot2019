@@ -49,7 +49,9 @@ typedef std::vector<miam::trajectory::TrajectoryPoint > TrajectoryVector;
  * main robot.
  */
 TrajectoryVector get_planned_trajectory_main_robot(
-    WayPointList waypoint_list
+    WayPointList waypoint_list,
+    bool plot = false,
+    bool verbose = false
 );
 
 }

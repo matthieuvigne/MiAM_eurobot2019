@@ -23,7 +23,9 @@ double const NOMINAL_SPEED = 0.95 * robotdimensions::maxWheelSpeed; ///< Nominal
                                                                     /// of the robot
 
 TrajectoryVector miam_pp::get_planned_trajectory_main_robot(
-    WayPointList waypoint_list
+    WayPointList waypoint_list,
+    bool plot,
+    bool verbose
 ) 
 {
     cout << "get_planned_trajectory_main_robot" << endl;
@@ -139,19 +141,30 @@ TrajectoryVector miam_pp::get_planned_trajectory_main_robot(
     ocp.subjectTo( -robotdimensions::maxWheelAcceleration <= wr <= robotdimensions::maxWheelAcceleration   );     // the control input u,
     ocp.subjectTo( -robotdimensions::maxWheelAcceleration <= wl <= robotdimensions::maxWheelAcceleration   );     // the control input u,
     ocp.subjectTo(  0.0 <= T <= 3.0 * reference_time_horizon );
-
-    GnuplotWindow window;
-    window.addSubplot( x, "x"      );
-    window.addSubplot( y, "y"      );
-    window.addSubplot( theta, "theta"          );
-    window.addSubplot( vl, "vl" );
-    window.addSubplot( vr, "vr" );
-    window.addSubplot( (vl + vr) / 2.0, "v" );
-    window.addSubplot( wl, "wl" );
-    window.addSubplot( wr, "wr" );
     
     OptimizationAlgorithm algorithm(ocp);
-    algorithm << window;
+    
+    if (!verbose) 
+    {
+        algorithm.set( PRINTLEVEL , NONE );
+    }
+    
+    
+    if (plot) 
+    {
+        GnuplotWindow window;
+        window.addSubplot( x, "x"      );
+        window.addSubplot( y, "y"      );
+        window.addSubplot( theta, "theta"          );
+        window.addSubplot( vl, "vl" );
+        window.addSubplot( vr, "vr" );
+        window.addSubplot( (vl + vr) / 2.0, "v" );
+        window.addSubplot( wl, "wl" );
+        window.addSubplot( wr, "wr" );
+        algorithm << window;
+    }
+
+    
     
     algorithm.set( INTEGRATOR_TYPE      , INT_RK78        );
     algorithm.set( INTEGRATOR_TOLERANCE , 1e-8            );
