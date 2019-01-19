@@ -36,12 +36,13 @@
 				///
 				/// \details This function returns the term by term multiplication of the point coordinates by a scalar.
 				friend RobotPosition operator*(double const& scalar, RobotPosition const& p1);
+				friend RobotPosition operator*(RobotPosition const& p1, double const& scalar);
 
 				/// \brief Division by a scalar.
 				///
 				/// \details This function returns the term by term division of the point coordinates by a scalar.
 				///          If scalar is too close to zero, this function return the original point.
-				friend RobotPosition operator/(double const& scalar, RobotPosition const& p1);
+				friend RobotPosition operator/(RobotPosition const& p1, double const& scalar);
 
 				/// \brief Return the norm of the (x,y) vector.
 				double norm() const;

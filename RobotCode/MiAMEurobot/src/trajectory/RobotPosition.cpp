@@ -38,9 +38,15 @@ namespace miam{
 	{
 		return RobotPosition(scalar * p1.x, scalar * p1.y, scalar * p1.theta);
 	}
+    
+    
+    RobotPosition operator*(RobotPosition const& p1, double const& scalar)
+	{
+		return RobotPosition(scalar * p1.x, scalar * p1.y, scalar * p1.theta);
+	}
 
 
-	RobotPosition operator/(double const& scalar, RobotPosition const& p1)
+	RobotPosition operator/(RobotPosition const& p1, double const& scalar)
 	{
 		if(std::abs(scalar) < 1e-6)
 			return p1;
