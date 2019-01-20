@@ -70,7 +70,8 @@ TrajectoryVector miam_pp::get_planned_trajectory_main_robot(
         }
     }
     
-    int N = resampled_waypoint_list.size();
+    // N is the number of intervals
+    int N = resampled_waypoint_list.size()-1;
     
     //cout << "Resampled waypoints:" << endl;
     //for (RobotPosition _rp : resampled_waypoint_list) 
@@ -78,7 +79,7 @@ TrajectoryVector miam_pp::get_planned_trajectory_main_robot(
         //cout << _rp << endl;
     //}
     
-    cout << "Number of resampled waypoints: " << N << endl;
+    cout << "Number of resampled waypoints: " << N+1 << endl;
     
     // Solve OCP using the resampled waypoints
     // using ACADO
@@ -89,10 +90,10 @@ TrajectoryVector miam_pp::get_planned_trajectory_main_robot(
     
     
     // Initialization
-    Grid timeGrid (0.0, reference_time_horizon, N);
+    Grid timeGrid (0.0, reference_time_horizon, N+1);
     VariablesGrid x_init(5, timeGrid);
 	VariablesGrid u_init(2, timeGrid);
-    for (int j = 0; j < N; j++) {
+    for (int j = 0; j < N+1; j++) {
             x_init(j, 0) = resampled_waypoint_list[j].x;
             x_init(j, 1) = resampled_waypoint_list[j].y;
             x_init(j, 2) = resampled_waypoint_list[j].theta;
@@ -165,7 +166,6 @@ TrajectoryVector miam_pp::get_planned_trajectory_main_robot(
     }
 
     
-    
     algorithm.set( INTEGRATOR_TYPE      , INT_RK78        );
     algorithm.set( INTEGRATOR_TOLERANCE , 1e-8            );
     algorithm.set( DISCRETIZATION_TYPE  , MULTIPLE_SHOOTING );
@@ -192,7 +192,7 @@ TrajectoryVector miam_pp::get_planned_trajectory_main_robot(
     double final_time = timeGrid_final(N, 0);
     
     cout << "Final time: " << final_time << endl;
-    
+
     TrajectoryVector output_trajectory;
     
     for (int i=0; i<N+1; i++) 
@@ -216,7 +216,7 @@ TrajectoryVector miam_pp::get_planned_trajectory_main_robot(
     
     if (desired_timestep != old_timestep) 
     {
-        cout << "Resampling " << N << " points into " << N_resampled << "points" << endl;
+        cout << "Resampling " << N+1 << " points into " << N_resampled+1 << "points" << endl;
         cout << "Old timestep: " << old_timestep << ", new timestep: " << desired_timestep << endl;
         
         for (int i=0; i<N_resampled+1; i++) 
@@ -225,6 +225,8 @@ TrajectoryVector miam_pp::get_planned_trajectory_main_robot(
             
             int old_index_low = std::floor(N * requested_time / final_time);
             int old_index_high = std::ceil(N * requested_time / final_time);
+            
+            cout << "low: " << old_index_low << ", high: " << old_index_high << endl;
             
             if (old_index_high > N)
             {
