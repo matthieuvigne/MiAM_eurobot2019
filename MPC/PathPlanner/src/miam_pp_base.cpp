@@ -189,6 +189,10 @@ TrajectoryVector miam_pp::get_planned_trajectory_main_robot(
 	VariablesGrid statesGrid_final;
 	algorithm.getDifferentialStates(statesGrid_final);
     
+    double final_time = timeGrid_final(N, 0);
+    
+    cout << "Final time: " << final_time << endl;
+    
     TrajectoryVector output_trajectory;
     
     for (int i=0; i<N+1; i++) 
@@ -202,7 +206,58 @@ TrajectoryVector miam_pp::get_planned_trajectory_main_robot(
         output_trajectory.push_back(_tp);
     }
     
-    return output_trajectory;
+    // Resampling
+    TrajectoryVector output_trajectory_resampled;
+    
+    double desired_timestep = 0.01;
+    double old_timestep = final_time / N;
+    
+    int N_resampled = std::ceil(final_time / 0.01); // One point every 10 ms
+    
+    if (desired_timestep != old_timestep) 
+    {
+        cout << "Resampling " << N << " points into " << N_resampled << "points" << endl;
+        cout << "Old timestep: " << old_timestep << ", new timestep: " << desired_timestep << endl;
+        
+        for (int i=0; i<N_resampled+1; i++) 
+        {
+            double requested_time = i * desired_timestep;
+            
+            int old_index_low = std::floor(N * requested_time / final_time);
+            int old_index_high = std::ceil(N * requested_time / final_time);
+            
+            if (old_index_high > N)
+            {
+                // Last timestep
+                output_trajectory_resampled.push_back(output_trajectory[old_index_low]);
+                continue;
+            }
+            
+            trajectory::TrajectoryPoint tp_low = output_trajectory[old_index_low];
+            trajectory::TrajectoryPoint tp_high = output_trajectory[old_index_high];
+            
+            double residue = (requested_time - old_index_low * old_timestep) / old_timestep;
+            
+            double ponderation_low = 1.0 - residue; 
+            double ponderation_high = residue; 
+            
+            // Linear interpolation
+            trajectory::TrajectoryPoint _tp;
+            _tp.position = ponderation_low * tp_low.position + ponderation_high * tp_high.position;
+            _tp.linearVelocity = ponderation_low * tp_low.linearVelocity + ponderation_high * tp_high.linearVelocity;
+            _tp.angularVelocity = ponderation_low * tp_low.angularVelocity + ponderation_high * tp_high.angularVelocity;
+            output_trajectory_resampled.push_back(_tp);
+            
+        }
+    }
+    
+    //cout << "Sanity check: " << endl;
+    //cout << output_trajectory.front().position << " v= " << output_trajectory.front().linearVelocity << " w=" << output_trajectory.front().angularVelocity << endl;
+    //cout << output_trajectory_resampled.front().position << " v= " << output_trajectory_resampled.front().linearVelocity << " w=" << output_trajectory_resampled.front().angularVelocity << endl;
+    //cout << output_trajectory.back().position << " v= " << output_trajectory.back().linearVelocity << " w=" << output_trajectory.back().angularVelocity << endl;
+    //cout << output_trajectory_resampled.back().position << " v= " << output_trajectory_resampled.back().linearVelocity << " w=" << output_trajectory_resampled.back().angularVelocity << endl;
+    
+    return output_trajectory_resampled;
 }
 
 
