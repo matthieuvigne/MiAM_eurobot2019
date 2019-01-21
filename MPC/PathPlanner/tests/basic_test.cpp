@@ -1,3 +1,5 @@
+#include <memory>
+
 #include <acado_toolkit.hpp>
 #include <acado_gnuplot.hpp>
 
@@ -38,14 +40,21 @@ int main( ){
     waypoint_list.push_back(miam::RobotPosition(800.0, 125.0, 0.5));
     waypoint_list.push_back(miam::RobotPosition(1000.0, 200.0, 1.0));
 
-    miam_pp::TrajectoryVector trajectory_vector = miam_pp::get_planned_trajectory_main_robot(
+    miam::trajectory::SampledTrajectory sampled_trajectory = miam_pp::get_planned_trajectory_main_robot(
         waypoint_list,
         true, // Plot output
         true  // Print output
     );
     
-    for (miam::trajectory::TrajectoryPoint _tp : trajectory_vector)
+    int N = std::floor(sampled_trajectory.getDuration() / 0.01);
+    double tstep = sampled_trajectory.getDuration() / N;
+    
+    std::cout << "N= " << N << std::endl;
+    std::cout << "tstep= " << tstep << std::endl;
+    
+    for (int i=0; i < N+1; i++)
     {
+        miam::trajectory::TrajectoryPoint _tp = sampled_trajectory.getCurrentPoint(i * tstep);
         std::cout << _tp.position << ", v=" << _tp.linearVelocity << ", w=" << _tp.angularVelocity << std::endl;
     }
 

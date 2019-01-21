@@ -10,6 +10,7 @@
 
 #include <MiAMEurobot/trajectory/RobotPosition.h>
 #include <MiAMEurobot/trajectory/Trajectory.h>
+#include <MiAMEurobot/trajectory/SampledTrajectory.h>
 #include <MiAMEurobot/trajectory/Utilities.h>
 
 
@@ -48,7 +49,7 @@ typedef std::vector<miam::trajectory::TrajectoryPoint > TrajectoryVector;
  * compute a suitable trajectory. Assume the dynamics are those of the
  * main robot.
  */
-TrajectoryVector get_planned_trajectory_main_robot(
+miam::trajectory::SampledTrajectory get_planned_trajectory_main_robot(
     WayPointList waypoint_list,
     bool plot = false,
     bool verbose = false

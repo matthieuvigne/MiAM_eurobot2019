@@ -7,6 +7,8 @@
 #include <acado_toolkit.hpp>
 #include <acado_gnuplot.hpp>
 
+#include <memory>
+
 using namespace miam;
 using namespace miam_pp;
 using namespace std;
@@ -22,7 +24,7 @@ double const OCP_N_TIMESTEPS = 100; ///< Number of OCP timesteps for each
 double const NOMINAL_SPEED = 0.95 * robotdimensions::maxWheelSpeed; ///< Nominal speed
                                                                     /// of the robot
 
-TrajectoryVector miam_pp::get_planned_trajectory_main_robot(
+trajectory::SampledTrajectory miam_pp::get_planned_trajectory_main_robot(
     WayPointList waypoint_list,
     bool plot,
     bool verbose
@@ -206,60 +208,17 @@ TrajectoryVector miam_pp::get_planned_trajectory_main_robot(
         output_trajectory.push_back(_tp);
     }
     
-    // Resampling
-    TrajectoryVector output_trajectory_resampled;
-    
-    double desired_timestep = 0.01;
-    double old_timestep = final_time / N;
-    
-    int N_resampled = std::ceil(final_time / 0.01); // One point every 10 ms
-    
-    if (desired_timestep != old_timestep) 
-    {
-        cout << "Resampling " << N+1 << " points into " << N_resampled+1 << "points" << endl;
-        cout << "Old timestep: " << old_timestep << ", new timestep: " << desired_timestep << endl;
-        
-        for (int i=0; i<N_resampled+1; i++) 
-        {
-            double requested_time = i * desired_timestep;
-            
-            int old_index_low = std::floor(N * requested_time / final_time);
-            int old_index_high = std::ceil(N * requested_time / final_time);
-            
-            cout << "low: " << old_index_low << ", high: " << old_index_high << endl;
-            
-            if (old_index_high > N)
-            {
-                // Last timestep
-                output_trajectory_resampled.push_back(output_trajectory[old_index_low]);
-                continue;
-            }
-            
-            trajectory::TrajectoryPoint tp_low = output_trajectory[old_index_low];
-            trajectory::TrajectoryPoint tp_high = output_trajectory[old_index_high];
-            
-            double residue = (requested_time - old_index_low * old_timestep) / old_timestep;
-            
-            double ponderation_low = 1.0 - residue; 
-            double ponderation_high = residue; 
-            
-            // Linear interpolation
-            trajectory::TrajectoryPoint _tp;
-            _tp.position = ponderation_low * tp_low.position + ponderation_high * tp_high.position;
-            _tp.linearVelocity = ponderation_low * tp_low.linearVelocity + ponderation_high * tp_high.linearVelocity;
-            _tp.angularVelocity = ponderation_low * tp_low.angularVelocity + ponderation_high * tp_high.angularVelocity;
-            output_trajectory_resampled.push_back(_tp);
-            
-        }
-    }
-    
     //cout << "Sanity check: " << endl;
     //cout << output_trajectory.front().position << " v= " << output_trajectory.front().linearVelocity << " w=" << output_trajectory.front().angularVelocity << endl;
     //cout << output_trajectory_resampled.front().position << " v= " << output_trajectory_resampled.front().linearVelocity << " w=" << output_trajectory_resampled.front().angularVelocity << endl;
     //cout << output_trajectory.back().position << " v= " << output_trajectory.back().linearVelocity << " w=" << output_trajectory.back().angularVelocity << endl;
     //cout << output_trajectory_resampled.back().position << " v= " << output_trajectory_resampled.back().linearVelocity << " w=" << output_trajectory_resampled.back().angularVelocity << endl;
     
-    return output_trajectory_resampled;
+    //shared_ptr<trajectory::SampledTrajectory > output(new );
+    
+    //cout << "final time " << output->getDuration() << endl;
+    
+    return trajectory::SampledTrajectory(output_trajectory, final_time);
 }
 
 
