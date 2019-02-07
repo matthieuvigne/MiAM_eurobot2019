@@ -45,14 +45,29 @@ typedef std::vector<miam::trajectory::TrajectoryPoint > TrajectoryVector;
 
 
 /**
- * Given a current state, a list of waypoints and a planning horizon,
- * compute a suitable trajectory. Assume the dynamics are those of the
- * main robot.
+ * Given a list of waypoints, a planning horizon, a first and a last
+ * points, compute a suitable trajectory. Assume the dynamics are 
+ * those of the main robot. In the WayPointList, the first and the last
+ * waypoints are ignored and replaced by the first and last trajectory
+ * points.
  */
 miam::trajectory::SampledTrajectory get_planned_trajectory_main_robot(
     WayPointList waypoint_list,
+    miam::trajectory::TrajectoryPoint first_trajectory_point,
+    miam::trajectory::TrajectoryPoint last_trajectory_point,
     bool plot = false,
     bool verbose = false
+);
+
+/**
+ * Given a current point and a sampled trajectory, compute a suitable 
+ * update for the trajectory. Assume the dynamics are those of the
+ * main robot.
+ */
+miam::trajectory::TrajectoryPoint solve_MPC_problem(
+    miam::trajectory::SampledTrajectory sampled_trajectory,
+    miam::trajectory::TrajectoryPoint current_trajectory_point,
+    double current_time
 );
 
 }
