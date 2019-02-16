@@ -4,11 +4,11 @@ This code, written entirely in C, is organished around a library, named MiAMEuro
 functionalities needed to use the robot (mainly port activation, motor and sensor drivers...). This library is
 generic, and could be reused for other projects.
 
-Two other projects use this library:
+This folder also contains:
  - TestSensors: a simple sensor test. This code tests all the sensors of the robot, both for code debugging and wiring testing purposes.
  - EurobotCode: the main code of the robot, used for Eurobot itself.
  - DrivetrainTest: code for a simplified drivetrain used to test new components: motors, encoders...
-
+ - HardwareTests: a set of independant tests for the robot hardware (mainly used for wiring tests).
 
 ## Compiling this code
 

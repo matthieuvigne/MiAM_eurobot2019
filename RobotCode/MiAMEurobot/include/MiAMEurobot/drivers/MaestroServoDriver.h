@@ -8,39 +8,50 @@
 
 	#include <string>
 
-	/// MaestroDriver structure: a simple int representing the board communication port.
-	typedef struct{
-		int port;		///< Serial port file descriptor.
-		int deviceID; 	///< Pololu device ID, for daisy chaining.
-	}MaestroDriver;
-
-
-	/// \brief Initialize the servo driver.
-    ///
-    /// \param driver MaestroDriver structure to initialize.
-    /// \param portName Serial port file name ("/dev/ttyOx")
-    /// \param deviceID Maestro device ID.
-    /// \returns   true on success, false otherwise.
-	bool maestro_init(MaestroDriver *driver, std::string const& portName, int deviceID);
-
-	static inline bool maestro_initDefault(MaestroDriver *driver, std::string const& portName)
+	/// \brief MaestroDriver Pololu servo driver, using USB or UART communication.
+	class MaestroDriver
 	{
-		return maestro_init(driver, portName, 12);
-	}
+		public:
+			/// \brief Default contstructor.
+			MaestroDriver();
 
-	/// \brief Set target position of a servo.
-    ///
-    /// \param[in,out] driver The MaestroDriver structure.
-    /// \param[in] servo The number of the servo to change (from 0 to 15).
-    /// \param[in] position Signal value, in microseconds (clamped between 500 and 2500). Note that the resolution
-    ///                   of the driver is of 0.25 microseconds.
-	void maestro_setPosition(MaestroDriver driver, int servo, double position);
+			/// \brief Initialize the servo driver.
+			///
+			/// \param driver MaestroDriver structure to initialize.
+			/// \param portName Serial port file name ("/dev/ttyOx")
+			/// \param deviceID Maestro device ID.
+			/// \returns   true on success, false otherwise.
+			bool init(std::string const& portName, int const& deviceID = 12);
 
-	/// \brief Set target speed of a servo.
-	/// \details This function in itself does not move a servo, but only specify the speed at which it will move at.
-    ///
-    /// \param[in,out] driver The MaestroDriver structure.
-    /// \param[in] servo The number of the servo to change (from 0 to 15).
-    /// \param[in] speed Servo speed, in us/s. Device resolution is 25us/s
-	void maestro_setSpeed(MaestroDriver driver, int servo, int speed);
+			/// \brief Set target position of a servo.
+			///
+			/// \param[in,out] driver The MaestroDriver structure.
+			/// \param[in] servo The number of the servo to change (from 0 to 15).
+			/// \param[in] position Signal value, in microseconds (clamped between 500 and 2500). Note that the resolution
+			///                   of the driver is of 0.25 microseconds.
+			void setPosition(int const& servo, double const& position);
+
+			/// \brief Set target speed of a servo.
+			/// \details This function in itself does not move a servo, but only specify the speed at which it will move at.
+			///
+			/// \param[in,out] driver The MaestroDriver structure.
+			/// \param[in] servo The number of the servo to change (from 0 to 15).
+			/// \param[in] speed Servo speed, in us/s. Device resolution is 25us/s
+			void setSpeed(int const& servo, int const& speed);
+
+		private:
+
+			/// \brief Clear internal device error.
+			void clearError();
+
+			/// \brief Send a command to the driver.
+			/// \param[in] commandID ID of the command.
+			/// \param[in] parameters Command parameters.
+			/// \param[in] length Length of the parameter.
+			/// \return Result of write.
+			int sendCommand(int const& commandID, unsigned char *parameters, int const& length);
+
+			int port_;		///< Serial port file descriptor.
+			int deviceID_; 	///< Pololu device ID, for daisy chaining.
+	};
 #endif

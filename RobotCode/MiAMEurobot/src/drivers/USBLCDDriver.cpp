@@ -137,5 +137,5 @@ uint8_t USBLCD::getButtonStateRaw()
 	// Check that what we receive is a valid button value, otherwise return 255.
 	if((message[0] & 0b11111000) != 0b10000000)
 		return 255;
-	return message[0] & 0b00000111;
+	return ~(message[0] & 0b00000111);
 }
