@@ -65,21 +65,29 @@
 	// Dimensions of the robot
 	namespace robotdimensions
 	{
-		double const wheelRadius = 51.0; ///< Wheel radius, in mm.
+		double const wheelRadius = 50.8; ///< Wheel radius, in mm.
 		double const wheelSpacing = 106.0; ///< Wheel spacing from robot center, in mm.
-		double const encoderWheelRadius = 26.0; ///< Radius of encoder wheels, in mm.
+		double const encoderWheelRadius = 25.3; ///< Radius of encoder wheels, in mm.
 		double const encoderWheelSpacing = 133.0; ///< Encoder wheel spacing from robot center, in mm.
 
 		double const stepSize = 2 * G_PI / 600.0; ///< Size of a motor step, in rad.
 
-		double const maxWheelSpeed = 600; ///< Maximum wheel speed, in mm/s.
-		double const maxWheelAcceleration = 800; ///< Maximum wheel acceleration, in mm/s^2.
+		double const maxWheelSpeed = 400; ///< Maximum wheel speed, in mm/s.
+		double const maxWheelAcceleration = 400; ///< Maximum wheel acceleration, in mm/s^2.
 	}
 
 	// Controller parameters
 	namespace controller
 	{
 		double const transverseKp = 0.1;
+
+		double const linearKp = 0.5;
+		double const linearKd = 0.0;
+		double const linearKi = 0.05;
+
+		double const rotationKp = 0.15;
+		double const rotationKd = 0.0;
+		double const rotationKi = 0.05;
 	}
 
 	/// \brief Class representing the robot wheeled base.

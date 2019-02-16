@@ -33,7 +33,8 @@ void *listenerThread(void *portName)
 	listenerData.encoderValues[1] = 0.0;
 
 	// Open communication
-	int port = uart_open((gchar*)portName, B1000000);
+	std::string name = static_cast<char*>(portName);
+	int port = uart_open(name, B1000000);
 	if(port < 0)
 	{
 		printf("Failed to initialize listener port. Terminating.\n");

@@ -9,7 +9,7 @@ set(CMAKE_CXX_COMPILER "arm-linux-gnueabihf-g++")
 set(CMAKE_CXX_FLAGS_DEBUG "-DDEBUG")
 
 # Set C compiler flags.
-set(CMAKE_CXX_FLAGS "-std=c++11 -Wall -fdiagnostics-color -lpthread -lm")
+set(CMAKE_CXX_FLAGS "-Wall -fdiagnostics-color")
 
 # Use pkg-config to find external libraries : Glib (compiled for arm) and BBBEurobot.
 find_package(PkgConfig REQUIRED)

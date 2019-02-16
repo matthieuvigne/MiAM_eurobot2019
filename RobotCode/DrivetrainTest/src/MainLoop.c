@@ -73,16 +73,22 @@ int main(int argc, char **argv)
 	g_thread_new("LowLevel", startLowLevelThread, NULL);
 
 	// Servo along a trajectory.
-	//~ RobotPosition endPosition = robot.getCurrentPosition();
+	RobotPosition endPosition = robot.getCurrentPosition();
+	endPosition.x += 1000;
 	//~ endPosition.y += 500;
-	//~ endPosition.x += 500;
 	std::vector<std::shared_ptr<Trajectory>> traj;
-	//~ traj = miam::trajectory::computeTrajectoryStaightLineToPoint(robot.getCurrentPosition(), endPosition);
+	traj = miam::trajectory::computeTrajectoryStaightLineToPoint(robot.getCurrentPosition(), endPosition);
 
-	std::shared_ptr<Trajectory> t = std::shared_ptr<Trajectory>(new miam::trajectory::PointTurn(robot.getCurrentPosition(), G_PI_2));
-	traj.push_back(t);
+	//~ std::shared_ptr<Trajectory> t = std::shared_ptr<Trajectory>(new miam::trajectory::PointTurn(robot.getCurrentPosition(), G_PI_2));
+	//~ traj.push_back(t);
 	robot.setTrajectoryToFollow(traj);
 	robot.waitForTrajectoryFinished();
+
+	//~ std::vector<int> position;
+	//~ position.push_back(500.0 / G_PI / robotdimensions::wheelRadius * 600);
+	//~ position.push_back(500.0 / G_PI / robotdimensions::wheelRadius * 600);
+	//~ std::cout << "nsteps" << 500.0 / G_PI / robotdimensions::wheelRadius * 600 << std::endl;
+	//~ robot.stepperMotors_.moveNSteps(position);
 
 	g_usleep(2000000);
 	printf("done\n");

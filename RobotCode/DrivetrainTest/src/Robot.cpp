@@ -100,14 +100,12 @@ bool Robot::init()
     g_free(date);
     std::string headers = getHeaderStringList();
     // Log robot dimensions in header.
-    gchar *info = g_strdup_printf("wheelRadius:%f_wheelSpacing:%f_stepSize:%f",
-                                  robotdimensions::wheelRadius,
-                                  robotdimensions::wheelSpacing,
-                                  robotdimensions::stepSize);
+    std::string info = "wheelRadius:" + std::to_string(robotdimensions::wheelRadius) + \
+                        "_wheelSpacing:" + std::to_string(robotdimensions::wheelSpacing) + \
+                        "_stepSize:" + std::to_string(robotdimensions::stepSize);
 
-    logger_ = logger_create(filename, "Drivetrain test robot", info, headers.c_str());
+    logger_ = Logger(filename, "Drivetrain test robot", info, getHeaderStringList());
     g_free(filename);
-    g_free(info);
 
 	// Set initial positon.
 	RobotPosition initialPosition;
@@ -117,8 +115,8 @@ bool Robot::init()
 	currentPosition_.set(initialPosition);
 
 	// Set PIDs.
-	PIDLinear_ = miam::PID(0.0, 0.0, 0.0, 0.0);
-	PIDAngular_ = miam::PID(0.0, 0.0, 0.0, 0.0);
+	PIDLinear_ = miam::PID(controller::linearKp, controller::linearKd, controller::linearKi, 0.2);
+	PIDAngular_ = miam::PID(controller::rotationKp, controller::rotationKd, controller::rotationKi, 0.15);
 
 	return true;
 }
@@ -175,11 +173,21 @@ bool Robot::followTrajectory(Trajectory *traj, double const& timeInTrajectory, d
 
 	// Project along line of slope theta.
 	RobotPosition tangent(std::cos(trajectoryPoint_.position.theta), std::sin(trajectoryPoint_.position.theta), 0.0);
+	RobotPosition orthogonal(-std::sin(trajectoryPoint_.position.theta), std::cos(trajectoryPoint_.position.theta), 0.0);
 	RobotPosition colinear, normal;
 	error.projectOnto(tangent, colinear, normal);
 
-	trackingLongitudinalError_ = colinear.norm();
-	trackingTransverseError_ = normal.norm();
+	trackingLongitudinalError_ = colinear.dot(tangent);
+
+	// If trajectory has an angular velocity but no linear velocity, it's a point turn:
+	// disable corresponding position servoing.
+	if(std::abs(trajectoryPoint_.linearVelocity) > 0.1 && std::abs(trajectoryPoint_.angularVelocity) > 1e-4)
+		trackingLongitudinalError_ = 0;
+
+	trackingTransverseError_ = normal.dot(orthogonal);
+	// Change sign if going backward.
+	if(trajectoryPoint_.linearVelocity < 0)
+		trackingTransverseError_ = - trackingTransverseError_;
 	trackingAngleError_ = currentPosition.theta - trajectoryPoint_.position.theta;
 
 	// If we are beyon trajector end, look to see if we are close enough to the target point to stop.
@@ -196,12 +204,12 @@ bool Robot::followTrajectory(Trajectory *traj, double const& timeInTrajectory, d
 
 	// Compute correction terms.
 	translationMotor += PIDLinear_.computeValue(trackingLongitudinalError_, dt);
+
 	// Modify angular PID target based on transverse error, if we are going fast enough.
 	double angularPIDError = trackingAngleError_;
 	if(std::abs(trajectoryPoint_.linearVelocity) > 0.1 * robotdimensions::maxWheelSpeed)
-		angularPIDError += trajectoryPoint_.linearVelocity / robotdimensions::maxWheelSpeed * controller::transverseKp * trackingTransverseError_;
+		angularPIDError += controller::transverseKp * trajectoryPoint_.linearVelocity / robotdimensions::maxWheelSpeed * trackingTransverseError_;
 	rotationMotor += PIDAngular_.computeValue(angularPIDError, dt);
-
 
 	// Compute the resulting velocity of each wheel, in mm/s.
 	double wheelVelocity[2];
@@ -284,7 +292,7 @@ void Robot::lowLevelThread()
     std::cout << "Low-level thread started." << std::endl;
 
     // Create metronome
-    Metronome metronome = metronome_create(LOOP_PERIOD * 1e9);
+    Metronome metronome(LOOP_PERIOD * 1e9);
     currentTime_ = 0;
 
     double lastTime = 0;
@@ -293,8 +301,8 @@ void Robot::lowLevelThread()
     {
 		// Wait for next tick.
 		lastTime = currentTime_;
-		metronome_wait(&metronome);
-		currentTime_ = metronome_getTimeElapsed(metronome);
+		metronome.wait();
+		currentTime_ = metronome.getElapsedTime();
 
 		// Update arduino data.
 		uCData oldData = microcontrollerData_;
@@ -329,27 +337,27 @@ void Robot::lowLevelThread()
 
 void Robot::updateLog()
 {
-	logger_setData(&logger_, LOGGER_TIME, currentTime_);
-	logger_setData(&logger_, LOGGER_COMMAND_VELOCITY_RIGHT, motorSpeed_[RIGHT]);
-	logger_setData(&logger_, LOGGER_COMMAND_VELOCITY_LEFT, motorSpeed_[LEFT]);
-	logger_setData(&logger_, LOGGER_MOTOR_POSITION_RIGHT, motorPosition_[RIGHT]);
-	logger_setData(&logger_, LOGGER_MOTOR_POSITION_LEFT, motorPosition_[LEFT]);
-	logger_setData(&logger_, LOGGER_ENCODER_RIGHT, microcontrollerData_.encoderValues[RIGHT]);
-	logger_setData(&logger_, LOGGER_ENCODER_LEFT, microcontrollerData_.encoderValues[LEFT]);
+	logger_.setData(LOGGER_TIME, currentTime_);
+	logger_.setData(LOGGER_COMMAND_VELOCITY_RIGHT, motorSpeed_[RIGHT]);
+	logger_.setData(LOGGER_COMMAND_VELOCITY_LEFT, motorSpeed_[LEFT]);
+	logger_.setData(LOGGER_MOTOR_POSITION_RIGHT, motorPosition_[RIGHT]);
+	logger_.setData(LOGGER_MOTOR_POSITION_LEFT, motorPosition_[LEFT]);
+	logger_.setData(LOGGER_ENCODER_RIGHT, microcontrollerData_.encoderValues[RIGHT]);
+	logger_.setData(LOGGER_ENCODER_LEFT, microcontrollerData_.encoderValues[LEFT]);
 
 	RobotPosition currentPosition = currentPosition_.get();
-	logger_setData(&logger_, LOGGER_CURRENT_POSITION_X, currentPosition.x);
-	logger_setData(&logger_, LOGGER_CURRENT_POSITION_Y, currentPosition.y);
-	logger_setData(&logger_, LOGGER_CURRENT_POSITION_THETA, currentPosition.theta);
+	logger_.setData(LOGGER_CURRENT_POSITION_X, currentPosition.x);
+	logger_.setData(LOGGER_CURRENT_POSITION_Y, currentPosition.y);
+	logger_.setData(LOGGER_CURRENT_POSITION_THETA, currentPosition.theta);
 
-	logger_setData(&logger_, LOGGER_TARGET_POSITION_X, trajectoryPoint_.position.x);
-	logger_setData(&logger_, LOGGER_TARGET_POSITION_Y, trajectoryPoint_.position.y);
-	logger_setData(&logger_, LOGGER_TARGET_POSITION_THETA, trajectoryPoint_.position.theta);
-	logger_setData(&logger_, LOGGER_TARGET_LINEAR_VELOCITY, trajectoryPoint_.linearVelocity);
-	logger_setData(&logger_, LOGGER_TARGET_ANGULAR_VELOCITY, trajectoryPoint_.angularVelocity);
+	logger_.setData(LOGGER_TARGET_POSITION_X, trajectoryPoint_.position.x);
+	logger_.setData(LOGGER_TARGET_POSITION_Y, trajectoryPoint_.position.y);
+	logger_.setData(LOGGER_TARGET_POSITION_THETA, trajectoryPoint_.position.theta);
+	logger_.setData(LOGGER_TARGET_LINEAR_VELOCITY, trajectoryPoint_.linearVelocity);
+	logger_.setData(LOGGER_TARGET_ANGULAR_VELOCITY, trajectoryPoint_.angularVelocity);
 
-	logger_setData(&logger_, LOGGER_TRACKING_LONGITUDINAL_ERROR, trackingLongitudinalError_);
-	logger_setData(&logger_, LOGGER_TRACKING_TRANSVERSE_ERROR, trackingTransverseError_);
-	logger_setData(&logger_, LOGGER_TRACKING_ANGLE_ERROR, trackingAngleError_);
-	logger_writeLine(logger_);
+	logger_.setData(LOGGER_TRACKING_LONGITUDINAL_ERROR, trackingLongitudinalError_);
+	logger_.setData(LOGGER_TRACKING_TRANSVERSE_ERROR, trackingTransverseError_);
+	logger_.setData(LOGGER_TRACKING_ANGLE_ERROR, trackingAngleError_);
+	logger_.writeLine();
 }
