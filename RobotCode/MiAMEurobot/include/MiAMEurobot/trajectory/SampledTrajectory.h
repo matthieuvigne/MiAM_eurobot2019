@@ -21,7 +21,12 @@
                         double duration
                         );
 
-                    TrajectoryPoint getCurrentPoint(double const& currentTime);
+					TrajectoryPoint getCurrentPoint(double const& currentTime);
+					
+					std::vector<TrajectoryPoint > getUnderlyingPoints() 
+					{
+						return sampledTrajectory_;
+					};
 
                 private:
                     std::vector<TrajectoryPoint > sampledTrajectory_; ///< Vector of trajectory waypoints.
