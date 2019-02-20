@@ -13,7 +13,7 @@ using namespace miam;
 using namespace miam_pp;
 using namespace std;
 
-double const MAX_OCP_TIMESTEP = 0.01; ///< Max OCP timestep in s
+double const MAX_OCP_TIMESTEP = 0.02; ///< Max OCP timestep in s
                                       /// (10 ms)
 
 // TODO still unused
@@ -21,11 +21,13 @@ double const MAX_OCP_TIMESTEP = 0.01; ///< Max OCP timestep in s
 double const OCP_N_TIMESTEPS = 100; ///< Number of OCP timesteps for each
                                     /// problem instance
 
-double const NOMINAL_SPEED = 0.95 * robotdimensions::maxWheelSpeed; ///< Nominal speed
+double const NOMINAL_SPEED = 0.8 * robotdimensions::maxWheelSpeed; ///< Nominal speed
                                                                     /// of the robot
 
 trajectory::SampledTrajectory miam_pp::get_planned_trajectory_main_robot(
     WayPointList waypoint_list,
+    trajectory::TrajectoryPoint first_trajectory_point,
+    trajectory::TrajectoryPoint last_trajectory_point,
     bool plot,
     bool verbose
 ) 
@@ -127,17 +129,17 @@ trajectory::SampledTrajectory miam_pp::get_planned_trajectory_main_robot(
     f << dot(vl) == wl;
 
     ocp.subjectTo( f );
-    ocp.subjectTo( AT_START, x ==  first_position.x );
-    ocp.subjectTo( AT_START, y ==  first_position.y );
-    ocp.subjectTo( AT_START, theta ==  first_position.theta );
-    ocp.subjectTo( AT_START, vr ==  0.0 );
-    ocp.subjectTo( AT_START, vl ==  0.0 );
+    ocp.subjectTo( AT_START, x ==  first_trajectory_point.position.x );
+    ocp.subjectTo( AT_START, y ==  first_trajectory_point.position.y );
+    ocp.subjectTo( AT_START, theta ==  first_trajectory_point.position.theta );
+    ocp.subjectTo( AT_START, vr ==  first_trajectory_point.linearVelocity + robotdimensions::wheelSpacing * first_trajectory_point.angularVelocity );
+    ocp.subjectTo( AT_START, vl == first_trajectory_point.linearVelocity - robotdimensions::wheelSpacing * first_trajectory_point.angularVelocity );
 
     ocp.subjectTo( AT_END  , x ==  last_position.x );
-    ocp.subjectTo( AT_END  , y ==  last_position.y );
-    ocp.subjectTo( AT_END  , theta ==  last_position.theta );
-    ocp.subjectTo( AT_END  , vr ==  0.0 );
-    ocp.subjectTo( AT_END  , vl ==  0.0 );
+    ocp.subjectTo( AT_END  , y ==  last_trajectory_point.position.y );
+    ocp.subjectTo( AT_END  , theta ==  last_trajectory_point.position.theta );
+    ocp.subjectTo( AT_END  , vr ==  last_trajectory_point.linearVelocity + robotdimensions::wheelSpacing * last_trajectory_point.angularVelocity );
+    ocp.subjectTo( AT_END , vl == last_trajectory_point.linearVelocity - robotdimensions::wheelSpacing * last_trajectory_point.angularVelocity );
 
     ocp.subjectTo( -robotdimensions::maxWheelSpeed <= vr <= robotdimensions::maxWheelSpeed   );     // the control input u,
     ocp.subjectTo( -robotdimensions::maxWheelSpeed <= vl <= robotdimensions::maxWheelSpeed   );     // the control input u,
