@@ -8,6 +8,7 @@
 #include <MiAMEurobot/trajectory/RobotPosition.h>
 #include <MiAMEurobot/trajectory/Trajectory.h>
 #include <MiAMEurobot/trajectory/Utilities.h>
+#include <MiAMEurobot/io/IOTrajectory.h>
 
 int main( ){
     
@@ -57,6 +58,8 @@ int main( ){
         miam::trajectory::TrajectoryPoint _tp = sampled_trajectory.getCurrentPoint(i * tstep);
         std::cout << _tp.position << ", v=" << _tp.linearVelocity << ", w=" << _tp.angularVelocity << std::endl;
     }
+    
+    miam::io::writeSampledTrajectoryToFile(sampled_trajectory, "test_sample_trajectory");
 
 	return 0;
 }
