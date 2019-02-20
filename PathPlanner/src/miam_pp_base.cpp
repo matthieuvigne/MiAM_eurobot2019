@@ -177,10 +177,6 @@ trajectory::SampledTrajectory miam_pp::get_planned_trajectory_main_robot(
 	algorithm.initializeControls(u_init);
     
     algorithm.solve();
-
-    algorithm.getDifferentialStates("outputs/states.txt"    );
-    algorithm.getParameters        ("outputs/parameters.txt");
-    algorithm.getControls          ("outputs/controls.txt"  );
     
     VariablesGrid timeGrid_final;
     algorithm.getParameters(timeGrid_final);
