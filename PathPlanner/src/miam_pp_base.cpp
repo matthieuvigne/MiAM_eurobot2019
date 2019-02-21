@@ -98,11 +98,11 @@ trajectory::SampledTrajectory miam_pp::get_planned_trajectory_main_robot(
     VariablesGrid x_init(5, timeGrid);
 	VariablesGrid u_init(2, timeGrid);
     for (int j = 0; j < N+1; j++) {
-            x_init(j, 0) = resampled_waypoint_list[j].x;
-            x_init(j, 1) = resampled_waypoint_list[j].y;
+            x_init(j, 0) = resampled_waypoint_list[j].x / 1000.0;
+            x_init(j, 1) = resampled_waypoint_list[j].y / 1000.0;
             x_init(j, 2) = resampled_waypoint_list[j].theta;
-            x_init(j, 3) = NOMINAL_SPEED;
-            x_init(j, 4) = NOMINAL_SPEED;
+            x_init(j, 3) = NOMINAL_SPEED / 1000.0;
+            x_init(j, 4) = NOMINAL_SPEED / 1000.0;
 			
 			u_init(j, 0) = 0.0;
 			u_init(j, 1) = 0.0;
@@ -124,27 +124,27 @@ trajectory::SampledTrajectory miam_pp::get_planned_trajectory_main_robot(
 
     f << dot(x) == (vl + vr) * cos(theta) / 2.0;
     f << dot(y) == (vl + vr) * sin(theta) / 2.0;
-    f << dot(theta) == (vr - vl) / (2.0 * robotdimensions::wheelSpacing);
+    f << dot(theta) == (vr - vl) / (2.0 * (robotdimensions::wheelSpacing / 1000.0) );
     f << dot(vr) == wr;
     f << dot(vl) == wl;
 
     ocp.subjectTo( f );
-    ocp.subjectTo( AT_START, x ==  first_trajectory_point.position.x );
-    ocp.subjectTo( AT_START, y ==  first_trajectory_point.position.y );
+    ocp.subjectTo( AT_START, x ==  first_trajectory_point.position.x / 1000.0 );
+    ocp.subjectTo( AT_START, y ==  first_trajectory_point.position.y / 1000.0 );
     ocp.subjectTo( AT_START, theta ==  first_trajectory_point.position.theta );
-    ocp.subjectTo( AT_START, vr ==  first_trajectory_point.linearVelocity + robotdimensions::wheelSpacing * first_trajectory_point.angularVelocity );
-    ocp.subjectTo( AT_START, vl == first_trajectory_point.linearVelocity - robotdimensions::wheelSpacing * first_trajectory_point.angularVelocity );
+    ocp.subjectTo( AT_START, vr ==  first_trajectory_point.linearVelocity / 1000.0 + robotdimensions::wheelSpacing * first_trajectory_point.angularVelocity / 1000.0 );
+    ocp.subjectTo( AT_START, vl == first_trajectory_point.linearVelocity / 1000.0 - robotdimensions::wheelSpacing * first_trajectory_point.angularVelocity / 1000.0 );
 
-    ocp.subjectTo( AT_END  , x ==  last_position.x );
-    ocp.subjectTo( AT_END  , y ==  last_trajectory_point.position.y );
+    ocp.subjectTo( AT_END  , x ==  last_position.x / 1000.0 );
+    ocp.subjectTo( AT_END  , y ==  last_trajectory_point.position.y / 1000.0 );
     ocp.subjectTo( AT_END  , theta ==  last_trajectory_point.position.theta );
-    ocp.subjectTo( AT_END  , vr ==  last_trajectory_point.linearVelocity + robotdimensions::wheelSpacing * last_trajectory_point.angularVelocity );
-    ocp.subjectTo( AT_END , vl == last_trajectory_point.linearVelocity - robotdimensions::wheelSpacing * last_trajectory_point.angularVelocity );
+    ocp.subjectTo( AT_END  , vr ==  last_trajectory_point.linearVelocity / 1000.0 + robotdimensions::wheelSpacing * last_trajectory_point.angularVelocity / 1000.0 );
+    ocp.subjectTo( AT_END , vl == last_trajectory_point.linearVelocity / 1000.0 - robotdimensions::wheelSpacing * last_trajectory_point.angularVelocity / 1000.0 );
 
-    ocp.subjectTo( -robotdimensions::maxWheelSpeed <= vr <= robotdimensions::maxWheelSpeed   );     // the control input u,
-    ocp.subjectTo( -robotdimensions::maxWheelSpeed <= vl <= robotdimensions::maxWheelSpeed   );     // the control input u,
-    ocp.subjectTo( -robotdimensions::maxWheelAcceleration <= wr <= robotdimensions::maxWheelAcceleration   );     // the control input u,
-    ocp.subjectTo( -robotdimensions::maxWheelAcceleration <= wl <= robotdimensions::maxWheelAcceleration   );     // the control input u,
+    ocp.subjectTo( -robotdimensions::maxWheelSpeed / 1000.0 <= vr <= robotdimensions::maxWheelSpeed / 1000.0   );     // the control input u,
+    ocp.subjectTo( -robotdimensions::maxWheelSpeed / 1000.0 <= vl <= robotdimensions::maxWheelSpeed / 1000.0   );     // the control input u,
+    ocp.subjectTo( -robotdimensions::maxWheelAcceleration / 1000.0 <= wr <= robotdimensions::maxWheelAcceleration / 1000.0   );     // the control input u,
+    ocp.subjectTo( -robotdimensions::maxWheelAcceleration / 1000.0 <= wl <= robotdimensions::maxWheelAcceleration / 1000.0   );     // the control input u,
     ocp.subjectTo(  0.0 <= T <= 3.0 * reference_time_horizon );
     
     OptimizationAlgorithm algorithm(ocp);
@@ -170,9 +170,9 @@ trajectory::SampledTrajectory miam_pp::get_planned_trajectory_main_robot(
     }
 
     
-    algorithm.set( INTEGRATOR_TYPE      , INT_RK78        );
+    algorithm.set( INTEGRATOR_TYPE      , INT_RK4        );
     algorithm.set( INTEGRATOR_TOLERANCE , 1e-8            );
-    algorithm.set( DISCRETIZATION_TYPE  , MULTIPLE_SHOOTING );
+    algorithm.set( DISCRETIZATION_TYPE  , SINGLE_SHOOTING );
     algorithm.set( KKT_TOLERANCE        , 1e-8            );
     
     algorithm.initializeDifferentialStates(x_init);
@@ -198,11 +198,11 @@ trajectory::SampledTrajectory miam_pp::get_planned_trajectory_main_robot(
     for (int i=0; i<N+1; i++) 
     {
         trajectory::TrajectoryPoint _tp;
-        _tp.position.x = statesGrid_final(i, 0);
-        _tp.position.y = statesGrid_final(i, 1);
+        _tp.position.x = statesGrid_final(i, 0) * 1000.0;
+        _tp.position.y = statesGrid_final(i, 1) * 1000.0;
         _tp.position.theta = statesGrid_final(i, 2);
-        _tp.linearVelocity = (statesGrid_final(i, 3) + statesGrid_final(i, 4)) / 2.0;
-        _tp.angularVelocity = (statesGrid_final(i, 3) - statesGrid_final(i, 4)) / (2.0 * robotdimensions::wheelSpacing);
+        _tp.linearVelocity = (statesGrid_final(i, 3) + statesGrid_final(i, 4)) * 1000.0 / 2.0;
+        _tp.angularVelocity = (statesGrid_final(i, 3) - statesGrid_final(i, 4)) * 1000.0 / (2.0 * robotdimensions::wheelSpacing);
         output_trajectory.push_back(_tp);
     }
     
