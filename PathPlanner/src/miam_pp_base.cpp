@@ -97,6 +97,7 @@ trajectory::SampledTrajectory miam_pp::get_planned_trajectory_main_robot(
     Grid timeGrid (0.0, reference_time_horizon, N+1);
     VariablesGrid x_init(5, timeGrid);
 	VariablesGrid u_init(2, timeGrid);
+    VariablesGrid p_init(1, timeGrid );
     for (int j = 0; j < N+1; j++) {
             x_init(j, 0) = resampled_waypoint_list[j].x / 1000.0;
             x_init(j, 1) = resampled_waypoint_list[j].y / 1000.0;
@@ -107,6 +108,7 @@ trajectory::SampledTrajectory miam_pp::get_planned_trajectory_main_robot(
 			u_init(j, 0) = 0.0;
 			u_init(j, 1) = 0.0;
 		}
+    p_init(0, 0) = reference_time_horizon;
     
     //std::cout << "Initial values:" << std::endl;
 	//x_init.print();
@@ -177,6 +179,7 @@ trajectory::SampledTrajectory miam_pp::get_planned_trajectory_main_robot(
     
     algorithm.initializeDifferentialStates(x_init);
 	algorithm.initializeControls(u_init);
+	algorithm.initializeParameters(p_init);
     
     algorithm.solve();
     
@@ -215,6 +218,15 @@ trajectory::SampledTrajectory miam_pp::get_planned_trajectory_main_robot(
     //shared_ptr<trajectory::SampledTrajectory > output(new );
     
     //cout << "final time " << output->getDuration() << endl;
+    
+    // Reset static ACADO counters
+    Control dummy1;
+    DifferentialState dummy2;
+    Parameter dummy3;
+
+    dummy1.clearStaticCounters();
+    dummy2.clearStaticCounters();
+    dummy3.clearStaticCounters();
     
     return trajectory::SampledTrajectory(output_trajectory, final_time);
 }
