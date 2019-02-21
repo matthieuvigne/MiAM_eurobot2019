@@ -2,7 +2,7 @@
 /// \brief Test various sensors.
 ///
 /// \details
-///	\note	Feb, 7th 2018
+///    \note    Feb, 7th 2018
 
 // Include BBBEurobot library.
 #include <BBBEurobot/BBBEurobot.h>
@@ -11,11 +11,11 @@
 /// \brief Tests IMU.
 ///
 /// \details This function inits the IMU, and if successful, prints read
-///	values for TEST_TIME_MICROSECONDS microseconds.
+///    values for TEST_TIME_MICROSECONDS microseconds.
 ///
 ///
 /// \param[in] adapter Pointer to a valid I2CAdapter to choose the I2C
-///				port (as returned by the i2c_open function, see I2C-Wrapper.h).
+///                port (as returned by the i2c_open function, see I2C-Wrapper.h).
 /// \param[in] testDuration Duration of the test (in seconds).
 void testIMU(I2CAdapter* adapter, double testDuration);
 
@@ -28,7 +28,7 @@ void testIMU(I2CAdapter* adapter, double testDuration);
 ///
 /// \param[in] portName Name of the SPI port
 /// \param[in] portName Name of the port, in the file system (i.e. a
-///	string "/dev/spidevx").
+///    string "/dev/spidevx").
 /// \param[in] testDuration Duration of the test (in seconds).
 void testMouse(gchar *portName, double testDuration);
 
@@ -36,11 +36,11 @@ void testMouse(gchar *portName, double testDuration);
 /// \brief Tests color sensor.
 ///
 /// \details This function inits the color sensor, and if successful,
-///	prints read values for test_duration microseconds.
+///    prints read values for test_duration microseconds.
 ///
 ///
 /// \param[in] adapter Pointer to a valid I2CAdapter to choose the I2C
-///	port (as returned by the i2c_open function, see I2C-Wrapper.h).
+///    port (as returned by the i2c_open function, see I2C-Wrapper.h).
 /// \param[in] testDuration Duration of the test (in seconds).
 void testColor(I2CAdapter* adapter, double testDuration);
 
@@ -50,11 +50,11 @@ void testColor(I2CAdapter* adapter, double testDuration);
 /// \details This function inits the LCD screen, and if successful,
 /// writes something on the screen on the two lines alternatively each
 /// 1 second, changes the color and monitor button pressed for
-///	test_duration microseconds.
+///    test_duration microseconds.
 ///
 ///
 /// \param[in] adapter Pointer to a valid I2CAdapter to choose the I2C
-///	port (as returned by the i2c_open function, see I2C-Wrapper.h).
+///    port (as returned by the i2c_open function, see I2C-Wrapper.h).
 /// \param[in] address Address of the I2C LCD screen.
 /// \param[in] testDuration Duration of the test (in seconds).
 void testLCD(I2CAdapter* adapter, double testDuration);

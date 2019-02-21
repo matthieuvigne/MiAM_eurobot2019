@@ -1,7 +1,7 @@
 #include "ServoHandler.h"
 
 // Servo config: port defintion.
-int const SERVO_TUBE[3] = {0, 1, 2};	// Numbered from right to left.
+int const SERVO_TUBE[3] = {0, 1, 2};    // Numbered from right to left.
 int const SERVO_SUCTION[3] = {6, 7, 8};
 
 int const SERVO_TAP = 12;
@@ -29,21 +29,21 @@ ServoHandler::ServoHandler()
 
 bool ServoHandler::init(std::string const& portName)
 {
-	return maestro_.init(portName);
+    return maestro_.init(portName);
 }
 
 
 void ServoHandler::openTube(int tubeNumber)
 {
-	if (tubeNumber < 0 || tubeNumber > 2)
-		return;
-	maestro_.setPosition(SERVO_TUBE[tubeNumber], 1500);
+    if (tubeNumber < 0 || tubeNumber > 2)
+        return;
+    maestro_.setPosition(SERVO_TUBE[tubeNumber], 1500);
 }
 
 
 void ServoHandler::closeTube(int tubeNumber)
 {
-	if (tubeNumber < 0 || tubeNumber > 2)
-		return;
-	maestro_.setPosition(SERVO_TUBE[tubeNumber], 1500);
+    if (tubeNumber < 0 || tubeNumber > 2)
+        return;
+    maestro_.setPosition(SERVO_TUBE[tubeNumber], 1500);
 }

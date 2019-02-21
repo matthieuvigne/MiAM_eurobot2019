@@ -33,74 +33,74 @@ volatile unsigned int *gpio_register;
 
 bool RPi_enableGPIO()
 {
-	// Open /dev/mem and connect to it.
-	int memoryFile = open("/dev/gpiomem", O_RDWR|O_SYNC);
-	if(memoryFile < 0)
-	{
-		#ifdef DEBUG
-			std::cout << "Error opening /dev/gpiomem: " << errno << " " << strerror(errno) << std::endl;
-		#endif
-		return false;
-	}
+    // Open /dev/mem and connect to it.
+    int memoryFile = open("/dev/gpiomem", O_RDWR|O_SYNC);
+    if(memoryFile < 0)
+    {
+        #ifdef DEBUG
+            std::cout << "Error opening /dev/gpiomem: " << errno << " " << strerror(errno) << std::endl;
+        #endif
+        return false;
+    }
 
-	// Map GPIO peripheral into memory. Second argument is block size, fifth is /dev/mem file, GPIO_BASE_ADDRESS gives
-	// the target address.
-	void *map = mmap(NULL, 4096, PROT_READ | PROT_WRITE, MAP_SHARED, memoryFile, GPIO_BASE_ADDRESS);
+    // Map GPIO peripheral into memory. Second argument is block size, fifth is /dev/mem file, GPIO_BASE_ADDRESS gives
+    // the target address.
+    void *map = mmap(NULL, 4096, PROT_READ | PROT_WRITE, MAP_SHARED, memoryFile, GPIO_BASE_ADDRESS);
 
-	if(map == MAP_FAILED)
-	{
-		#ifdef DEBUG
-			std::cout << "Error mapping GPIO memory: " << errno << " " << strerror(errno) << std::endl;
-		#endif
-		return false;
-	}
+    if(map == MAP_FAILED)
+    {
+        #ifdef DEBUG
+            std::cout << "Error mapping GPIO memory: " << errno << " " << strerror(errno) << std::endl;
+        #endif
+        return false;
+    }
 
-	// Make gpio_register point to this address.
-	gpio_register = (volatile unsigned int *)map;
-	return true;
+    // Make gpio_register point to this address.
+    gpio_register = (volatile unsigned int *)map;
+    return true;
 }
 
 void RPi_setupGPIO(unsigned int const& gpioPin, PiGPIOMode const& direction)
 {
-	// Check that GPIO number is valid.
-	if(gpioPin < 4 || gpioPin > 26)
-		return;
-	// GPFSELn register corresponding to the current pin: set the three corresponding bits to 0.
-	*(gpio_register + (gpioPin/10)) &=  ~( 0b111 << ((gpioPin % 10)*3));
-	// If defined as output, set corresponding bits to 001
-	if(direction == PI_GPIO_OUTPUT)
-		*(gpio_register + (gpioPin/10)) |= 0b001 << ((gpioPin % 10)*3);
-	// Setup pullups.
-	// Setup GPPUD register.
-	*(gpio_register + GPPUD) = 0;
-	if(direction == PI_GPIO_INPUT_PULLUP)
-		*(gpio_register + GPPUD) = 0b10;
-	else if(direction == PI_GPIO_INPUT_PULLDOWN)
-		*(gpio_register + GPPUD) = 0b01;
-	usleep(1);
-	// Pulse corresponding GPPUDCLK bit.
-	*(gpio_register + GPPUDCLK0) |= 1 << gpioPin;
-	usleep(1);
-	*(gpio_register + GPPUDCLK0) &= ~(1 << gpioPin);
+    // Check that GPIO number is valid.
+    if(gpioPin < 4 || gpioPin > 26)
+        return;
+    // GPFSELn register corresponding to the current pin: set the three corresponding bits to 0.
+    *(gpio_register + (gpioPin/10)) &=  ~( 0b111 << ((gpioPin % 10)*3));
+    // If defined as output, set corresponding bits to 001
+    if(direction == PI_GPIO_OUTPUT)
+        *(gpio_register + (gpioPin/10)) |= 0b001 << ((gpioPin % 10)*3);
+    // Setup pullups.
+    // Setup GPPUD register.
+    *(gpio_register + GPPUD) = 0;
+    if(direction == PI_GPIO_INPUT_PULLUP)
+        *(gpio_register + GPPUD) = 0b10;
+    else if(direction == PI_GPIO_INPUT_PULLDOWN)
+        *(gpio_register + GPPUD) = 0b01;
+    usleep(1);
+    // Pulse corresponding GPPUDCLK bit.
+    *(gpio_register + GPPUDCLK0) |= 1 << gpioPin;
+    usleep(1);
+    *(gpio_register + GPPUDCLK0) &= ~(1 << gpioPin);
 }
 
 void RPi_writeGPIO(unsigned int const& gpioPin, bool const& value)
 {
-	// Check that GPIO number is valid.
-	if(gpioPin < 4 || gpioPin > 26)
-		return;
+    // Check that GPIO number is valid.
+    if(gpioPin < 4 || gpioPin > 26)
+        return;
 
-	if(value == LOW)
-		*(gpio_register + GPCLR0) |= 1 << gpioPin;
-	else
-		*(gpio_register + GPSET0) |= 1 << gpioPin;
+    if(value == LOW)
+        *(gpio_register + GPCLR0) |= 1 << gpioPin;
+    else
+        *(gpio_register + GPSET0) |= 1 << gpioPin;
 }
 
 bool RPi_readGPIO(unsigned int const& gpioPin)
 {
-	// Check that GPIO number is valid.
-	if(gpioPin < 4 || gpioPin > 26)
-		return LOW;
-	// Get corresponding bit from GPLEV0
-	return (*(gpio_register + GPLEV0) & (1 << gpioPin) ? HIGH : LOW);
+    // Check that GPIO number is valid.
+    if(gpioPin < 4 || gpioPin > 26)
+        return LOW;
+    // Get corresponding bit from GPLEV0
+    return (*(gpio_register + GPLEV0) & (1 << gpioPin) ? HIGH : LOW);
 }

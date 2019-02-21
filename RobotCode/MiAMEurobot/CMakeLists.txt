@@ -12,11 +12,11 @@ option(CROSS_COMPILE "True to cross compile to arm, false to compile on current 
 # Set compiler and library name.
 
 if(CROSS_COMPILE)
-	set(CMAKE_CXX_COMPILER "arm-linux-gnueabihf-g++")
-	set(LIBRARY_NAME ${PROJECT_NAME})
+    set(CMAKE_CXX_COMPILER "arm-linux-gnueabihf-g++")
+    set(LIBRARY_NAME ${PROJECT_NAME})
 else()
-	set(CMAKE_CXX_COMPILER "g++")
-	set(LIBRARY_NAME ${PROJECT_NAME}_intel)
+    set(CMAKE_CXX_COMPILER "g++")
+    set(LIBRARY_NAME ${PROJECT_NAME}_intel)
 endif()
 
 # Set compiler flags.
@@ -25,11 +25,11 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -Wall -fdiagnostics-color -lpthread -lm")
 
 # Set build-type specific flags
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-	message("Build mode: debug.")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ggdb -DDEBUG")
+    message("Build mode: debug.")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ggdb -DDEBUG")
 else (CMAKE_BUILD_TYPE STREQUAL "Debug")
-	message("Build mode: release build - optimization enabled.")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
+    message("Build mode: release build - optimization enabled.")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
 endif (CMAKE_BUILD_TYPE STREQUAL "Debug")
 
 # Specify library content :
@@ -49,9 +49,9 @@ find_package(PkgConfig REQUIRED)
 unset(RPLIDARLIB_FOUND CACHE)
 # Link to rplidar library (take the correct version depending on wheather we are cross-compiling or not).
 if(CROSS_COMPILE)
-	pkg_search_module(RPLIDARLIB REQUIRED rplidar)
+    pkg_search_module(RPLIDARLIB REQUIRED rplidar)
 else()
-	pkg_search_module(RPLIDARLIB REQUIRED rplidar_intel)
+    pkg_search_module(RPLIDARLIB REQUIRED rplidar_intel)
 endif()
 message(STATUS "Found rplidar v." ${RPLIDARLIB_VERSION})
 

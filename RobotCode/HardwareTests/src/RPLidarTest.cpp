@@ -6,21 +6,21 @@
 
 int main(int argc, char **argv)
 {
-	std::cout << "RPLIDAR A2 test." << std::endl;
-	std::cout << "Requierments: RPLIDAR plugged into any usb port of Raspberry Pi." << std::endl;
+    std::cout << "RPLIDAR A2 test." << std::endl;
+    std::cout << "Requierments: RPLIDAR plugged into any usb port of Raspberry Pi." << std::endl;
 
-	RPLidarHandler lidar;
-	if(!lidar.init("/dev/ttyUSB0"))
-	{
-		std::cout << "Failed to talk to RPLidar" << std::endl;
-		return -1;
-	}
+    RPLidarHandler lidar;
+    if(!lidar.init("/dev/ttyUSB0"))
+    {
+        std::cout << "Failed to talk to RPLidar" << std::endl;
+        return -1;
+    }
 
-	for(int i = 0; i < 10; i ++)
-	{
-		lidar.update();
-		std::cout << lidar.debuggingBuffer_[lidar.debuggingBufferPosition_].theta << " " << lidar.debuggingBuffer_[lidar.debuggingBufferPosition_].r << std::endl;
-		usleep(1000000);
-	}
-	return 0;
+    for(int i = 0; i < 10; i ++)
+    {
+        lidar.update();
+        std::cout << lidar.debuggingBuffer_[lidar.debuggingBufferPosition_].theta << " " << lidar.debuggingBuffer_[lidar.debuggingBufferPosition_].r << std::endl;
+        usleep(1000000);
+    }
+    return 0;
 }

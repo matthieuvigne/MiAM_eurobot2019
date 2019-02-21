@@ -18,74 +18,74 @@ const int CAPE_LED[CAPE_N_LED] = {47, 46};
 // Internal function : access the cape manager to check if Eurobot cape is enabled. Exits if file access is not granted.
 bool isEurobotEnabled()
 {
-	// Look in slots file if the Eurobot overlay is already enabled.
-	std::ifstream file("/sys/devices/bone_capemgr.9/slots");
-	if(!file.is_open())
-	{
-		printf("Enabling serial ports failed: cannot open cape manager (/sys/devices/bone_capemgr.9/slots).\n");
-		exit(0);
-	}
+    // Look in slots file if the Eurobot overlay is already enabled.
+    std::ifstream file("/sys/devices/bone_capemgr.9/slots");
+    if(!file.is_open())
+    {
+        printf("Enabling serial ports failed: cannot open cape manager (/sys/devices/bone_capemgr.9/slots).\n");
+        exit(0);
+    }
 
-	bool isEurobotEnabled = false;
-	// Check if the overlay is already enabled
-	while (!file.eof())
-	{
-		std::string line;
-		getline(file, line);
-		if(line.find("Eurobot") != std::string::npos)
-		{
-			isEurobotEnabled = true;
-			break;
-		}
-	}
-	file.close();
-	return isEurobotEnabled;
+    bool isEurobotEnabled = false;
+    // Check if the overlay is already enabled
+    while (!file.eof())
+    {
+        std::string line;
+        getline(file, line);
+        if(line.find("Eurobot") != std::string::npos)
+        {
+            isEurobotEnabled = true;
+            break;
+        }
+    }
+    file.close();
+    return isEurobotEnabled;
 }
 
 
 void BBB_enableCape()
 {
-	// Check if the overlay is already enabled.
-	if(!isEurobotEnabled())
-	{
-		std::string overlayFile = "/lib/firmware/Eurobot-00A0.dtbo";
-		// Else, let us first check that the overlay file exists.
-		std::ifstream f(overlayFile);
-		if (!f.good())
-		{
-			printf("Enabling serial ports failed: cannot find overlay (%s).\n", overlayFile);
-			exit(-1);
-		}
-		// Enable the overlay.
-		system("echo Eurobot > /sys/devices/bone_capemgr.9/slots");
+    // Check if the overlay is already enabled.
+    if(!isEurobotEnabled())
+    {
+        std::string overlayFile = "/lib/firmware/Eurobot-00A0.dtbo";
+        // Else, let us first check that the overlay file exists.
+        std::ifstream f(overlayFile);
+        if (!f.good())
+        {
+            printf("Enabling serial ports failed: cannot find overlay (%s).\n", overlayFile);
+            exit(-1);
+        }
+        // Enable the overlay.
+        system("echo Eurobot > /sys/devices/bone_capemgr.9/slots");
 
-		// Check that the overlay is indeed enabled.
-		if(!isEurobotEnabled())
-		{
-			printf("Enabling serial ports failed: unknown error.\n");
-			exit(-1);
-		}
-	}
+        // Check that the overlay is indeed enabled.
+        if(!isEurobotEnabled())
+        {
+            printf("Enabling serial ports failed: unknown error.\n");
+            exit(-1);
+        }
+    }
 
-	// Open file descriptors for I2C interfaces.
-	bool i2cStarted = i2c_open(&I2C_1, "/dev/i2c-1");
-	i2cStarted &= i2c_open(&I2C_2, "/dev/i2c-2");
-	if(!i2cStarted)
-	{
-		printf("Could not open I2C port; perhaps overlay file is invalid ? Exiting...\n");
-		exit(-1);
-	}
-	// Analog ports do not need to be enable.
-	// Set all exposed GPIOs as input, except LEDs which should be outputs, set to low.
-	for(int i = 0; i < CAPE_N_DIGITAL; i++)
-		gpio_exportPin(CAPE_DIGITAL[i], "in");
+    // Open file descriptors for I2C interfaces.
+    bool i2cStarted = i2c_open(&I2C_1, "/dev/i2c-1");
+    i2cStarted &= i2c_open(&I2C_2, "/dev/i2c-2");
+    if(!i2cStarted)
+    {
+        printf("Could not open I2C port; perhaps overlay file is invalid ? Exiting...\n");
+        exit(-1);
+    }
+    // Analog ports do not need to be enable.
+    // Set all exposed GPIOs as input, except LEDs which should be outputs, set to low.
+    for(int i = 0; i < CAPE_N_DIGITAL; i++)
+        gpio_exportPin(CAPE_DIGITAL[i], "in");
 
-	for(int i = 0; i < CAPE_N_LED; i++)
-	{
-		gpio_exportPin(CAPE_LED[i], "out");
-		gpio_digitalWrite(CAPE_LED[i], 0);
-	}
+    for(int i = 0; i < CAPE_N_LED; i++)
+    {
+        gpio_exportPin(CAPE_LED[i], "out");
+        gpio_digitalWrite(CAPE_LED[i], 0);
+    }
 
-	// Init analog readers.
-	gpio_initAnalogReaders();
+    // Init analog readers.
+    gpio_initAnalogReaders();
 }

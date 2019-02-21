@@ -9,16 +9,16 @@ I2CAdapter RPI_I2C;
 
 void RPi_enablePorts()
 {
-	// Open file descriptors for I2C interfaces.
-	bool i2cStarted = i2c_open(&RPI_I2C, "/dev/i2c-1");
-	if(!i2cStarted)
-	{
-		printf("Could not open I2C port; perhaps I2C is not enabled? Exiting...\n");
-		exit(-1);
-	}
-	if(!RPi_enableGPIO())
-	{
-		printf("Error accessing GPIO ports. Exiting...\n");
-		exit(-1);
-	}
+    // Open file descriptors for I2C interfaces.
+    bool i2cStarted = i2c_open(&RPI_I2C, "/dev/i2c-1");
+    if(!i2cStarted)
+    {
+        printf("Could not open I2C port; perhaps I2C is not enabled? Exiting...\n");
+        exit(-1);
+    }
+    if(!RPi_enableGPIO())
+    {
+        printf("Error accessing GPIO ports. Exiting...\n");
+        exit(-1);
+    }
 }
