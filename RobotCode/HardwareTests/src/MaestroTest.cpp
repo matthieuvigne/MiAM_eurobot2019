@@ -15,12 +15,23 @@ int main(int argc, char **argv)
 		return -1;
 	}
 
-	std::cout << "Moving servo 0" << std::endl;
-	maestro.setPosition(0, 1000);
-	usleep(1000000);
-	maestro.setPosition(0, 2000);
-	usleep(1000000);
-	maestro.setPosition(0, 1500);
-	usleep(1000000);
-	maestro.setPosition(0, 0);
+	int servoToTest = 14;
+	std::cout << "Moving servo " << servoToTest << std::endl;
+	//~ maestro.setPosition(servoToTest, 1050);
+	//~ usleep(1000000);
+	//~ maestro.setPosition(servoToTest, 1980);
+	//~ usleep(10000000);
+	//~ maestro.setPosition(servoToTest, 1500);
+	//~ usleep(1000000);
+	//~ maestro.setPosition(servoToTest, 0);
+
+	maestro.setPosition(14, 1980);
+
+	maestro.setPosition(6, 1840);
+	maestro.setPosition(8, 1850);
+	usleep(10000000);
+	maestro.setPosition(14, 0);
+
+	maestro.setPosition(6, 1600);
+	maestro.setPosition(8, 1600);
 }

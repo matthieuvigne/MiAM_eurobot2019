@@ -90,6 +90,10 @@ Robot::Robot():
 	motorSpeed_.push_back(0.0);
 	motorPosition_.push_back(0);
 	motorPosition_.push_back(0);
+	kinematics_ = DrivetrainKinematics(robotdimensions::wheelRadius,
+			                          robotdimensions::wheelSpacing,
+			                          robotdimensions::encoderWheelRadius,
+			                          robotdimensions::encoderWheelSpacing);
 }
 
 bool Robot::init()
@@ -158,11 +162,11 @@ bool Robot::followTrajectory(Trajectory *traj, double const& timeInTrajectory, d
 	trajectoryPoint_ = traj->getCurrentPoint(timeInTrajectory);
 
 	// Compute targets for rotation and translation motors.
-	double translationMotor, rotationMotor;
+	BaseSpeed targetSpeed;
 
 	// Feedforward.
-	translationMotor = trajectoryPoint_.linearVelocity;
-	rotationMotor = trajectoryPoint_.angularVelocity;
+	targetSpeed.linear = trajectoryPoint_.linearVelocity;
+	targetSpeed.angular = trajectoryPoint_.angularVelocity;
 
 	// Compute error.
 	RobotPosition currentPosition = currentPosition_.get();
@@ -203,21 +207,20 @@ bool Robot::followTrajectory(Trajectory *traj, double const& timeInTrajectory, d
 	}
 
 	// Compute correction terms.
-	translationMotor += PIDLinear_.computeValue(trackingLongitudinalError_, dt);
+	targetSpeed.linear += PIDLinear_.computeValue(trackingLongitudinalError_, dt);
 
 	// Modify angular PID target based on transverse error, if we are going fast enough.
 	double angularPIDError = trackingAngleError_;
 	if(std::abs(trajectoryPoint_.linearVelocity) > 0.1 * robotdimensions::maxWheelSpeed)
 		angularPIDError += controller::transverseKp * trajectoryPoint_.linearVelocity / robotdimensions::maxWheelSpeed * trackingTransverseError_;
-	rotationMotor += PIDAngular_.computeValue(angularPIDError, dt);
+	targetSpeed.angular += PIDAngular_.computeValue(angularPIDError, dt);
 
-	// Compute the resulting velocity of each wheel, in mm/s.
-	double wheelVelocity[2];
-	wheelVelocity[RIGHT] = translationMotor + robotdimensions::wheelSpacing * rotationMotor;
-	wheelVelocity[LEFT] = translationMotor - robotdimensions::wheelSpacing * rotationMotor;
+	// Convert from base velocity to motor wheel velocity.
+	WheelSpeed wheelSpeed = kinematics_.inverseKinematics(targetSpeed);
 
-	for(int i = 0; i < 2; i++)
-		motorSpeed_[i] = wheelVelocity[i] / robotdimensions::wheelRadius / robotdimensions::stepSize;
+	// Convert to motor unit.
+	motorSpeed_[RIGHT] = wheelSpeed.right / robotdimensions::stepSize;
+	motorSpeed_[LEFT] = wheelSpeed.left / robotdimensions::stepSize;
 
 	return false;
 }
@@ -311,26 +314,20 @@ void Robot::lowLevelThread()
 		// Update motor position.
 		motorPosition_ = stepperMotors_.getPosition();
 
-		double dt = currentTime_ - lastTime;
 
-		// Estimate angle.
-		double encoderIncrement[2];
-		for(int i = 0; i < 2; i++)
-			encoderIncrement[i] = (microcontrollerData_.encoderValues[i] - oldData.encoderValues[i]) * robotdimensions::encoderWheelRadius;
+		// Update position through integration of encoders measurements.
+		WheelSpeed encoderIncrement;
+		encoderIncrement.right = microcontrollerData_.encoderValues[RIGHT] - oldData.encoderValues[RIGHT];
+		encoderIncrement.left = microcontrollerData_.encoderValues[LEFT] - oldData.encoderValues[LEFT];
 
-		double tanTheta = (encoderIncrement[RIGHT] - encoderIncrement[LEFT]) / robotdimensions::encoderWheelSpacing / 2.0;
-
-		// Update position.
 		RobotPosition currentPosition = currentPosition_.get();
-		currentPosition.theta += atan(tanTheta);
-		// Integrate angle estimation on X and Y.
-		double linearIncrement = 1 / 2.0 * (encoderIncrement[LEFT] + encoderIncrement[RIGHT]);
-		currentPosition.x += linearIncrement * std::cos(currentPosition.theta);
-		// Minus sign: the frame is indirect.
-		currentPosition.y -= linearIncrement * std::sin(currentPosition.theta);
+		kinematics_.integratePosition(encoderIncrement, currentPosition);
 		currentPosition_.set(currentPosition);
 
+		// Perform trajectory tracking.
+		double dt = currentTime_ - lastTime;
 		updateTrajectoryFollowingTarget(dt);
+		// Update log.
 		updateLog();
     }
 }

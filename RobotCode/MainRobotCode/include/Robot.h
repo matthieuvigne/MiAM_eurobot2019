@@ -23,6 +23,7 @@
 	#include <mutex>
 
 	#include "uCListener.h"
+	#include "ServoHandler.h"
 
 	// Right and left macros, for array addressing.
 	#define RIGHT 0
@@ -107,6 +108,7 @@
 	{
 		public:
 			miam::L6470 stepperMotors_; ///< Robot driving motors.
+			ServoHandler servos_; ///< Interface for the servo driver.
 
 			/// \brief Constructor: do nothing for now.
 			Robot();
@@ -170,7 +172,6 @@
 
 			// Current robot status.
 			ProtectedPosition currentPosition_; ///< Current robot position, thread-safe.
-			std::mutex positionMutex_;	///< Mutex for writing to currentPosition_
 			miam::trajectory::TrajectoryPoint trajectoryPoint_; ///< Current trajectory point.
 			double currentTime_; ///< Current robot time, counted by low-level thread.
 			std::vector<double> motorSpeed_; ///< Current motor speed.
@@ -194,6 +195,9 @@
 			// Tracking PIDs
 			miam::PID PIDLinear_; ///< Longitudinal PID.
 			miam::PID PIDAngular_; ///< Angular PID.
+
+			// Kinematics
+			DrivetrainKinematics kinematics_;
 	};
 
 	extern Robot robot;	///< The robot instance, representing the current robot.
