@@ -16,7 +16,6 @@
     #include <math.h>
     #include <stdlib.h>
     #include <stdio.h>
-    #include <glib.h>
 
     #include <memory>
     #include <vector>
@@ -71,7 +70,7 @@
         double const encoderWheelRadius = 25.3; ///< Radius of encoder wheels, in mm.
         double const encoderWheelSpacing = 133.0; ///< Encoder wheel spacing from robot center, in mm.
 
-        double const stepSize = 2 * G_PI / 600.0; ///< Size of a motor step, in rad.
+        double const stepSize = 2 * M_PI / 600.0; ///< Size of a motor step, in rad.
 
         double const maxWheelSpeed = 400; ///< Maximum wheel speed, in mm/s.
         double const maxWheelAcceleration = 400; ///< Maximum wheel acceleration, in mm/s^2.

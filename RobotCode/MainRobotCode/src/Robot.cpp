@@ -4,6 +4,8 @@
 
 #include <algorithm>
 #include <string>
+#include <unistd.h>
+#include <ctime>
 
 // Update loop frequency
 const double LOOP_PERIOD = 0.010;
@@ -56,7 +58,7 @@ std::string enumToHeaderString(std::string const& s)
     // Put it in lowercase.
     std::transform(outputString.begin(), outputString.end(), outputString.begin(), ::tolower);
     //Iterate over string, looking for underscores.
-    for(int i = 0; i < outputString.length(); i++)
+    for(unsigned int i = 0; i < outputString.length(); i++)
     {
         if(outputString[i] == '_')
         {
@@ -99,9 +101,10 @@ Robot::Robot():
 bool Robot::init()
 {
     // Create logger.
-    gchar *date = g_date_time_format(g_date_time_new_now_local(), "%Y%m%dT%H%M%SZ");
-    gchar *filename = g_strdup_printf("log%s.csv", date);
-    g_free(date);
+    std::time_t t = std::time(nullptr);
+    char timestamp[100];
+    std::strftime(timestamp, sizeof(timestamp), "%A %c", std::localtime(&t));
+    std::string filename = "log" + std::string(timestamp) + ".csv";
     std::string headers = getHeaderStringList();
     // Log robot dimensions in header.
     std::string info = "wheelRadius:" + std::to_string(robotdimensions::wheelRadius) + \
@@ -109,7 +112,6 @@ bool Robot::init()
                         "_stepSize:" + std::to_string(robotdimensions::stepSize);
 
     logger_ = Logger(filename, "Drivetrain test robot", info, getHeaderStringList());
-    g_free(filename);
 
     // Set initial positon.
     RobotPosition initialPosition;
@@ -151,8 +153,8 @@ void Robot::setTrajectoryToFollow(std::vector<std::shared_ptr<Trajectory>> const
 bool Robot::waitForTrajectoryFinished()
 {
     while(currentTrajectories_.size() > 0)
-        g_usleep(2.0 * 1000000 * LOOP_PERIOD);
-    return TRUE;
+        usleep(2.0 * 1000000 * LOOP_PERIOD);
+    return true;
 }
 
 
@@ -300,7 +302,7 @@ void Robot::lowLevelThread()
 
     double lastTime = 0;
 
-    while(TRUE)
+    while(true)
     {
         // Wait for next tick.
         lastTime = currentTime_;

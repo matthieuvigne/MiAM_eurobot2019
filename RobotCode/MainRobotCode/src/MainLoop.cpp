@@ -5,6 +5,10 @@
 #include "Robot.h"
 
 #include <iostream>
+#include <thread>
+#include <stdlib.h>
+#include <unistd.h>
+#include <signal.h>
 
 Robot robot;
 
@@ -17,16 +21,11 @@ const int MOTOR_BEMF[4] = {0x3B, 0x1430, 0x22, 0x53};
 void killCode(int x)
 {
     robot.stepperMotors_.hardStop();
-    g_usleep(50000);
+    usleep(50000);
     robot.stepperMotors_.highZ();
     exit(0);
 }
 
-void *startLowLevelThread(void *)
-{
-    robot.lowLevelThread();
-    return 0;
-}
 
 int main(int argc, char **argv)
 {
@@ -35,7 +34,7 @@ int main(int argc, char **argv)
     signal(SIGTERM, killCode);
 
     // Init raspberry serial ports and GPIO.
-    //~ RPi_enablePorts();
+    RPi_enablePorts();
 
     // Init robot - this only creates the log for now.
     robot.init();
@@ -65,12 +64,11 @@ int main(int argc, char **argv)
     }
 
     // Init communication with arduino.
-    uCListener_startListener("/dev/ttyACM0");
-    g_usleep(2000000);
-
+    std::thread listenerThread(uCListener_listenerThread, "/dev/ttyACM0");
+    usleep(2000000);
 
     // Start low-level thread.
-    g_thread_new("LowLevel", startLowLevelThread, NULL);
+    std::thread lowLevelThread(&Robot::lowLevelThread, &robot);
 
     // Servo along a trajectory.
     RobotPosition endPosition = robot.getCurrentPosition();
@@ -90,9 +88,9 @@ int main(int argc, char **argv)
     //~ std::cout << "nsteps" << 500.0 / G_PI / robotdimensions::wheelRadius * 600 << std::endl;
     //~ robot.stepperMotors_.moveNSteps(position);
 
-    g_usleep(2000000);
+    usleep(2000000);
     printf("done\n");
-    while(TRUE) ;;
+    while(true) ;;
     return 0;
 }
 

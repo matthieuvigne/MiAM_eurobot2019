@@ -4,43 +4,46 @@
 #include <unistd.h>
 #include <errno.h>
 #include <stdlib.h>
+#include <mutex>
+#include <thread>
+
+#include <cmath>
 
 // Length of the message to receive from the uC.
 // The message consists of two 0xFF 0xFF bytes, then n bytes.
 #define MESSAGE_LENGTH 5
 
 // Encoder resolution: ticks to rad.
-const double ENCODER_RESOLUTION = 2 * G_PI / (1024 * 4);
+const double ENCODER_RESOLUTION = 2 * M_PI / (1024 * 4);
 
 // Global variables: a uCData struct protected by a mutex.
-GMutex uCMutex;
+std::mutex uCMutex;
 uCData listenerData;
 
 // State in the message:
-gboolean lastWasFF = 0; //If the last byte was a 0xFF byte.
+bool lastWasFF = false; //If the last byte was a 0xFF byte.
 int positionInMessage = -1;    // Where we are currently writting in the buffer.
 unsigned char buffer[MESSAGE_LENGTH];
 
 // For encoder: last value.
 int16_t lastEncoderValue[2] = {0, 0};
 // First read: take current value as 0.
-gboolean isFirstRead = TRUE;
+bool isFirstRead = true;
 
-void *listenerThread(void *portName)
+void uCListener_listenerThread(std::string const& portName)
 {
     // Init data structure.
     listenerData.encoderValues[0] = 0.0;
     listenerData.encoderValues[1] = 0.0;
 
     // Open communication
-    std::string name = static_cast<char*>(portName);
-    int port = uart_open(name, B1000000);
+    int port = uart_open(portName, B1000000);
     if(port < 0)
     {
         printf("Failed to initialize listener port. Terminating.\n");
         exit(0);
     }
-    while(TRUE)
+    while(true)
     {
         // Read a single byte from the serial port.
         unsigned char lastData = 0;
@@ -66,7 +69,7 @@ void *listenerThread(void *portName)
                 if(positionInMessage == MESSAGE_LENGTH)
                 {
                     // Reset status.
-                    lastWasFF = FALSE;
+                    lastWasFF = false;
                     positionInMessage = -1;
 
                     // Verify checksum.
@@ -90,7 +93,7 @@ void *listenerThread(void *portName)
 
                             if(isFirstRead)
                             {
-                                isFirstRead = FALSE || (i == 0);
+                                isFirstRead = false || (i == 0);
                                 lastEncoderValue[i] = encoderValue;
                             }
                             // Determine the direction of the encoder from the shortest travel possible (i.e. we assume
@@ -103,29 +106,23 @@ void *listenerThread(void *portName)
                             lastEncoderValue[i] = encoderValue;
 
                             double encoderIncrement = deltaEncoder * ENCODER_RESOLUTION;
-                            g_mutex_lock(&uCMutex);
+                            uCMutex.lock();
                             listenerData.encoderValues[i] += encoderIncrement;
-                            g_mutex_unlock(&uCMutex);
+                            uCMutex.unlock();
                         }
                     }
                 }
             }
         }
     }
-    return 0;
 }
 
-
-void uCListener_startListener(gchar *portName)
-{
-    g_thread_new("uCListener", listenerThread, portName);
-}
 
 uCData uCListener_getData()
 {
-    g_mutex_lock(&uCMutex);
+    uCMutex.lock();
     uCData currentData = listenerData;
-    g_mutex_unlock(&uCMutex);
+    uCMutex.unlock();
     return currentData;
 }
 
