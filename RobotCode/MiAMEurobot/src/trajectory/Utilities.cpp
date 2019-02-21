@@ -12,9 +12,9 @@ namespace miam{
 		RobotPosition computeCircleCenter(RobotPosition const& startingPosition, double const& radius, rotationside const& side)
 		{
 			RobotPosition circleCenter;
-			double centerAngle = startingPosition.theta + M_PI / 2.0;
+			double centerAngle = startingPosition.theta - M_PI / 2.0;
 			if(side == rotationside::RIGHT)
-				centerAngle -= M_PI;
+				centerAngle += M_PI;
 			circleCenter.x = startingPosition.x + std::abs(radius) * std::cos(centerAngle);
 			circleCenter.y = startingPosition.y - std::abs(radius) * std::sin(centerAngle);
 			circleCenter.theta = centerAngle - M_PI;
@@ -24,10 +24,6 @@ namespace miam{
 
 		double computeShortestAngle(RobotPosition startPoint, RobotPosition endPoint)
 		{
-			// Switch y axis signs.
-			startPoint.y = - startPoint.y;
-			endPoint.y = - endPoint.y;
-
 			// Compute line angle.
 			double angle = std::atan2(endPoint.y - startPoint.y, endPoint.x - startPoint.x);
 

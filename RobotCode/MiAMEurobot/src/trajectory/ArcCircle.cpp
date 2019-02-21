@@ -62,7 +62,7 @@ namespace miam{
 
 			// Compute point along circle.
 			output.position.x += radius_ * std::cos(circleCenter_.theta + motionSign_ * state.position);
-			output.position.y -= radius_ * std::sin(circleCenter_.theta + motionSign_ * state.position);
+			output.position.y += radius_ * std::sin(circleCenter_.theta + motionSign_ * state.position);
 			output.position.theta = circleCenter_.theta + motionSign_ * M_PI_2 + motionSign_ * state.position;
 			if(motionSign_ == -1.0)
 				output.position.theta += 2 * M_PI;

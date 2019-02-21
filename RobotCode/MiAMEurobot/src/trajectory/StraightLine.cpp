@@ -44,9 +44,9 @@ namespace miam{
 
 			output.linearVelocity = motionSign_ * state.velocity;
 
-			// Compute position, remember y is negative.
+			// Compute position.
 			output.position.x += motionSign_ * state.position * std::cos(startPoint_.theta);
-			output.position.y -= motionSign_ * state.position * std::sin(startPoint_.theta);
+			output.position.y += motionSign_ * state.position * std::sin(startPoint_.theta);
 
 			return output;
 		}

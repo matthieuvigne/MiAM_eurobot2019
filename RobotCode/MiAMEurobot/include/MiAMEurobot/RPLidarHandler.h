@@ -21,13 +21,13 @@
 	const double LIDAR_RPM = 600.0;	///< Lidar velocity, in rpm.
 	const double MAX_DISTANCE = 2000.0; ///< Maximum distance for processing, in mm: points above that distance are discarded.
 
-	const double BLOB_THICKNESS = 80.0; ///< Distance from bloc center to consider a point in the blob, in mm.
-	const double BLOB_MIN_SIZE = 60.0; ///< Minimum size of the blob to consider it as a robot.
-	const double BLOB_MAX_SIZE = 140.0; ///< Maximum size of the blob to consider it as a robot.
+	const double BLOB_THICKNESS = 100.0; //80 ///< Distance from bloc center to consider a point in the blob, in mm.
+	const double BLOB_MIN_SIZE = 60.0; //60 ///< Minimum size of the blob to consider it as a robot.
+	const double BLOB_MAX_SIZE = 140.0; //140 ///< Maximum size of the blob to consider it as a robot.
 
-	const int BLOB_BREAK = 2; ///< Number of points needed to consider that a block has come to an endMinimum number of points to be a valid obstacle.
+	const int BLOB_BREAK = 2; //2 ///< Number of points needed to consider that a block has come to an endMinimum number of points to be a valid obstacle.
 
-	const int MIN_POINTS = 4; ///< Minimum number of points inside a blob to be considered a robot.
+	const int MIN_POINTS = 4; // 4 ///< Minimum number of points inside a blob to be considered a robot.
 							 ///< At 1.5m, 600rpm, 8ksamples/s, a circle of 70mm corresponds to 6 points.
 
 	/// \brief Structure representing a data point returned by the lidar.
@@ -54,6 +54,47 @@
 		double x;
 		double y;
 	};
+
+	//~ struct Blob {
+
+		//~ Blob(
+			//~ const double r_min,
+			//~ const double r_max,
+			//~ const double theta_min,
+			//~ const double theta_max)
+		//~ :	r_min       (r_min),
+			//~ r_max       (r_max),
+			//~ theta_min   (theta_min),
+			//~ theta_max   (theta_max)
+		//~ {
+			//~ assert(r_max > r_min);
+			//~ assert(theta_max > theta_min);
+		//~ }
+
+		//~ LidarPoint getCenter()
+		//~ {
+			//~ return LidarPoint(
+				//~ r_max - r_min,
+				//~ theta_max - theta_min);
+		//~ }
+
+		//~ LidarPoint* getBoundingBoxCorners()
+		//~ {
+			//~ LidarPoint corners[4];
+
+			//~ corners[0] = LidarPoint(r_min, theta_min);
+			//~ corners[1] = LidarPoint(r_min, theta_max);
+			//~ corners[2] = LidarPoint(r_max, theta_max);
+			//~ corners[3] = LidarPoint(r_max, theta_min);
+
+			//~ return corners;
+		//~ }
+
+		//~ r_min;
+		//~ r_max;
+		//~ theta_min;
+		//~ theta_max;
+	//~ }:
 
 	class RPLidarHandler
 	{

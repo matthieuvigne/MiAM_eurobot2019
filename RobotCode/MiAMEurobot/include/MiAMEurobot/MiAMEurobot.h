@@ -15,6 +15,7 @@
 	#include <MiAMEurobot/trajectory/PointTurn.h>
 	#include <MiAMEurobot/trajectory/StraightLine.h>
 	#include <MiAMEurobot/trajectory/Utilities.h>
+	#include <MiAMEurobot/trajectory/DrivetrainKinematics.h>
 
 	#include <MiAMEurobot/drivers/ADNS9800Driver.h>
 	#include <MiAMEurobot/drivers/L6470Driver.h>
