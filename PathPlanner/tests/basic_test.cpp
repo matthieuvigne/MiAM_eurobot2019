@@ -8,7 +8,24 @@
 #include <MiAMEurobot/trajectory/RobotPosition.h>
 #include <MiAMEurobot/trajectory/Trajectory.h>
 #include <MiAMEurobot/trajectory/Utilities.h>
+#include <MiAMEurobot/trajectory/DrivetrainKinematics.h>
 #include <MiAMEurobot/io/IOTrajectory.h>
+
+
+// Import robotdimensions
+#include <MainRobotCode/include/Robot.h>
+
+using namespace robotdimensions;
+
+
+DrivetrainKinematics drivetrain_kinematics_2(
+    wheelRadius,
+    wheelSpacing,
+    encoderWheelRadius,
+    encoderWheelSpacing
+);
+
+using namespace std;
 
 int main( ){
     
@@ -16,6 +33,32 @@ int main( ){
     
     miam::RobotPosition test = miam::RobotPosition(1.0, 2.0, 0.0);
     miam::RobotPosition test2 = miam::RobotPosition(3.0, 2.0, 0.0);
+    
+    
+    BaseSpeed base_speed(1234.0, 0.2345);
+    cout << base_speed.linear << " " << base_speed.angular << endl;
+    
+    WheelSpeed ws1 = drivetrain_kinematics_2.inverseKinematics(base_speed);
+    std::cout << ws1.right << " " << ws1.left << endl;
+    
+    BaseSpeed bs1 = drivetrain_kinematics_2.forwardKinematics(
+        drivetrain_kinematics_2.inverseKinematics(base_speed)
+    );
+    cout << bs1.linear << " " << bs1.angular << endl;
+    
+    
+    WheelSpeed wheel_speed(1234.0, 2355.0);
+    cout << wheel_speed.right << " " << wheel_speed.left << endl;
+    
+    BaseSpeed bs2 = drivetrain_kinematics_2.forwardKinematics(wheel_speed);
+    std::cout << bs2.linear << " " << bs2.angular << endl;
+    
+    WheelSpeed ws2 = drivetrain_kinematics_2.inverseKinematics(
+        drivetrain_kinematics_2.forwardKinematics(wheel_speed)
+    );
+    cout << ws2.right << " " << ws2.left << endl;
+    
+    
     
     std::cout << "RobotPosition: " << test << std::endl;
     std::cout << "RobotPosition: " << test-test2 << std::endl;
