@@ -23,7 +23,7 @@ FIND_PACKAGE( ACADO REQUIRED )
 #
 # Include directories
 #
-INCLUDE_DIRECTORIES( . ${ACADO_INCLUDE_DIRS} include ../RobotCode/MiAMEurobot/include )
+INCLUDE_DIRECTORIES( . ${ACADO_INCLUDE_DIRS} include ../RobotCode )
 FILE( GLOB_RECURSE ${PROJECT_NAME}_HEADERS include/*.hpp )
 
 #
