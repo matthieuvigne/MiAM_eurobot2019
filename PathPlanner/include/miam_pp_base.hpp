@@ -14,21 +14,7 @@
 #include <MiAMEurobot/trajectory/Utilities.h>
 
 
-// Define the robot dimensions if Robot.h was not defined
-#ifndef ROBOT_H
-namespace robotdimensions
-{
-    double const wheelRadius = 50.8; ///< Wheel radius, in mm.
-    double const wheelSpacing = 106.0; ///< Wheel spacing from robot center, in mm.
-    double const encoderWheelRadius = 25.3; ///< Radius of encoder wheels, in mm.
-    double const encoderWheelSpacing = 133.0; ///< Encoder wheel spacing from robot center, in mm.
 
-    double const stepSize = 2 * 3.14159265359 / 600.0; ///< Size of a motor step, in rad.
-
-    double const maxWheelSpeed = 400; ///< Maximum wheel speed, in mm/s.
-    double const maxWheelAcceleration = 400; ///< Maximum wheel acceleration, in mm/s^2.
-}
-#endif
 
 
 namespace miam_pp {
