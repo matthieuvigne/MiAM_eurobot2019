@@ -36,8 +36,8 @@ BaseSpeed DrivetrainKinematics::forwardKinematics(WheelSpeed const& wheelSpeedIn
 WheelSpeed DrivetrainKinematics::inverseKinematics(BaseSpeed const& baseSpeedIn)
 {
     WheelSpeed speed;
-    speed.right = (baseSpeedIn.linear + motorWheelSpacing_ * baseSpeedIn.angular) / (M_PI * motorWheelRadius_);
-    speed.left = (baseSpeedIn.linear - motorWheelSpacing_ * baseSpeedIn.angular) / (M_PI * motorWheelRadius_);
+    speed.right = (baseSpeedIn.linear + motorWheelSpacing_ * baseSpeedIn.angular) / (2.0 * M_PI * motorWheelRadius_);
+    speed.left = (baseSpeedIn.linear - motorWheelSpacing_ * baseSpeedIn.angular) / (2.0 * M_PI * motorWheelRadius_);
     return speed;
 }
 
