@@ -247,7 +247,7 @@ trajectory::SampledTrajectory miam_pp::get_planned_trajectory_main_robot(
         BaseSpeed base_speed_position =
             drivetrain_kinematics.forwardKinematics(wheel_speed_position);
         
-        _tp.linearVelocity = base_speed_position.linear * 1000.0 ;
+        _tp.linearVelocity = base_speed_position.linear ;
         _tp.angularVelocity = base_speed_position.angular ;
         output_trajectory.push_back(_tp);
     }
