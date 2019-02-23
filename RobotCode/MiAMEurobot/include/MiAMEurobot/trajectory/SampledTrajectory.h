@@ -27,6 +27,8 @@
 					{
 						return sampledTrajectory_;
 					};
+                    
+                    void replanify(double const& replanificationTime);
 
                 private:
                     std::vector<TrajectoryPoint > sampledTrajectory_; ///< Vector of trajectory waypoints.

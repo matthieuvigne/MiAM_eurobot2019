@@ -1,67 +1,124 @@
 #include "Robot.h"
+#include "MPC.h"
+
+#define MAINROBOTCODE_USE_MPC false
 
 // Control of the robot motion on the table.
 // Trajectory list handling, trajectory following, obstacle avoidance.
 
 bool Robot::followTrajectory(Trajectory *traj, double const& timeInTrajectory, double const & dt)
 {
-    // Get current trajectory state.
-    trajectoryPoint_ = traj->getCurrentPoint(timeInTrajectory);
-
-    // Compute targets for rotation and translation motors.
-    BaseSpeed targetSpeed;
-
-    // Feedforward.
-    targetSpeed.linear = trajectoryPoint_.linearVelocity;
-    targetSpeed.angular = trajectoryPoint_.angularVelocity;
-
-    // Compute error.
-    RobotPosition currentPosition = currentPosition_.get();
-    RobotPosition error = currentPosition - trajectoryPoint_.position;
-
-    // Rotate by -theta to express the error in the tangent frame.
-    RobotPosition rotatedError = error.rotate(-trajectoryPoint_.position.theta);
-
-    trackingLongitudinalError_ = rotatedError.x;
-    trackingTransverseError_ = rotatedError.y;
-
-    // Change sign if going backward.
-    if(trajectoryPoint_.linearVelocity < 0)
-        trackingTransverseError_ = - trackingTransverseError_;
-    trackingAngleError_ = currentPosition.theta - trajectoryPoint_.position.theta;
-
-    // If we are beyon trajector end, look to see if we are close enough to the target point to stop.
-    if(traj->getDuration() <= timeInTrajectory)
+    
+    if(MAINROBOTCODE_USE_MPC)
     {
-        if(trackingLongitudinalError_ < 3 && trackingAngleError_ < 0.02 && motorSpeed_[RIGHT] < 100 && motorSpeed_[LEFT] < 100)
+        // Get current trajectory state.
+        trajectoryPoint_ = traj->getCurrentPoint(timeInTrajectory);
+        
+        // Compute error.
+        RobotPosition currentPosition = currentPosition_.get();
+        
+        // Compute targets for rotation and translation motors.
+        BaseSpeed targetSpeed;
+        
+        // Feedforward.
+        targetSpeed.linear = trajectoryPoint_.linearVelocity;
+        targetSpeed.angular = trajectoryPoint_.angularVelocity;
+        
+        // Compute base velocity.
+        // TODO here fetch linear and angular velocities according to encoders
+        //~ BaseSpeed speed = forwardKinematics(wheelSpeedIn, useEncoders);
+        miam::trajectory::TrajectoryPoint current_trajectory_point;
+        current_trajectory_point.position = currentPosition;
+        current_trajectory_point.linearVelocity = targetSpeed.linear;
+        current_trajectory_point.angularVelocity = targetSpeed.angular;
+        
+        // TODO here time is hardcoded
+        if (timeInTrajectory >= traj->getDuration()) 
         {
-            // Just stop the robot.
+             // Just stop the robot.
             motorSpeed_[0] = 0.0;
             motorSpeed_[1] = 0.0;
             return true;
         }
+        
+        miam::trajectory::TrajectoryPoint forward_traj_point = solve_MPC_problem(
+            traj,
+            current_trajectory_point,
+            timeInTrajectory
+        );
+        
+        WheelSpeed ws = kinematics_.inverseKinematics(
+            BaseSpeed(
+                forward_traj_point.linearVelocity,
+                forward_traj_point.angularVelocity
+            )
+        );
+        
+        motorSpeed_[RIGHT] = ws.right / robotdimensions::stepSize;
+        motorSpeed_[LEFT] = ws.left / robotdimensions::stepSize;
+        return true;
+        
+    } 
+    else 
+    {
+        // Get current trajectory state.
+        trajectoryPoint_ = traj->getCurrentPoint(timeInTrajectory);
+
+        // Compute targets for rotation and translation motors.
+        BaseSpeed targetSpeed;
+
+        // Feedforward.
+        targetSpeed.linear = trajectoryPoint_.linearVelocity;
+        targetSpeed.angular = trajectoryPoint_.angularVelocity;
+
+        // Compute error.
+        RobotPosition currentPosition = currentPosition_.get();
+        RobotPosition error = currentPosition - trajectoryPoint_.position;
+
+        // Rotate by -theta to express the error in the tangent frame.
+        RobotPosition rotatedError = error.rotate(-trajectoryPoint_.position.theta);
+
+        trackingLongitudinalError_ = rotatedError.x;
+        trackingTransverseError_ = rotatedError.y;
+
+        // Change sign if going backward.
+        if(trajectoryPoint_.linearVelocity < 0)
+            trackingTransverseError_ = - trackingTransverseError_;
+        trackingAngleError_ = currentPosition.theta - trajectoryPoint_.position.theta;
+
+        // If we are beyon trajector end, look to see if we are close enough to the target point to stop.
+        if(traj->getDuration() <= timeInTrajectory)
+        {
+            if(trackingLongitudinalError_ < 3 && trackingAngleError_ < 0.02 && motorSpeed_[RIGHT] < 100 && motorSpeed_[LEFT] < 100)
+            {
+                // Just stop the robot.
+                motorSpeed_[0] = 0.0;
+                motorSpeed_[1] = 0.0;
+                return true;
+            }
+        }
+
+        // Compute correction terms.
+
+        // If trajectory has an angular velocity but no linear velocity, it's a point turn:
+        // disable corresponding position servoing.
+        if(std::abs(trajectoryPoint_.linearVelocity) > 0.1 || std::abs(trajectoryPoint_.angularVelocity) < 1e-4)
+            targetSpeed.linear += PIDLinear_.computeValue(trackingLongitudinalError_, dt);
+
+        // Modify angular PID target based on transverse error, if we are going fast enough.
+        double angularPIDError = trackingAngleError_;
+        if(std::abs(trajectoryPoint_.linearVelocity) > 0.1 * robotdimensions::maxWheelSpeed)
+            angularPIDError += controller::transverseKp * trajectoryPoint_.linearVelocity / robotdimensions::maxWheelSpeed * trackingTransverseError_;
+        targetSpeed.angular += PIDAngular_.computeValue(angularPIDError, dt);
+
+        // Convert from base velocity to motor wheel velocity.
+        WheelSpeed wheelSpeed = kinematics_.inverseKinematics(targetSpeed);
+        // Convert to motor unit.
+        motorSpeed_[RIGHT] = wheelSpeed.right / robotdimensions::stepSize;
+        motorSpeed_[LEFT] = wheelSpeed.left / robotdimensions::stepSize;
+
+        return false;
     }
-
-    // Compute correction terms.
-
-    // If trajectory has an angular velocity but no linear velocity, it's a point turn:
-    // disable corresponding position servoing.
-    if(std::abs(trajectoryPoint_.linearVelocity) > 0.1 || std::abs(trajectoryPoint_.angularVelocity) < 1e-4)
-        targetSpeed.linear += PIDLinear_.computeValue(trackingLongitudinalError_, dt);
-
-    // Modify angular PID target based on transverse error, if we are going fast enough.
-    double angularPIDError = trackingAngleError_;
-    if(std::abs(trajectoryPoint_.linearVelocity) > 0.1 * robotdimensions::maxWheelSpeed)
-        angularPIDError += controller::transverseKp * trajectoryPoint_.linearVelocity / robotdimensions::maxWheelSpeed * trackingTransverseError_;
-    targetSpeed.angular += PIDAngular_.computeValue(angularPIDError, dt);
-
-    // Convert from base velocity to motor wheel velocity.
-    WheelSpeed wheelSpeed = kinematics_.inverseKinematics(targetSpeed);
-    // Convert to motor unit.
-    motorSpeed_[RIGHT] = wheelSpeed.right / robotdimensions::stepSize;
-    motorSpeed_[LEFT] = wheelSpeed.left / robotdimensions::stepSize;
-
-    return false;
 }
 
 

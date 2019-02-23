@@ -1,6 +1,9 @@
 #include "MiAMEurobot/trajectory/SampledTrajectory.h"
 #include <cmath>
 
+#define MIAM_EUROBOT_SAMPLED_TRAJECTORY_RESAMPLE_TIMESTEP 0.01
+
+using namespace std;
 
 namespace miam{
     namespace trajectory{
@@ -48,6 +51,33 @@ namespace miam{
 
             return output;
 
+        }
+        
+        void SampledTrajectory::replanify(double const& replanificationTime) 
+        {
+            // Create a new vector
+            std::vector<TrajectoryPoint > newSampledTrajectory;
+            
+            // Do not do anything if the trajectory was finished
+            if (getDuration() <= replanificationTime)
+            {
+                return;
+            }
+            
+            // Number of resampling points
+            int N = std::ceil((getDuration() - replanificationTime) / MIAM_EUROBOT_SAMPLED_TRAJECTORY_RESAMPLE_TIMESTEP);
+            double newStep = (getDuration() - replanificationTime) / N;
+            
+            for (int i=0; i<N; i++) 
+            {
+                newSampledTrajectory.push_back(
+                    getCurrentPoint(replanificationTime + i * newStep)
+                );
+            }
+            
+            // New time and new vector of trajectory points
+            duration_ = getDuration() - replanificationTime;
+            sampledTrajectory_ = newSampledTrajectory;
         }
     }
 }

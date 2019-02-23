@@ -4,6 +4,9 @@
 #include "Robot.h"
 
 
+#include <MPC.h>
+
+
 // Update loop frequency
 const double LOOP_PERIOD = 0.010;
 
@@ -120,6 +123,7 @@ bool Robot::initSystem()
 
     return allInitSuccessful;
 }
+
 
 
 bool Robot::setupBeforeMatchStart()
