@@ -26,8 +26,24 @@ unset(MIAMLIB_FOUND CACHE)
 pkg_search_module(MIAMLIB REQUIRED MiAMEurobot>=2.0)
 message(STATUS "Found MiAMEurobot v." ${MIAMLIB_VERSION})
 
-include_directories(${MIAMLIB_INCLUDE_DIRS})
+include_directories(
+    ${MIAMLIB_INCLUDE_DIRS}
+    custom_solver
+    qpoases
+    qpoases/INCLUDE
+    qpoases/SRC
+)
 link_directories(${MIAMLIB_LIBRARY_DIRS})
+
+# QPoases
+FILE( GLOB LIB_SOURCES qpoases/SRC/*.cpp )
+FILE( GLOB LIB_HEADERS qpoases/INCLUDE/*.hpp )
+ADD_LIBRARY( QPoases ${LIB_SOURCES} ${LIB_HEADERS} )
+
+# CustomSolver
+FILE( GLOB LIB_SOURCES custom_solver/*.cpp custom_solver/*.c )
+FILE( GLOB LIB_HEADERS custom_solver/*.hpp custom_solver/*.h )
+ADD_LIBRARY( CustomSolver ${LIB_SOURCES} ${LIB_HEADERS} )
 
 # Include source files from src directory.
 file(GLOB_RECURSE ${PROJECT_NAME}_SOURCES "src/*.cpp")
@@ -36,7 +52,7 @@ include_directories(include)
 
 # Set executable target and link libraries.
 add_executable(${PROJECT_NAME} ${${PROJECT_NAME}_SOURCES})
-target_link_libraries(${PROJECT_NAME} ${MIAMLIB_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${MIAMLIB_LIBRARIES} CustomSolver QPoases )
 
 install(TARGETS ${PROJECT_NAME} DESTINATION ".")
 
