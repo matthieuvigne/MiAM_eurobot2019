@@ -21,6 +21,10 @@
                 void openTube(int tubeNumber); ///< Open suction air tube.
                 void closeTube(int tubeNumber); ///< Close suction air tube.
 
+                void tapOpen(); ///< Open air tap.
+                void tapClose(); ///< Close air tap.
+
+				void shutdownServos(); ///< Turn off all servos.
             private:
                 MaestroDriver maestro_;
         };

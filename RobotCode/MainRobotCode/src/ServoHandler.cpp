@@ -1,8 +1,9 @@
 #include "ServoHandler.h"
+#include <unistd.h>
 
 // Servo config: port defintion.
-int const SERVO_TUBE[3] = {0, 1, 2};    // Numbered from right to left.
-int const SERVO_SUCTION[3] = {6, 7, 8};
+int const SERVO_SUCTION[3] = {0, 1, 2};    // Numbered from right to left.
+int const SERVO_TUBE[3] = {6, 7, 8};
 
 int const SERVO_TAP = 12;
 int const SERVO_VERTICAL_TRANSLATION = 13;
@@ -37,13 +38,38 @@ void ServoHandler::openTube(int tubeNumber)
 {
     if (tubeNumber < 0 || tubeNumber > 2)
         return;
-    maestro_.setPosition(SERVO_TUBE[tubeNumber], 1500);
+    maestro_.setPosition(SERVO_TUBE[tubeNumber], 1550);
 }
 
 
 void ServoHandler::closeTube(int tubeNumber)
 {
-    if (tubeNumber < 0 || tubeNumber > 2)
-        return;
-    maestro_.setPosition(SERVO_TUBE[tubeNumber], 1500);
+	switch(tubeNumber)
+	{
+		case 0: maestro_.setPosition(SERVO_TUBE[tubeNumber], 1850); break;
+		case 1: maestro_.setPosition(SERVO_TUBE[tubeNumber], 1840); break;
+		case 2: maestro_.setPosition(SERVO_TUBE[tubeNumber], 1850); break;
+		default: break;
+	}
+}
+
+
+void ServoHandler::tapOpen()
+{
+    maestro_.setPosition(SERVO_TAP, 1500);
+}
+
+
+void ServoHandler::tapClose()
+{
+    maestro_.setPosition(SERVO_TAP, 750);
+}
+
+void ServoHandler::shutdownServos()
+{
+	for(int i = 0; i < 18; i++)
+	{
+		maestro_.setPosition(i, 0);
+		usleep(50);
+	}
 }

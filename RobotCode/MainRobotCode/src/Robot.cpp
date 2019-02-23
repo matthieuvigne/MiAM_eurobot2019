@@ -103,7 +103,7 @@ bool Robot::init()
     // Create logger.
     std::time_t t = std::time(nullptr);
     char timestamp[100];
-    std::strftime(timestamp, sizeof(timestamp), "%A %c", std::localtime(&t));
+    std::strftime(timestamp, sizeof(timestamp), "%Y%m%dT%H%M%SZ", std::localtime(&t));
     std::string filename = "log" + std::string(timestamp) + ".csv";
     std::string headers = getHeaderStringList();
     // Log robot dimensions in header.

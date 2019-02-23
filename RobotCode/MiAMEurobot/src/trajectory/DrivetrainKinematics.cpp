@@ -26,18 +26,18 @@ BaseSpeed DrivetrainKinematics::forwardKinematics(WheelSpeed const& wheelSpeedIn
     double wheelRadius = (useEncoders ? encoderWheelRadius_ : motorWheelRadius_);
     double wheelSpacing = (useEncoders ? encoderWheelSpacing_ : motorWheelSpacing_);
 
-    // Linear velocity: average of both velocities time wheel circumference ; the twos simplyfiy.
-    speed.linear = (wheelSpeedIn.right + wheelSpeedIn.left) * M_PI * wheelRadius;
-    // Angular velocity: difference of both velocities time wheel radius over wheel spacing ; the twos simplyfiy.
-    speed.angular = (wheelSpeedIn.right - wheelSpeedIn.left) * M_PI * wheelRadius / wheelSpacing;
+    // Linear velocity: average of both velocities.
+    speed.linear = (wheelSpeedIn.right + wheelSpeedIn.left) / 2.0 * wheelRadius;
+    // Angular velocity: difference of both velocities over wheel spacing.
+    speed.angular = (wheelSpeedIn.right - wheelSpeedIn.left) / 2.0 * wheelRadius / wheelSpacing;
     return speed;
 }
 
 WheelSpeed DrivetrainKinematics::inverseKinematics(BaseSpeed const& baseSpeedIn)
 {
     WheelSpeed speed;
-    speed.right = (baseSpeedIn.linear + motorWheelSpacing_ * baseSpeedIn.angular) / (2.0 * M_PI * motorWheelRadius_);
-    speed.left = (baseSpeedIn.linear - motorWheelSpacing_ * baseSpeedIn.angular) / (2.0 * M_PI * motorWheelRadius_);
+    speed.right = (baseSpeedIn.linear + motorWheelSpacing_ * baseSpeedIn.angular) / motorWheelRadius_;
+    speed.left = (baseSpeedIn.linear - motorWheelSpacing_ * baseSpeedIn.angular) / motorWheelRadius_;
     return speed;
 }
 
