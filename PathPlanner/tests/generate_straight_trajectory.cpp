@@ -18,16 +18,16 @@ int main( ){
     
     miam_pp::WayPointList waypoint_list = miam_pp::WayPointList();
     waypoint_list.push_back(miam::RobotPosition(0.0, 0.0, 0.00));
-    waypoint_list.push_back(miam::RobotPosition(1000.0, 0.01, 0.00));
+    waypoint_list.push_back(miam::RobotPosition(1000.0, 0.00, 0.00));
 
     miam::trajectory::TrajectoryPoint first_trajectory_point;
     first_trajectory_point.position = waypoint_list.front();
-    first_trajectory_point.linearVelocity = 0.01;
-    first_trajectory_point.angularVelocity = 0.01;
+    first_trajectory_point.linearVelocity = 0.00;
+    first_trajectory_point.angularVelocity = 0.00;
     miam::trajectory::TrajectoryPoint last_trajectory_point;
     last_trajectory_point.position = waypoint_list.back();
-    last_trajectory_point.linearVelocity = 0.01;
-    last_trajectory_point.angularVelocity = 0.01;
+    last_trajectory_point.linearVelocity = 0.00;
+    last_trajectory_point.angularVelocity = 0.00;
     
     /* 
      * Trajectory planning 
