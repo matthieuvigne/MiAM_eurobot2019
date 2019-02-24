@@ -44,7 +44,8 @@ trajectory::SampledTrajectory miam_pp::get_planned_trajectory_main_robot(
     trajectory::TrajectoryPoint first_trajectory_point,
     trajectory::TrajectoryPoint last_trajectory_point,
     bool plot,
-    bool verbose
+    bool verbose,
+    bool vlin_free_at_end
 ) 
 {
     cout << "get_planned_trajectory_main_robot" << endl;
@@ -118,8 +119,8 @@ trajectory::SampledTrajectory miam_pp::get_planned_trajectory_main_robot(
         x_init(j, 0) = resampled_waypoint_list[j].x / 1000.0;
         x_init(j, 1) = resampled_waypoint_list[j].y / 1000.0;
         x_init(j, 2) = resampled_waypoint_list[j].theta;
-        x_init(j, 3) = 0.8 * maxWheelSpeed / (2.0 * M_PI * wheelRadius);
-        x_init(j, 4) = 0.8 * maxWheelSpeed / (2.0 * M_PI * wheelRadius);
+        x_init(j, 3) = 0.8 * maxWheelSpeed / wheelRadius;
+        x_init(j, 4) = 0.8 * maxWheelSpeed / wheelRadius;
 
         u_init(j, 0) = 0.0;
         u_init(j, 1) = 0.0;
@@ -139,10 +140,13 @@ trajectory::SampledTrajectory miam_pp::get_planned_trajectory_main_robot(
     ocp.minimizeMayerTerm( T );
     //ocp.minimizeLagrangeTerm( wl*wl );
     //ocp.minimizeLagrangeTerm( wr*wr );
-
-    f << dot(x) == (vr + vl) * M_PI * wheelRadius * cos(theta) / 1000.0;
-    f << dot(y) == (vr + vl) * M_PI * wheelRadius * sin(theta) / 1000.0;
-    f << dot(theta) == (vr - vl) * M_PI * wheelRadius / wheelSpacing;
+    
+    //~ double vlin_normfactor = wheelRadius / 2.0 / 1000.0;
+    //~ double vang_normfactor = wheelRadius / 2.0 / wheelSpacing;
+    
+    f << dot(x) == ((vr + vl) * wheelRadius / 2.0) * cos(theta) / 1000.0;
+    f << dot(y) == ((vr + vl) * wheelRadius / 2.0) * sin(theta) / 1000.0;
+    f << dot(theta) == ((vr - vl) * wheelRadius / 2.0) / wheelSpacing;
     f << dot(vr) == wr;
     f << dot(vl) == wl;
     
@@ -162,25 +166,38 @@ trajectory::SampledTrajectory miam_pp::get_planned_trajectory_main_robot(
     ocp.subjectTo( AT_START, vl == first_trajectory_point_wheelspeed.left );
     
     // Last position
-    BaseSpeed last_trajectory_point_basespeed(
+    ocp.subjectTo( AT_END  , x ==  last_trajectory_point.position.x / 1000.0 );
+    ocp.subjectTo( AT_END  , y ==  last_trajectory_point.position.y / 1000.0 );
+    ocp.subjectTo( AT_END  , theta ==  last_trajectory_point.position.theta );
+    
+    if (vlin_free_at_end) 
+    {
+        ocp.subjectTo( AT_END  , vl - vr ==  0 );
+    }
+    else
+    {
+        
+        BaseSpeed last_trajectory_point_basespeed(
         last_trajectory_point.linearVelocity,
         last_trajectory_point.angularVelocity
         );
-    WheelSpeed last_trajectory_point_wheelspeed =
-        drivetrain_kinematics.inverseKinematics(last_trajectory_point_basespeed);
-
-    cout << last_trajectory_point_wheelspeed.right << " " << last_trajectory_point_wheelspeed.left << endl;
-    
-    ocp.subjectTo( AT_END  , x ==  last_position.x / 1000.0 );
-    ocp.subjectTo( AT_END  , y ==  last_trajectory_point.position.y / 1000.0 );
-    ocp.subjectTo( AT_END  , theta ==  last_trajectory_point.position.theta );
-    ocp.subjectTo( AT_END  , vr ==  last_trajectory_point_wheelspeed.right );
-    ocp.subjectTo( AT_END  , vl ==  last_trajectory_point_wheelspeed.left );
-
-    ocp.subjectTo( -maxWheelSpeed / (2.0 * M_PI * wheelRadius) <= vr <= maxWheelSpeed / (2.0 * M_PI * wheelRadius) );     // the control input u,
-    ocp.subjectTo( -maxWheelSpeed / (2.0 * M_PI * wheelRadius) <= vl <= maxWheelSpeed / (2.0 * M_PI * wheelRadius) );     // the control input u,
-    ocp.subjectTo( -maxWheelAcceleration / (2.0 * M_PI * wheelRadius) <= wr <= maxWheelAcceleration / (2.0 * M_PI * wheelRadius) );     // the control input u,
-    ocp.subjectTo( -maxWheelAcceleration / (2.0 * M_PI * wheelRadius) <= wl <= maxWheelAcceleration / (2.0 * M_PI * wheelRadius) );     // the control input u,
+        WheelSpeed last_trajectory_point_wheelspeed =
+            drivetrain_kinematics.inverseKinematics(
+                last_trajectory_point_basespeed
+            );
+        
+        if (verbose)
+        {
+            cout << last_trajectory_point_wheelspeed.right << " " << last_trajectory_point_wheelspeed.left << endl;
+        }
+        
+        ocp.subjectTo( AT_END  , vr ==  last_trajectory_point_wheelspeed.right );
+        ocp.subjectTo( AT_END  , vl ==  last_trajectory_point_wheelspeed.left );
+    }
+    ocp.subjectTo( -maxWheelSpeed / wheelRadius <= vr <= maxWheelSpeed / wheelRadius );     // the control input u,
+    ocp.subjectTo( -maxWheelSpeed / wheelRadius <= vl <= maxWheelSpeed / wheelRadius );     // the control input u,
+    ocp.subjectTo( -maxWheelAcceleration / wheelRadius <= wr <= maxWheelAcceleration / wheelRadius );     // the control input u,
+    ocp.subjectTo( -maxWheelAcceleration / wheelRadius <= wl <= maxWheelAcceleration / wheelRadius );     // the control input u,
     ocp.subjectTo(  0.0 <= T <= 3.0 * reference_time_horizon );
     
     OptimizationAlgorithm algorithm(ocp);
@@ -199,8 +216,8 @@ trajectory::SampledTrajectory miam_pp::get_planned_trajectory_main_robot(
         window.addSubplot( theta, "theta"          );
         window.addSubplot( vl, "vl" );
         window.addSubplot( vr, "vr" );
-        window.addSubplot( (vr + vl) * M_PI * wheelRadius / 1000.0, "vlin" );
-        window.addSubplot( (vr - vl) * M_PI * wheelRadius / wheelSpacing, "vang" );
+        window.addSubplot( (vr + vl) * wheelRadius / 2.0 / 1000.0, "vlin" );
+        window.addSubplot( (vr - vl) * wheelRadius / 2.0 / wheelSpacing, "vang" );
         window.addSubplot( wl, "wl" );
         window.addSubplot( wr, "wr" );
         algorithm << window;
@@ -229,8 +246,11 @@ trajectory::SampledTrajectory miam_pp::get_planned_trajectory_main_robot(
     
     double final_time = timeGrid_final(N, 0);
     
-    cout << "Final time: " << final_time << endl;
-
+    if (verbose)
+    {
+        cout << "Final time: " << final_time << endl;
+    }
+    
     TrajectoryVector output_trajectory;
     
     for (int i=0; i<N+1; i++) 

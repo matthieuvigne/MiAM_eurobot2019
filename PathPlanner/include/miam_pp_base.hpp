@@ -40,7 +40,8 @@ miam::trajectory::SampledTrajectory get_planned_trajectory_main_robot(
     miam::trajectory::TrajectoryPoint first_trajectory_point,
     miam::trajectory::TrajectoryPoint last_trajectory_point,
     bool plot = false,
-    bool verbose = false
+    bool verbose = false,
+    bool vlin_free_at_end = false
 );
 
 }
