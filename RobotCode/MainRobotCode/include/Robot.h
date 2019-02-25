@@ -13,6 +13,7 @@
     #include <MiAMEurobot/raspberry_pi/RaspberryPi.h>
     #include <MiAMEurobot/trajectory/PointTurn.h>
     #include <MiAMEurobot/trajectory/Utilities.h>
+    #include <MiAMEurobot/trajectory/DrivetrainKinematics.h>
     #include <math.h>
     #include <stdlib.h>
     #include <stdio.h>
@@ -59,6 +60,36 @@
 
         private:
             RobotPosition position_;
+            std::mutex mutex_;
+    };
+    
+    /// \brief Simple class to provide thread-safe access to the robot wheel speeds.
+    class ProtectedWheelSpeed{
+        public:
+            ProtectedWheelSpeed():
+                wheelSpeed_(),
+                mutex_()
+            {
+            }
+
+            WheelSpeed get()
+            {
+                WheelSpeed ws;
+                mutex_.lock();
+                ws = wheelSpeed_;
+                mutex_.unlock();
+                return ws;
+            }
+
+            void set(WheelSpeed const& ws)
+            {
+                mutex_.lock();
+                wheelSpeed_ = ws;
+                mutex_.unlock();
+            }
+
+        private:
+            WheelSpeed wheelSpeed_;
             std::mutex mutex_;
     };
 
@@ -121,6 +152,10 @@
             /// \return Current robot position.
             RobotPosition getCurrentPosition();
 
+            /// \brief Get current robot wheel speed.
+            /// \return Current robot wheel speed.
+            WheelSpeed getCurrentWheelSpeed();
+
             /// \brief Reset the position of the robot on the table.
             ///
             /// \details This function might be used for example when the robot is put in contact with a side of the table,
@@ -131,6 +166,15 @@
             /// \param[in] resetY Wheather or not to reset the Y coordinate.
             /// \param[in] resetTheta Wheather or not to reset the angle.
             void resetPosition(RobotPosition const& resetPosition, bool const& resetX, bool const& resetY, bool const& resetTheta);
+            
+            /// \brief Reset the wheel speed of the robot.
+            ///
+            /// \details Overrides the current wheel speeds.
+            ///
+            /// \param[in] resetWheelSpeed The wheel speed to which reset the robot.
+            /// \param[in] resetRight Wheather or not to reset the right speed.
+            /// \param[in] resetLeft Wheather or not to reset the left speed.
+            void resetWheelSpeed(WheelSpeed const& resetWheelSpeed, bool const& resetRight, bool const& resetLeft);
 
             /// \brief Set new trajectory set to follow.
             /// \details This function is used to set the trajectories which will be followed by
@@ -171,6 +215,7 @@
 
             // Current robot status.
             ProtectedPosition currentPosition_; ///< Current robot position, thread-safe.
+            ProtectedWheelSpeed currentWheelSpeed_; ///< Current robot wheel speed, thread-safe.
             miam::trajectory::TrajectoryPoint trajectoryPoint_; ///< Current trajectory point.
             double currentTime_; ///< Current robot time, counted by low-level thread.
             std::vector<double> motorSpeed_; ///< Current motor speed.

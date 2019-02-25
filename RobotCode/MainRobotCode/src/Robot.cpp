@@ -119,6 +119,10 @@ bool Robot::init()
     initialPosition.y = 0;
     initialPosition.theta = 0;
     currentPosition_.set(initialPosition);
+    WheelSpeed initialWheelSpeed;
+    initialWheelSpeed.right = 0;
+    initialWheelSpeed.left = 0;
+    currentWheelSpeed_.set(initialWheelSpeed);
 
     // Set PIDs.
     PIDLinear_ = miam::PID(controller::linearKp, controller::linearKd, controller::linearKi, 0.2);
@@ -132,6 +136,11 @@ RobotPosition Robot::getCurrentPosition()
     return currentPosition_.get();
 }
 
+WheelSpeed Robot::getCurrentWheelSpeed()
+{
+    return currentWheelSpeed_.get();
+}
+
 void Robot::resetPosition(RobotPosition const& resetPosition, bool const& resetX, bool const& resetY, bool const& resetTheta)
 {
     RobotPosition position = currentPosition_.get();
@@ -142,6 +151,16 @@ void Robot::resetPosition(RobotPosition const& resetPosition, bool const& resetX
     if(resetTheta)
         position.theta = resetPosition.theta;
     currentPosition_.set(position);
+}
+
+void Robot::resetWheelSpeed(WheelSpeed const& resetWheelSpeed, bool const& resetRight, bool const& resetLeft)
+{
+    WheelSpeed wheelSpeed = currentWheelSpeed_.get();
+    if(resetRight)
+        wheelSpeed.right = resetWheelSpeed.right;
+    if(resetLeft)
+        wheelSpeed.left = resetWheelSpeed.left;
+    currentWheelSpeed_.set(wheelSpeed);
 }
 
 
@@ -329,6 +348,13 @@ void Robot::lowLevelThread()
         // Perform trajectory tracking.
         double dt = currentTime_ - lastTime;
         updateTrajectoryFollowingTarget(dt);
+        
+        // Update current wheel speeds (in rad/s)
+        WheelSpeed instantWheelSpeed;
+        instantWheelSpeed.right = encoderIncrement.right / dt;
+        instantWheelSpeed.left = encoderIncrement.left / dt;
+        currentWheelSpeed_.set(instantWheelSpeed);
+        
         // Update log.
         updateLog();
     }
