@@ -36,12 +36,16 @@
                 RobotPosition position; ///< Trajectory point in the table.
                 double linearVelocity; ///< Linear velocity along the trajectory, at the current point.
                 double angularVelocity; ///< Angular velocity along the trajectory, at the current point.
-
+                double linearAcceleration;
+                double angularAcceleration;
+                
                 /// \brief Default constructor.
                 TrajectoryPoint():
                 position(),
                 linearVelocity(0.0),
-                angularVelocity(0.0)
+                angularVelocity(0.0),
+                linearAcceleration(0.0),
+                angularAcceleration(0.0)
                 {}
             };
 

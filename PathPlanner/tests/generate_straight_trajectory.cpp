@@ -32,13 +32,16 @@ int main( ){
     /* 
      * Trajectory planning 
      */
-    miam::trajectory::SampledTrajectory sampled_trajectory = miam_pp::get_planned_trajectory_main_robot(
+    miam::trajectory::SampledTrajectory init_trajectory = miam_pp::get_init_trajectory_from_waypoint_list(
         waypoint_list,
         first_trajectory_point,
-        last_trajectory_point,
+        last_trajectory_point
+    );
+    miam::trajectory::SampledTrajectory sampled_trajectory = miam_pp::get_planned_trajectory_main_robot(
+        init_trajectory,
         true, // Plot output
         true  // Print output
-);
+	);
     
     miam::io::writeSampledTrajectoryToFile(sampled_trajectory, trajectory_name);
 

@@ -39,17 +39,13 @@ double const OCP_N_TIMESTEPS = 100; ///< Number of OCP timesteps for each
 double const NOMINAL_SPEED = 0.8 * robotdimensions::maxWheelSpeed; ///< Nominal speed
                                                                     /// of the robot
 
-trajectory::SampledTrajectory miam_pp::get_planned_trajectory_main_robot(
+
+SampledTrajectory miam_pp::get_init_trajectory_from_waypoint_list(
     WayPointList waypoint_list,
-    trajectory::TrajectoryPoint first_trajectory_point,
-    trajectory::TrajectoryPoint last_trajectory_point,
-    bool plot,
-    bool verbose,
-    bool vlin_free_at_end
-) 
+    TrajectoryPoint first_trajectory_point,
+    TrajectoryPoint last_trajectory_point
+)
 {
-    cout << "get_planned_trajectory_main_robot" << endl;
-    
     if (waypoint_list.size() < 2) 
     {
         throw runtime_error("Specify 2 or more waypoints");
@@ -68,38 +64,136 @@ trajectory::SampledTrajectory miam_pp::get_planned_trajectory_main_robot(
     cout << "Reference time horizon: " << reference_time_horizon << endl;
     
     
-    // Resample waypoints to match MAX_OCP_TIMESTEP * NOMINAL_SPEED
-    WayPointList resampled_waypoint_list = WayPointList();
-    for (int i=0; i<waypoint_list.size(); i++) 
+    // Resample trajectory points to match MAX_OCP_TIMESTEP * NOMINAL_SPEED
+    std::vector<TrajectoryPoint > resampled_trajectory_vector_list;
+    
+    double t_to_vref = (maxWheelSpeed-first_trajectory_point.linearVelocity) / maxWheelAcceleration;
+    double t_from_vref = (maxWheelSpeed-last_trajectory_point.linearVelocity) / maxWheelAcceleration;
+    
+    cout << "t_to_vref " << t_to_vref << endl;
+    cout << "t_from_vref " << t_from_vref << endl;
+    
+    // First trajectory point
+    resampled_trajectory_vector_list.push_back(first_trajectory_point);
+    
+    for (int i=0; i<waypoint_list.size()-1; i++) 
     {
-        resampled_waypoint_list.push_back(RobotPosition(waypoint_list[i]));
-        if (i < waypoint_list.size()-1)
+        RobotPosition current_waypoint = waypoint_list[i];
+        RobotPosition vector_between_waypoints = waypoint_list[i+1] - waypoint_list[i];
+        
+        double distance_between_waypoints = vector_between_waypoints.norm();
+        
+        int ndiv = std::floor(distance_between_waypoints / (NOMINAL_SPEED * MAX_OCP_TIMESTEP));    
+        
+        for (int j=0; j<ndiv+1; j++) 
         {
-            RobotPosition current_waypoint = waypoint_list[i];
-            RobotPosition vector_between_waypoints = waypoint_list[i+1] - waypoint_list[i];
+            if (i == 0 & j == 0) continue;
             
-            double distance_between_waypoints = vector_between_waypoints.norm();
+            double prop = (j+1.0) / (ndiv+0.0);
+            double current_time = i * reference_time_horizon / (waypoint_list.size()-1) + j * distance_between_waypoints / NOMINAL_SPEED / ndiv;    
             
-            int ndiv = std::ceil(distance_between_waypoints / (NOMINAL_SPEED * MAX_OCP_TIMESTEP));    
+            cout << "current_time " << current_time << endl;
             
-            for (int j=0; j<ndiv; j++) 
+            TrajectoryPoint tp_;
+            tp_.position = current_waypoint + prop * vector_between_waypoints;
+            
+            //~ cout << tp_.position << endl;
+            
+            if (reference_time_horizon - current_time < t_from_vref)
             {
-                double prop = (j+1.0) / (ndiv+1.0);
-                resampled_waypoint_list.push_back(current_waypoint + prop * vector_between_waypoints);
+                tp_.linearVelocity = ((current_time - t_from_vref) * maxWheelSpeed + (reference_time_horizon - current_time) * last_trajectory_point.linearVelocity) / t_from_vref / wheelRadius; 
+                tp_.linearAcceleration = -maxWheelAcceleration;
+                tp_.angularVelocity = 0.0; 
+                tp_.linearAcceleration = 0.0;
             }
+            else if (current_time < t_to_vref)
+            {
+                tp_.linearVelocity = (current_time * first_trajectory_point.linearVelocity + (t_to_vref - current_time) * maxWheelSpeed) / t_to_vref / wheelRadius; 
+                tp_.linearAcceleration = maxWheelAcceleration;
+                tp_.angularVelocity = 0.0;
+                tp_.linearAcceleration = 0.0;
+            }
+            else
+            {
+                tp_.linearVelocity = maxWheelSpeed / wheelRadius; 
+                tp_.linearAcceleration = 0.0;
+                tp_.angularVelocity = 0.0;
+                tp_.linearAcceleration = 0.0;
+            }
+            
+            resampled_trajectory_vector_list.push_back(tp_);
+            
+            
         }
+
     }
     
+    // Last trajectory point
+    resampled_trajectory_vector_list.push_back(last_trajectory_point);
+    
+    
+    for (int i=0; i<resampled_trajectory_vector_list.size(); i++) {
+        TrajectoryPoint tmp = resampled_trajectory_vector_list[i];
+        cout << tmp.position << " vlin=" << tmp.linearVelocity << ", wlin=" << tmp.linearAcceleration << ", vang=" << tmp.angularVelocity << ", wang=" << tmp.angularAcceleration << endl;
+    }
+    
+    
+        //~ if (N - j < n_timesteps_from_vref) 
+        //~ {            
+            //~ x_init(j, 3) = j * maxWheelSpeed / N / wheelRadius;
+            //~ x_init(j, 4) = j * maxWheelSpeed / N / wheelRadius;
+            //~ u_init(j, 0) = maxWheelAcceleration / wheelRadius;
+            //~ u_init(j, 1) = maxWheelAcceleration / wheelRadius;
+        //~ }
+        //~ else if (j < n_timesteps_to_vref)
+        //~ {
+            //~ x_init(j, 3) = (N-j) * maxWheelSpeed / N / wheelRadius;
+            //~ x_init(j, 4) = (N-j) * maxWheelSpeed / N / wheelRadius;
+            //~ u_init(j, 0) = -maxWheelAcceleration / wheelRadius;
+            //~ u_init(j, 1) = -maxWheelAcceleration / wheelRadius;
+        //~ }
+        //~ else
+        //~ {
+            //~ x_init(j, 3) = maxWheelSpeed / wheelRadius;
+            //~ x_init(j, 4) = maxWheelSpeed / wheelRadius;
+            //~ u_init(j, 0) = 0.0;
+            //~ u_init(j, 1) = 0.0;
+        //~ }
+    
     // N is the number of intervals
-    int N = resampled_waypoint_list.size()-1;
+    int N = resampled_trajectory_vector_list.size()-1;
     
     //cout << "Resampled waypoints:" << endl;
-    //for (RobotPosition _rp : resampled_waypoint_list) 
+    //for (RobotPosition _rp : resampled_trajectory_vector_list) 
     //{
         //cout << _rp << endl;
     //}
     
     cout << "Number of resampled waypoints: " << N+1 << endl;
+    
+    SampledTrajectory res(resampled_trajectory_vector_list, reference_time_horizon);
+    cout << "foo" << endl;
+    cout << res.getUnderlyingPoints().size() << endl;
+    cout << "bar" << endl;
+    
+    return res;
+}
+
+
+SampledTrajectory miam_pp::get_planned_trajectory_main_robot(
+    SampledTrajectory& init_trajectory,
+    bool plot,
+    bool verbose,
+    bool vlin_free_at_end
+) 
+{
+    cout << "get_planned_trajectory_main_robot" << endl;
+    
+    TrajectoryPoint first_trajectory_point = init_trajectory.getCurrentPoint(0);
+    TrajectoryPoint last_trajectory_point = init_trajectory.getEndPoint();
+    
+    double reference_time_horizon = init_trajectory.getDuration();
+    
     
     // Solve OCP using the resampled waypoints
     // using ACADO
@@ -108,22 +202,46 @@ trajectory::SampledTrajectory miam_pp::get_planned_trajectory_main_robot(
     
     USING_NAMESPACE_ACADO
     
+    int N = init_trajectory.getDuration() / MAX_OCP_TIMESTEP;
+    double timestep = reference_time_horizon / N;
     
     // Initialization
     Grid timeGrid (0.0, reference_time_horizon, N+1);
     VariablesGrid x_init(5, timeGrid);
 	VariablesGrid u_init(2, timeGrid);
     VariablesGrid p_init(1, timeGrid );
+    
     for (int j = 0; j < N+1; j++) {
-
-        x_init(j, 0) = resampled_waypoint_list[j].x / 1000.0;
-        x_init(j, 1) = resampled_waypoint_list[j].y / 1000.0;
-        x_init(j, 2) = resampled_waypoint_list[j].theta;
-        x_init(j, 3) = 0.8 * maxWheelSpeed / wheelRadius;
-        x_init(j, 4) = 0.8 * maxWheelSpeed / wheelRadius;
-
-        u_init(j, 0) = 0.0;
-        u_init(j, 1) = 0.0;
+        
+        TrajectoryPoint tp_ = init_trajectory.getCurrentPoint(j * timestep);
+        
+        x_init(j, 0) = tp_.position.x / 1000.0;
+        x_init(j, 1) = tp_.position.y / 1000.0;
+        x_init(j, 2) = tp_.position.theta;
+        
+        // Initialize wheel speed
+        {
+            WheelSpeed ws_ = drivetrain_kinematics.inverseKinematics(
+                BaseSpeed(
+                    tp_.linearVelocity, 
+                    tp_.angularVelocity
+                    )
+                );
+            x_init(j, 3) = ws_.right;
+            x_init(j, 4) = ws_.left;
+        }
+        
+        // Initialize wheel acceleration
+        {
+            WheelSpeed ws_ = drivetrain_kinematics.inverseKinematics(
+                BaseSpeed(
+                    tp_.linearAcceleration, 
+                    tp_.angularAcceleration
+                    )
+                );
+            u_init(j, 0) = ws_.right;
+            u_init(j, 1) = ws_.left;
+        }
     }
     p_init(0, 0) = reference_time_horizon;
     
@@ -224,9 +342,9 @@ trajectory::SampledTrajectory miam_pp::get_planned_trajectory_main_robot(
     }
 
     
-    algorithm.set( INTEGRATOR_TYPE      , INT_RK4        );
+    algorithm.set( INTEGRATOR_TYPE      , INT_RK78        );
     algorithm.set( INTEGRATOR_TOLERANCE , 1e-8            );
-    algorithm.set( DISCRETIZATION_TYPE  , SINGLE_SHOOTING );
+    algorithm.set( DISCRETIZATION_TYPE  , MULTIPLE_SHOOTING );
     algorithm.set( KKT_TOLERANCE        , 1e-8            );
     
     algorithm.initializeDifferentialStates(x_init);
@@ -251,11 +369,11 @@ trajectory::SampledTrajectory miam_pp::get_planned_trajectory_main_robot(
         cout << "Final time: " << final_time << endl;
     }
     
-    TrajectoryVector output_trajectory;
+    std::vector<TrajectoryPoint > output_trajectory;
     
     for (int i=0; i<N+1; i++) 
     {
-        trajectory::TrajectoryPoint _tp;
+        TrajectoryPoint _tp;
         _tp.position.x = statesGrid_final(i, 0) * 1000.0;
         _tp.position.y = statesGrid_final(i, 1) * 1000.0;
         _tp.position.theta = statesGrid_final(i, 2);
@@ -291,7 +409,7 @@ trajectory::SampledTrajectory miam_pp::get_planned_trajectory_main_robot(
     dummy2.clearStaticCounters();
     dummy3.clearStaticCounters();
     
-    return trajectory::SampledTrajectory(output_trajectory, final_time);
+    return SampledTrajectory(output_trajectory, final_time);
 }
 
 

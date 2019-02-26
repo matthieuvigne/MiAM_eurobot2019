@@ -37,14 +37,16 @@ int main( ){
     /* 
      * Trajectory planning 
      */
-    miam::trajectory::SampledTrajectory sampled_trajectory = miam_pp::get_planned_trajectory_main_robot(
+    miam::trajectory::SampledTrajectory init_trajectory = miam_pp::get_init_trajectory_from_waypoint_list(
         waypoint_list,
         first_trajectory_point,
-        last_trajectory_point,
-        true, // Plot output
-        true, // Print output,
-        true  // vlin_free_at_end
+        last_trajectory_point
     );
+    miam::trajectory::SampledTrajectory sampled_trajectory = miam_pp::get_planned_trajectory_main_robot(
+        init_trajectory,
+        true, // Plot output
+        true  // Print output
+	);
     
     // Get last point of the first half
     miam::trajectory::TrajectoryPoint tp_first_half =
@@ -70,20 +72,23 @@ int main( ){
      /* 
      * Trajectory planning 
      */
-    miam::trajectory::SampledTrajectory sampled_trajectory_2 = miam_pp::get_planned_trajectory_main_robot(
+    miam::trajectory::SampledTrajectory init_trajectory_2 = miam_pp::get_init_trajectory_from_waypoint_list(
         waypoint_list_2,
         first_trajectory_point_2,
-        last_trajectory_point_2,
+        last_trajectory_point_2
+    );
+    miam::trajectory::SampledTrajectory sampled_trajectory_2 = miam_pp::get_planned_trajectory_main_robot(
+        init_trajectory_2,
         true, // Plot output
         true  // Print output
-    );
+	);
     
     //// Combine trajectories
-    miam_pp::TrajectoryVector output_trajectory_vector = sampled_trajectory.getUnderlyingPoints();
+    std::vector<TrajectoryPoint > output_trajectory_vector = sampled_trajectory.getUnderlyingPoints();
     // Remove last point (duplicate)
     output_trajectory_vector.pop_back();
     // Concatenate with second half
-    miam_pp::TrajectoryVector output_trajectory_vector_2 = sampled_trajectory_2.getUnderlyingPoints();
+    std::vector<TrajectoryPoint > output_trajectory_vector_2 = sampled_trajectory_2.getUnderlyingPoints();
     output_trajectory_vector.insert(
         output_trajectory_vector.end(),
         output_trajectory_vector_2.begin(),
