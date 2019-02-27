@@ -122,9 +122,9 @@
             /// \return Current robot position.
             RobotPosition getCurrentPosition();
 
-            /// \brief Get current robot wheel speed.
-            /// \return Current robot wheel speed.
-            WheelSpeed getCurrentWheelSpeed();
+            /// \brief Get current robot base speed.
+            /// \return Current robot base speed.
+            BaseSpeed getCurrentBaseSpeed();
 
             /// \brief Reset the position of the robot on the table.
             ///
@@ -136,15 +136,6 @@
             /// \param[in] resetY Wheather or not to reset the Y coordinate.
             /// \param[in] resetTheta Wheather or not to reset the angle.
             void resetPosition(RobotPosition const& resetPosition, bool const& resetX, bool const& resetY, bool const& resetTheta);
-            
-            /// \brief Reset the wheel speed of the robot.
-            ///
-            /// \details Overrides the current wheel speeds.
-            ///
-            /// \param[in] resetWheelSpeed The wheel speed to which reset the robot.
-            /// \param[in] resetRight Wheather or not to reset the right speed.
-            /// \param[in] resetLeft Wheather or not to reset the left speed.
-            void resetWheelSpeed(WheelSpeed const& resetWheelSpeed, bool const& resetRight, bool const& resetLeft);
 
             /// \brief Set new trajectory set to follow.
             /// \details This function is used to set the trajectories which will be followed by
@@ -185,7 +176,7 @@
 
             // Current robot status.
             ProtectedPosition currentPosition_; ///< Current robot position, thread-safe.
-            WheelSpeed currentWheelSpeed_; ///< Current robot wheel speed.
+            BaseSpeed currentBaseSpeed_; ///< Current robot base speed.
             miam::trajectory::TrajectoryPoint trajectoryPoint_; ///< Current trajectory point.
             double currentTime_; ///< Current robot time, counted by low-level thread.
             std::vector<double> motorSpeed_; ///< Current motor speed.

@@ -119,10 +119,8 @@ bool Robot::init()
     initialPosition.y = 0;
     initialPosition.theta = 0;
     currentPosition_.set(initialPosition);
-    WheelSpeed initialWheelSpeed;
-    initialWheelSpeed.right = 0;
-    initialWheelSpeed.left = 0;
-    currentWheelSpeed_.set(initialWheelSpeed);
+    currentBaseSpeed_.linear = 0;
+    currentBaseSpeed_.angular = 0;
 
     // Set PIDs.
     PIDLinear_ = miam::PID(controller::linearKp, controller::linearKd, controller::linearKi, 0.2);
@@ -136,9 +134,9 @@ RobotPosition Robot::getCurrentPosition()
     return currentPosition_.get();
 }
 
-WheelSpeed Robot::getCurrentWheelSpeed()
+BaseSpeed Robot::getCurrentBaseSpeed()
 {
-    return currentWheelSpeed_;
+    return currentBaseSpeed_;
 }
 
 void Robot::resetPosition(RobotPosition const& resetPosition, bool const& resetX, bool const& resetY, bool const& resetTheta)
@@ -344,11 +342,7 @@ void Robot::lowLevelThread()
         instantWheelSpeedEncoder.left = encoderIncrement.left / dt;
         
         // Get base speed
-        BaseSpeed baseSpeed = kinematics_.forwardKinematics(instantWheelSpeedEncoder, true);
-        
-        // Update wheel speeds (in rad/s)
-        WheelSpeed instantWheel = kinematics_.inverseKinematics(baseSpeed);       
-        currentWheelSpeed_.set(instantWheelSpeed);
+        currentBaseSpeed_ = kinematics_.forwardKinematics(instantWheelSpeedEncoder, true);
         
         // Update log.
         updateLog();
