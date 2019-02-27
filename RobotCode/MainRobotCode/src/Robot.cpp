@@ -138,7 +138,7 @@ RobotPosition Robot::getCurrentPosition()
 
 WheelSpeed Robot::getCurrentWheelSpeed()
 {
-    return currentWheelSpeed_.get();
+    return currentWheelSpeed_;
 }
 
 void Robot::resetPosition(RobotPosition const& resetPosition, bool const& resetX, bool const& resetY, bool const& resetTheta)
@@ -152,17 +152,6 @@ void Robot::resetPosition(RobotPosition const& resetPosition, bool const& resetX
         position.theta = resetPosition.theta;
     currentPosition_.set(position);
 }
-
-void Robot::resetWheelSpeed(WheelSpeed const& resetWheelSpeed, bool const& resetRight, bool const& resetLeft)
-{
-    WheelSpeed wheelSpeed = currentWheelSpeed_.get();
-    if(resetRight)
-        wheelSpeed.right = resetWheelSpeed.right;
-    if(resetLeft)
-        wheelSpeed.left = resetWheelSpeed.left;
-    currentWheelSpeed_.set(wheelSpeed);
-}
-
 
 void Robot::setTrajectoryToFollow(std::vector<std::shared_ptr<Trajectory>> const& trajectories)
 {
@@ -349,10 +338,16 @@ void Robot::lowLevelThread()
         double dt = currentTime_ - lastTime;
         updateTrajectoryFollowingTarget(dt);
         
-        // Update current wheel speeds (in rad/s)
-        WheelSpeed instantWheelSpeed;
-        instantWheelSpeed.right = encoderIncrement.right / dt;
-        instantWheelSpeed.left = encoderIncrement.left / dt;
+        // Get current encoder speeds (in rad/s)
+        WheelSpeed instantWheelSpeedEncoder;
+        instantWheelSpeedEncoder.right = encoderIncrement.right / dt;
+        instantWheelSpeedEncoder.left = encoderIncrement.left / dt;
+        
+        // Get base speed
+        BaseSpeed baseSpeed = kinematics_.forwardKinematics(instantWheelSpeedEncoder, true);
+        
+        // Update wheel speeds (in rad/s)
+        WheelSpeed instantWheel = kinematics_.inverseKinematics(baseSpeed);       
         currentWheelSpeed_.set(instantWheelSpeed);
         
         // Update log.

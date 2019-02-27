@@ -62,36 +62,6 @@
             RobotPosition position_;
             std::mutex mutex_;
     };
-    
-    /// \brief Simple class to provide thread-safe access to the robot wheel speeds.
-    class ProtectedWheelSpeed{
-        public:
-            ProtectedWheelSpeed():
-                wheelSpeed_(),
-                mutex_()
-            {
-            }
-
-            WheelSpeed get()
-            {
-                WheelSpeed ws;
-                mutex_.lock();
-                ws = wheelSpeed_;
-                mutex_.unlock();
-                return ws;
-            }
-
-            void set(WheelSpeed const& ws)
-            {
-                mutex_.lock();
-                wheelSpeed_ = ws;
-                mutex_.unlock();
-            }
-
-        private:
-            WheelSpeed wheelSpeed_;
-            std::mutex mutex_;
-    };
 
     // Dimensions of the robot
     namespace robotdimensions
@@ -215,7 +185,7 @@
 
             // Current robot status.
             ProtectedPosition currentPosition_; ///< Current robot position, thread-safe.
-            ProtectedWheelSpeed currentWheelSpeed_; ///< Current robot wheel speed, thread-safe.
+            WheelSpeed currentWheelSpeed_; ///< Current robot wheel speed.
             miam::trajectory::TrajectoryPoint trajectoryPoint_; ///< Current trajectory point.
             double currentTime_; ///< Current robot time, counted by low-level thread.
             std::vector<double> motorSpeed_; ///< Current motor speed.
