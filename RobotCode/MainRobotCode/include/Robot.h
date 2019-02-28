@@ -13,6 +13,7 @@
     #include <MiAMEurobot/raspberry_pi/RaspberryPi.h>
     #include <MiAMEurobot/trajectory/PointTurn.h>
     #include <MiAMEurobot/trajectory/Utilities.h>
+    #include <MiAMEurobot/trajectory/DrivetrainKinematics.h>
     #include <math.h>
     #include <stdlib.h>
     #include <stdio.h>
@@ -121,6 +122,10 @@
             /// \return Current robot position.
             RobotPosition getCurrentPosition();
 
+            /// \brief Get current robot base speed.
+            /// \return Current robot base speed.
+            BaseSpeed getCurrentBaseSpeed();
+
             /// \brief Reset the position of the robot on the table.
             ///
             /// \details This function might be used for example when the robot is put in contact with a side of the table,
@@ -171,6 +176,7 @@
 
             // Current robot status.
             ProtectedPosition currentPosition_; ///< Current robot position, thread-safe.
+            BaseSpeed currentBaseSpeed_; ///< Current robot base speed.
             miam::trajectory::TrajectoryPoint trajectoryPoint_; ///< Current trajectory point.
             double currentTime_; ///< Current robot time, counted by low-level thread.
             std::vector<double> motorSpeed_; ///< Current motor speed.
