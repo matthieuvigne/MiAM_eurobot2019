@@ -14,7 +14,6 @@ set(CMAKE_CXX_FLAGS "-Wall -Wno-psabi -fdiagnostics-color -lpthread")
 # Use pkg-config to find external libraries : Glib (compiled for arm) and BBBEurobot.
 find_package(PkgConfig REQUIRED)
 # Look for external libraries, and link them to the project.
-message(STATUS "Found armglib-2.0 v." ${ARMGLIB_VERSION})
 unset(MIAMLIB_FOUND CACHE)
 pkg_search_module(MIAMLIB REQUIRED MiAMEurobot>=2.0)
 message(STATUS "Found MiAMEurobot v." ${MIAMLIB_VERSION})

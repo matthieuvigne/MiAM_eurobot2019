@@ -63,7 +63,7 @@ int main(int argc, char **argv)
         exit(0);
     }
 
-    // Init communication with arduino.
+    // Init communication with arduino, give it 2s to boot.
     std::thread listenerThread(uCListener_listenerThread, "/dev/ttyACM0");
     usleep(2000000);
 

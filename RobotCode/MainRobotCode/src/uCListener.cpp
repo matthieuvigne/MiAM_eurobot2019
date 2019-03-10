@@ -1,5 +1,6 @@
 #include "uCListener.h"
 
+#include <string.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <errno.h>
@@ -8,6 +9,8 @@
 #include <thread>
 
 #include <cmath>
+
+#include <iostream>
 
 // Length of the message to receive from the uC.
 // The message consists of two 0xFF 0xFF bytes, then n bytes.
@@ -40,7 +43,16 @@ void uCListener_listenerThread(std::string const& portName)
     int port = uart_open(portName, B1000000);
     if(port < 0)
     {
-        printf("Failed to initialize listener port. Terminating.\n");
+        std::cout << "Failed to initialize listener port. Terminating." << std::endl;
+        exit(0);
+    }
+    // Check that an Arduino with the MiAMSlave code is present.
+    unsigned char returnData[9];
+    int returnValue = read_timeout(port, returnData, 9, 2000);
+    if(returnValue < 9 || strcmp((char*)returnData, "MiAMSlave") != 0)
+    {
+        std::cout << "Didn't recieve correct message from Arduino slave: expected MiAMSlave, got \"" << returnData;
+        std::cout << "\". Is Arduino correctly flashed ? Terminating." << std::endl;
         exit(0);
     }
     while(true)

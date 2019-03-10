@@ -27,17 +27,17 @@ void handleEncoder(char encoderNumber)
 {
   // Get current status.
   bool currentA = READ_BIT(ENCODER_TO_REGISTER(encoderNumber), encoderPinA[encoderNumber]);
-  
+
   // The direction of the encoder is given by currentA xor oldB
   encoderCount[encoderNumber] += (oldB[encoderNumber] ^ currentA ? 1 : -1);
   oldB[encoderNumber] =  READ_BIT(ENCODER_TO_REGISTER(encoderNumber), encoderPinB[encoderNumber]);
-  
+
   // Keep the number within 15 bits.
   if(encoderCount[encoderNumber] > INT15_MAX)
     encoderCount[encoderNumber] = INT15_MIN ;
   else if(encoderCount[encoderNumber] < INT15_MIN)
     encoderCount[encoderNumber] = INT15_MAX;
-  
+
 }
 
 // Interrupt for first encoder.
@@ -53,7 +53,7 @@ ISR(PCINT0_vect)
 }
 
 
-void setup() 
+void setup()
 {
   // Enable serial port.
   Serial.begin(1000000);
@@ -71,7 +71,9 @@ void setup()
   PCMSK0 |= 1 << encoderPinB[1];
   // Enalbe interrupt for port B and D.
   PCICR = 0b101;
-  
+
+  // Send ID message - since whenever doing an open() in Linux, the Arduino gets reset, this is the first message the master will read.
+  Serial.write("MiAMSlave");
 }
 
 void loop() {
@@ -88,6 +90,6 @@ void loop() {
   checksum += (encoderComp >> 8) & 0xFF;
   checksum += encoderComp & 0xFF;
  }
-  Serial.write(checksum);
+ Serial.write(checksum);
  delayMicroseconds(2000);
 }
