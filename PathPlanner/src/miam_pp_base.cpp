@@ -112,7 +112,7 @@ trajectory::SampledTrajectory miam_pp::get_planned_trajectory_main_robot(
     // Initialization
     Grid timeGrid (0.0, reference_time_horizon, N+1);
     VariablesGrid x_init(5, timeGrid);
-	VariablesGrid u_init(2, timeGrid);
+    VariablesGrid u_init(2, timeGrid);
     VariablesGrid p_init(1, timeGrid );
     for (int j = 0; j < N+1; j++) {
 
@@ -128,8 +128,8 @@ trajectory::SampledTrajectory miam_pp::get_planned_trajectory_main_robot(
     p_init(0, 0) = reference_time_horizon;
     
     //std::cout << "Initial values:" << std::endl;
-	//x_init.print();
-	//u_init.print();
+    //x_init.print();
+    //u_init.print();
 
     DifferentialState        x, y, theta, vr, vl    ;
     Control                  wr, wl     ;    
@@ -230,8 +230,8 @@ trajectory::SampledTrajectory miam_pp::get_planned_trajectory_main_robot(
     algorithm.set( KKT_TOLERANCE        , 1e-8            );
     
     algorithm.initializeDifferentialStates(x_init);
-	algorithm.initializeControls(u_init);
-	algorithm.initializeParameters(p_init);
+    algorithm.initializeControls(u_init);
+    algorithm.initializeParameters(p_init);
     
     algorithm.solve();
     
@@ -239,10 +239,10 @@ trajectory::SampledTrajectory miam_pp::get_planned_trajectory_main_robot(
     algorithm.getParameters(timeGrid_final);
     
     VariablesGrid controlsGrid_final;
-	algorithm.getControls(controlsGrid_final);
-	
-	VariablesGrid statesGrid_final;
-	algorithm.getDifferentialStates(statesGrid_final);
+    algorithm.getControls(controlsGrid_final);
+    
+    VariablesGrid statesGrid_final;
+    algorithm.getDifferentialStates(statesGrid_final);
     
     double final_time = timeGrid_final(N, 0);
     

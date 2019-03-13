@@ -63,6 +63,10 @@
                     /// \brief Get final point of the trajectory.
                     /// \return Position at duration_
                     TrajectoryPoint getEndPoint();
+                    
+                    /// \brief When following a trajectory, check if the trajectory has already
+                    /// been seen once for init purposes.
+                    bool seenOnce;
 
                     /// \brief Replanify the trajectory from the given time.
                     ///

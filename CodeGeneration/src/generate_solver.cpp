@@ -7,6 +7,19 @@
 using namespace robotdimensions;
 
 
+// Weights of the QP solver
+// Along trajectory
+double mu_traj = 1.0;
+double mu_theta = 1.0;
+double mu_vel = 0.3;
+double mu_control = 0.3;
+// At the end
+double mu_end_traj = 1.0;
+double mu_end_theta = 1.0;
+double mu_end_vel = 0.3;
+double mu_end_control = 0.3;
+
+
 DrivetrainKinematics drivetrain_kinematics(
     wheelRadius,
     wheelSpacing,
@@ -20,7 +33,7 @@ int main()
     USING_NAMESPACE_ACADO
     
     // Number of time intervals
-    int N = 20;
+    int N = 30;
     
     // Duration of the timestep
     // 10 ms
@@ -43,9 +56,19 @@ int main()
     h << x << y << theta << vr << vl;
     hN << x << y << theta << vr << vl;
 
-    DMatrix W = eye<double>( h.getDim() );
-    DMatrix WN = eye<double>( hN.getDim() );
-    WN *= 5;
+    DMatrix W ( h.getDim(), h.getDim() );
+    W(0, 0) = mu_traj;
+    W(1, 1) = mu_traj;
+    W(2, 2) = mu_theta;
+    W(3, 3) = mu_vel;
+    W(4, 4) = mu_vel;
+    
+    DMatrix WN ( hN.getDim(), hN.getDim() );
+    WN(0, 0) = mu_end_traj;
+    WN(1, 1) = mu_end_traj;
+    WN(2, 2) = mu_end_theta;
+    WN(3, 3) = mu_end_vel;
+    WN(4, 4) = mu_end_vel;    
 
     //
     // Optimal Control Problem
@@ -56,34 +79,37 @@ int main()
 
     ocp.minimizeLSQ(W, h);
     ocp.minimizeLSQEndTerm(WN, hN);
+    
+    
+    // Relaxing some constraints
+    ocp.subjectTo( -maxWheelSpeed * 1.1 <= vr <= maxWheelSpeed * 1.1   );     // the control input u,
+    ocp.subjectTo( -maxWheelSpeed * 1.1 <= vl <= maxWheelSpeed * 1.1   );     // the control input u,
+    ocp.subjectTo( -maxWheelAcceleration * 1.1 <= wr <= maxWheelAcceleration * 1.1   );     // the control input u,
+    ocp.subjectTo( -maxWheelAcceleration * 1.1 <= wl <= maxWheelAcceleration * 1.1   );     // the control input u,
 
-    ocp.subjectTo( -maxWheelSpeed <= vr <= maxWheelSpeed   );     // the control input u,
-    ocp.subjectTo( -maxWheelSpeed <= vl <= maxWheelSpeed   );     // the control input u,
-    ocp.subjectTo( -maxWheelAcceleration <= wr <= maxWheelAcceleration   );     // the control input u,
-    ocp.subjectTo( -maxWheelAcceleration <= wl <= maxWheelAcceleration   );     // the control input u,
+    // Export the code:
+    OCPexport mpc( ocp );
 
-	// Export the code:
-	OCPexport mpc( ocp );
+    mpc.set( HESSIAN_APPROXIMATION,       GAUSS_NEWTON    );
+    mpc.set( DISCRETIZATION_TYPE,         SINGLE_SHOOTING );
+    mpc.set( INTEGRATOR_TYPE,             INT_RK4         );
+    mpc.set( NUM_INTEGRATOR_STEPS,        30              );
+    mpc.set( FIX_INITIAL_STATE,           YES              );
 
-	mpc.set( HESSIAN_APPROXIMATION,       GAUSS_NEWTON    );
-	mpc.set( DISCRETIZATION_TYPE,         SINGLE_SHOOTING );
-	mpc.set( INTEGRATOR_TYPE,             INT_RK4         );
-	mpc.set( NUM_INTEGRATOR_STEPS,        30              );
+    mpc.set( QP_SOLVER,                   QP_QPOASES      );
+//     mpc.set( HOTSTART_QP,                 YES             );
+//     mpc.set( LEVENBERG_MARQUARDT,         1.0e-4          );
+    mpc.set( GENERATE_TEST_FILE,          YES             );
+    mpc.set( GENERATE_MAKE_FILE,          YES             );
+    mpc.set( GENERATE_MATLAB_INTERFACE,   NO             );
+    mpc.set( GENERATE_SIMULINK_INTERFACE, NO             );
 
-	mpc.set( QP_SOLVER,                   QP_QPOASES      );
-// 	mpc.set( HOTSTART_QP,                 YES             );
-// 	mpc.set( LEVENBERG_MARQUARDT,         1.0e-4          );
-	mpc.set( GENERATE_TEST_FILE,          YES             );
-	mpc.set( GENERATE_MAKE_FILE,          YES             );
-	mpc.set( GENERATE_MATLAB_INTERFACE,   NO             );
-	mpc.set( GENERATE_SIMULINK_INTERFACE, NO             );
+//     mpc.set( USE_SINGLE_PRECISION,        YES             );
 
-// 	mpc.set( USE_SINGLE_PRECISION,        YES             );
+    if (mpc.exportCode( "MiAM_MPC" ) != SUCCESSFUL_RETURN)
+        exit( EXIT_FAILURE );
 
-	if (mpc.exportCode( "MiAM_MPC" ) != SUCCESSFUL_RETURN)
-		exit( EXIT_FAILURE );
+    mpc.printDimensionsQP( );
 
-	mpc.printDimensionsQP( );
-
-	return EXIT_SUCCESS;
+    return EXIT_SUCCESS;
 }
