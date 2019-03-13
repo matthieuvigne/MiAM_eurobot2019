@@ -10,7 +10,7 @@
 
 #include <MPC.h>
 
-#define MAINROBOTCODE_USE_MPC false
+#define MAINROBOTCODE_USE_MPC true
 
 // Update loop frequency
 const double LOOP_PERIOD = 0.010;
@@ -256,26 +256,9 @@ bool Robot::followTrajectory(Trajectory *traj, double const& timeInTrajectory, d
     
     if(MAINROBOTCODE_USE_MPC)
     {
-        // Get current trajectory state.
-        trajectoryPoint_ = traj->getCurrentPoint(timeInTrajectory);
         
-        // Compute error.
-        RobotPosition currentPosition = currentPosition_.get();
-        
-        // Compute targets for rotation and translation motors.
-        BaseSpeed targetSpeed;
-        
-        // Feedforward.
-        targetSpeed.linear = trajectoryPoint_.linearVelocity;
-        targetSpeed.angular = trajectoryPoint_.angularVelocity;
-        
-        // Compute base velocity.
-        // TODO here fetch linear and angular velocities according to encoders
-        //~ BaseSpeed speed = forwardKinematics(wheelSpeedIn, useEncoders);
-        miam::trajectory::TrajectoryPoint current_trajectory_point;
-        current_trajectory_point.position = currentPosition;
-        current_trajectory_point.linearVelocity = targetSpeed.linear;
-        current_trajectory_point.angularVelocity = targetSpeed.angular;
+        // NOTE: the MPC problem must be initialized when following a new traj
+        // initialize_MPC_problem()
         
         // TODO here time is hardcoded
         if (timeInTrajectory >= traj->getDuration()) 
@@ -286,12 +269,25 @@ bool Robot::followTrajectory(Trajectory *traj, double const& timeInTrajectory, d
             return true;
         }
         
+        // Current trajectory point
+        miam::trajectory::TrajectoryPoint current_trajectory_point;
+        
+        // Position
+        current_trajectory_point.position = currentPosition_.get();
+        
+        // Base speed
+        BaseSpeed current_base_speed = getCurrentBaseSpeed();
+        current_trajectory_point.linearVelocity = current_base_speed.linear;
+        current_trajectory_point.angularVelocity = current_base_speed.angular;
+        
+        // Solve MPC
         miam::trajectory::TrajectoryPoint forward_traj_point = solve_MPC_problem(
             traj,
             current_trajectory_point,
             timeInTrajectory
         );
         
+        // Convert to motor speed
         WheelSpeed ws = kinematics_.inverseKinematics(
             BaseSpeed(
                 forward_traj_point.linearVelocity,
@@ -301,7 +297,7 @@ bool Robot::followTrajectory(Trajectory *traj, double const& timeInTrajectory, d
         
         motorSpeed_[RIGHT] = ws.right / robotdimensions::stepSize;
         motorSpeed_[LEFT] = ws.left / robotdimensions::stepSize;
-        return true;
+        return false;
         
     } 
     else 
@@ -389,6 +385,22 @@ void Robot::updateTrajectoryFollowingTarget(double const& dt)
     {
         // Load first trajectory, look if we are done following it.
         Trajectory *traj = currentTrajectories_.at(0).get();
+        
+        if (MAINROBOTCODE_USE_MPC)
+        {
+            // If the trajectory has never been seen, init MPC problem with it
+            if(!traj->seenOnce)
+            {
+                initialize_MPC_problem
+                (
+                    traj,
+                    currentTime_ - trajectoryStartTime_
+                );
+                traj->seenOnce = true;
+                std::cout << "Initialized new MPC problem" << std::endl;
+            }
+        }
+        
         // Look if first trajectory is done.
         double timeInTrajectory = currentTime_ - trajectoryStartTime_;
         if(timeInTrajectory > traj->getDuration())
