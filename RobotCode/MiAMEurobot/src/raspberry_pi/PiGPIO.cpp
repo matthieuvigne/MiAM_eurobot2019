@@ -91,9 +91,9 @@ void RPi_writeGPIO(unsigned int const& gpioPin, bool const& value)
         return;
 
     if(value == LOW)
-        *(gpio_register + GPCLR0) |= 1 << gpioPin;
+        *(gpio_register + GPCLR0) = 1 << gpioPin;
     else
-        *(gpio_register + GPSET0) |= 1 << gpioPin;
+        *(gpio_register + GPSET0) = 1 << gpioPin;
 }
 
 bool RPi_readGPIO(unsigned int const& gpioPin)

@@ -409,7 +409,7 @@ namespace miam
         for(uint8_t i = 1; i <= paramLength; i++)
         {
             for(uint j = 0; j < numberOfDevices_; j++)
-                response.at(j)  += data[numberOfDevices_ * i] << (8 * (paramLength - i));
+                response.at(j)  += data[numberOfDevices_ * i + j] << (8 * (paramLength - i));
         }
         return response;
     }
