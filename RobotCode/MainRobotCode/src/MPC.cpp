@@ -51,7 +51,7 @@ void initialize_MPC_problem(
     
 
     /* Initialize the measurements/reference. */
-    for (int j = 0; j < N; j++) {
+    for (int j = 0; j < N+1; j++) {
         double _current_time_offset = HORIZON_T * j / N;
         
         TrajectoryPoint current_time_point = reference_trajectory->getCurrentPoint(current_time + _current_time_offset);
@@ -63,11 +63,11 @@ void initialize_MPC_problem(
         WheelSpeed ws =
             dt_kinematics_mpc.inverseKinematics(bs);
         
-        acadoVariables.y[ j * NY ] = current_time_point.position.x / 1000.0;
-        acadoVariables.y[ j * NY + 1] = current_time_point.position.y / 1000.0;
-        acadoVariables.y[ j * NY + 2] = current_time_point.position.theta;
-        acadoVariables.y[ j * NY + 3] = ws.right;
-        acadoVariables.y[ j * NY + 4] = ws.left ;
+        acadoVariables.x[ j * NX ] = current_time_point.position.x / 1000.0;
+        acadoVariables.x[ j * NX + 1] = current_time_point.position.y / 1000.0;
+        acadoVariables.x[ j * NX + 2] = current_time_point.position.theta;
+        acadoVariables.x[ j * NX + 3] = ws.right;
+        acadoVariables.x[ j * NX + 4] = ws.left ;
     }
     
     /* Initialize the controls. Use an Euler scheme according to the velocities... */
@@ -79,23 +79,23 @@ void initialize_MPC_problem(
     acadoVariables.u[ (N-1) * NU ] = acadoVariables.u[ (N-2) * NU ];
     acadoVariables.u[ (N-1) * NU + 1] = acadoVariables.u[ (N-2) * NU + 1 ];
     
-    /* Initialize the final point. */
-    {
-        TrajectoryPoint final_time_point = reference_trajectory->getCurrentPoint(current_time + HORIZON_T);
+    //~ /* Initialize the final point. */
+    //~ {
+        //~ TrajectoryPoint final_time_point = reference_trajectory->getCurrentPoint(current_time + HORIZON_T);
         
-        BaseSpeed bs(
-            final_time_point.linearVelocity,
-            final_time_point.angularVelocity
-        );
-        WheelSpeed ws =
-            dt_kinematics_mpc.inverseKinematics(bs);
+        //~ BaseSpeed bs(
+            //~ final_time_point.linearVelocity,
+            //~ final_time_point.angularVelocity
+        //~ );
+        //~ WheelSpeed ws =
+            //~ dt_kinematics_mpc.inverseKinematics(bs);
         
-        acadoVariables.yN[0] = final_time_point.position.x / 1000.0;
-        acadoVariables.yN[1] = final_time_point.position.y / 1000.0;
-        acadoVariables.yN[2] = final_time_point.position.theta;
-        acadoVariables.yN[3] = ws.right;
-        acadoVariables.yN[4] = ws.left;
-    }
+        //~ acadoVariables.xN[0] = final_time_point.position.x / 1000.0;
+        //~ acadoVariables.xN[1] = final_time_point.position.y / 1000.0;
+        //~ acadoVariables.xN[2] = final_time_point.position.theta;
+        //~ acadoVariables.xN[3] = ws.right;
+        //~ acadoVariables.xN[4] = ws.left;
+    //~ }
 }
 
 
@@ -198,7 +198,7 @@ TrajectoryPoint solve_MPC_problem(
             acadoVariables.x[n_delay * 5 + 4]
         );
         BaseSpeed bs =
-            dt_kinematics_mpc.forwardKinematics(ws);
+            dt_kinematics_mpc.forwardKinematics(ws, false);
         
         updated_current_trajectory_point.position.x = acadoVariables.x[n_delay * 5 + 0] * 1000.0;
         updated_current_trajectory_point.position.y = acadoVariables.x[n_delay * 5 + 1] * 1000.0;
