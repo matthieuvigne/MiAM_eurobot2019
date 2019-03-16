@@ -9,15 +9,15 @@ using namespace robotdimensions;
 
 // Weights of the QP solver
 // Along trajectory
-double mu_traj = 1.0;
-double mu_theta = 1.0;
-double mu_vel = 0.3;
-double mu_control = 0.3;
+double mu_traj = 10.0;
+double mu_theta = 2.0;
+double mu_vel = 0.01;
+//~ double mu_control = 0.3;
 // At the end
-double mu_end_traj = 1.0;
-double mu_end_theta = 1.0;
-double mu_end_vel = 0.3;
-double mu_end_control = 0.3;
+double mu_end_traj = 10.0;
+double mu_end_theta = 2.0;
+double mu_end_vel = 0.01;
+//~ double mu_end_control = 0.3 * 5;
 
 
 DrivetrainKinematics drivetrain_kinematics(
@@ -33,7 +33,7 @@ int main()
     USING_NAMESPACE_ACADO
     
     // Number of time intervals
-    int N = 30;
+    int N = 20;
     
     // Duration of the timestep
     // 10 ms
@@ -46,9 +46,9 @@ int main()
     Control                  wr, wl     ;   
     DifferentialEquation     f( 0.0, T );
 
-    f << dot(x) == (vr + vl) * M_PI * wheelRadius * cos(theta) / 1000.0;
-    f << dot(y) == (vr + vl) * M_PI * wheelRadius * sin(theta) / 1000.0;
-    f << dot(theta) == (vr - vl) * M_PI * wheelRadius / wheelSpacing;
+    f << dot(x) == (vr + vl) * wheelRadius * cos(theta) / 2.0 / 1000.0;
+    f << dot(y) == (vr + vl) * wheelRadius * sin(theta) / 2.0 / 1000.0;
+    f << dot(theta) == (vr - vl) * wheelRadius / 2.0 / wheelSpacing;
     f << dot(vr) == wr;
     f << dot(vl) == wl;
     
@@ -84,8 +84,8 @@ int main()
     // Relaxing some constraints
     ocp.subjectTo( -maxWheelSpeed * 1.1 <= vr <= maxWheelSpeed * 1.1   );     // the control input u,
     ocp.subjectTo( -maxWheelSpeed * 1.1 <= vl <= maxWheelSpeed * 1.1   );     // the control input u,
-    ocp.subjectTo( -maxWheelAcceleration * 1.1 <= wr <= maxWheelAcceleration * 1.1   );     // the control input u,
-    ocp.subjectTo( -maxWheelAcceleration * 1.1 <= wl <= maxWheelAcceleration * 1.1   );     // the control input u,
+    ocp.subjectTo( -maxWheelAcceleration * 10 <= wr <= maxWheelAcceleration * 10   );     // the control input u,
+    ocp.subjectTo( -maxWheelAcceleration * 10 <= wl <= maxWheelAcceleration * 10   );     // the control input u,
 
     // Export the code:
     OCPexport mpc( ocp );
@@ -93,7 +93,7 @@ int main()
     mpc.set( HESSIAN_APPROXIMATION,       GAUSS_NEWTON    );
     mpc.set( DISCRETIZATION_TYPE,         SINGLE_SHOOTING );
     mpc.set( INTEGRATOR_TYPE,             INT_RK4         );
-    mpc.set( NUM_INTEGRATOR_STEPS,        30              );
+    //~ mpc.set( NUM_INTEGRATOR_STEPS,        N              );
     mpc.set( FIX_INITIAL_STATE,           YES              );
 
     mpc.set( QP_SOLVER,                   QP_QPOASES      );
