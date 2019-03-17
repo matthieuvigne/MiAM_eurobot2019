@@ -24,6 +24,16 @@ bool MaestroDriver::init(std::string const& portName, int const& deviceID)
     if(port_ == -1)
         return false;
 
+    // Check that a Maestro servo driver is indeed present.
+    // This is done by sending a GetMovingState command and checking the reply.
+    tcflush(port_, TCIOFLUSH);
+
+    unsigned char returnData[1];
+    sendCommand(0x13, returnData, 1);
+    int returnValue = read_timeout(port_, returnData, 1, 100);
+    if(returnValue < 1 || returnData[0] > 1)
+        return false;
+
     return true;
 }
 

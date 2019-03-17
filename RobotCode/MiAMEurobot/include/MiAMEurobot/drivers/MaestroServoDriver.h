@@ -9,6 +9,7 @@
     #include <string>
 
     /// \brief MaestroDriver Pololu servo driver, using USB or UART communication.
+    /// \details The so-called "Pololu protocol" is used, without CRC check.
     class MaestroDriver
     {
         public:
@@ -35,7 +36,6 @@
             /// \param[in] servo The number of the servo to change (from 0 to 15).
             /// \param[in] speed Servo speed, in us/s. Device resolution is 25us/s
             void setSpeed(int const& servo, int const& speed);
-
         private:
 
             /// \brief Clear internal device error.
