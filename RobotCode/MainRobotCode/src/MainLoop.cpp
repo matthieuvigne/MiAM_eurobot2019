@@ -63,9 +63,14 @@ int main(int argc, char **argv)
         exit(0);
     }
 
-    // Init communication with arduino, give it 2s to boot.
-    std::thread listenerThread(uCListener_listenerThread, "/dev/ttyACM0");
-    usleep(2000000);
+    // Init communication with arduino.
+    bool isArduinoInit = uCListener_start("/dev/arduinoUno");
+    if(!isArduinoInit)
+    {
+        std::cout << "Failed to talk to Arduino" << std::endl;
+        exit(0);
+    }
+
 
     // Start low-level thread.
     std::thread lowLevelThread(&Robot::lowLevelThread, &robot);

@@ -33,28 +33,12 @@ int16_t lastEncoderValue[2] = {0, 0};
 // First read: take current value as 0.
 bool isFirstRead = true;
 
-void uCListener_listenerThread(std::string const& portName)
+void uCListener_listenerThread(int const& port)
 {
     // Init data structure.
     listenerData.encoderValues[0] = 0.0;
     listenerData.encoderValues[1] = 0.0;
 
-    // Open communication
-    int port = uart_open(portName, B1000000);
-    if(port < 0)
-    {
-        std::cout << "Failed to initialize listener port. Terminating." << std::endl;
-        exit(0);
-    }
-    // Check that an Arduino with the MiAMSlave code is present.
-    unsigned char returnData[9];
-    int returnValue = read_timeout(port, returnData, 9, 2000);
-    if(returnValue < 9 || strcmp((char*)returnData, "MiAMSlave") != 0)
-    {
-        std::cout << "Didn't recieve correct message from Arduino slave: expected MiAMSlave, got \"" << returnData;
-        std::cout << "\". Is Arduino correctly flashed ? Terminating." << std::endl;
-        exit(0);
-    }
     while(true)
     {
         // Read a single byte from the serial port.
@@ -130,6 +114,32 @@ void uCListener_listenerThread(std::string const& portName)
 }
 
 
+bool uCListener_start(std::string const& portName)
+{
+    // Start communication with the arduino.
+
+    // Open communication
+    int port = uart_open(portName, B1000000);
+    if(port < 0)
+        return false;
+
+    // Check that an Arduino with the MiAMSlave code is present.
+    unsigned char returnData[10];
+    returnData[9] = '\0';
+    int returnValue = read_timeout(port, returnData, 9, 2500);
+    if(returnValue < 9 || strcmp((char*)returnData, "MiAMSlave") != 0)
+    {
+        std::cout << "Didn't recieve correct message from Arduino slave: expected MiAMSlave, got \"" << returnData << "\"" << std::endl;
+        return false;
+    }
+
+    // Start the listening thread.
+    std::thread listenerThread(uCListener_listenerThread, port);
+    listenerThread.detach();
+    return true;
+}
+
+
 uCData uCListener_getData()
 {
     uCMutex.lock();
@@ -137,4 +147,3 @@ uCData uCListener_getData()
     uCMutex.unlock();
     return currentData;
 }
-

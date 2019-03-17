@@ -15,14 +15,17 @@
         double encoderValues[2]; ///<< Current position of the two encoders, in rad.
     }uCData;
 
-    /// \brief The listener thread ; this function never returns and needs to be launched as a separate thread.
+    /// \brief Start a background thread listening to the arduino microcontroller.
+    ///
+    /// \details This function starts the thread, and waits for a reply from the Arduino. This may take up to 2s.
     ///
     /// \param[in] portName Name of the serial port to connect to.
     /// \note By default, the port name to which the Arduino connects can change (/dev/ttyACMx). To bind to a fix
     /// path, create a rule in /etc/udev/rules.d/10-local.rules. For instance, for an Arduino Uno board add the following line:
     /// SUBSYSTEM=="tty", ATTRS{idVendor}=="2341", ATTRS{idProduct}=="0043", SYMLINK+="arduinoUno"
     /// This makes any arduino board match the symlink /dev/arduinoUno
-    void uCListener_listenerThread(std::string const& portName);
+    /// \return True if communication with Arduino is successful.
+    bool uCListener_start(std::string const& portName);
 
     /// \brief Get the last value read from the sensors.
     uCData uCListener_getData();
