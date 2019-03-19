@@ -7,7 +7,6 @@
 
 using namespace miam;
 using namespace miam::trajectory;
-using namespace robotdimensions;
 
 /* Some convenient definitions. */
 #define NX          ACADO_NX  /* Number of differential state variables.  */
@@ -20,26 +19,18 @@ using namespace robotdimensions;
 
 #define N           ACADO_N   /* Number of intervals in the horizon. */
 
-#define VERBOSE     0         /* Show iterations: 1, silent: 0.  */
+#define VERBOSE     1         /* Show iterations: 1, silent: 0.  */
 
 
 /*
  * Parameters with which the custom solver was compiled
  */
-#define DELTA_T    0.015
+#define DELTA_T    0.02
 #define HORIZON_T   DELTA_T * N
 
 /* Global variables used by the solver. */
 ACADOvariables acadoVariables;
 ACADOworkspace acadoWorkspace;
-
-
-DrivetrainKinematics dt_kinematics_mpc(
-    wheelRadius,
-    wheelSpacing,
-    encoderWheelRadius,
-    encoderWheelSpacing
-);
 
 
 void initialize_MPC_problem(
@@ -49,53 +40,23 @@ void initialize_MPC_problem(
     /* Initialize the solver. */
     acado_initializeSolver();
     
-
-    /* Initialize the measurements/reference. */
     for (int j = 0; j < N+1; j++) {
         double _current_time_offset = HORIZON_T * j / N;
-        
         TrajectoryPoint current_time_point = reference_trajectory->getCurrentPoint(current_time + _current_time_offset);
         
-        //~ BaseSpeed bs(
-            //~ current_time_point.linearVelocity,
-            //~ current_time_point.angularVelocity
-        //~ );
-        //~ WheelSpeed ws =
-            //~ dt_kinematics_mpc.inverseKinematics(bs);
-        
+        /* Initialize the states. */        
         acadoVariables.x[ j * NX ] = current_time_point.position.x / 1000.0;
         acadoVariables.x[ j * NX + 1] = current_time_point.position.y / 1000.0;
         acadoVariables.x[ j * NX + 2] = current_time_point.position.theta;
-        acadoVariables.x[ j * NX + 3] = current_time_point.linearVelocity / 1000.0;
-        acadoVariables.x[ j * NX + 4] = current_time_point.angularVelocity;
+    
+        /* Initialize the controls. */
+        acadoVariables.u[ j * NU ] = current_time_point.linearVelocity / 1000.0;
+        acadoVariables.u[ j * NU + 1] = current_time_point.angularVelocity;
     }
     
-    /* Initialize the controls. Use an Euler scheme according to the velocities... */
-    for (int j = 0; j < N-1; j++) {      
-        acadoVariables.u[ j * NU ] = (acadoVariables.y[ (j+1) * NY + 3] - acadoVariables.y[ j * NY + 3]) / DELTA_T;
-        acadoVariables.u[ j * NU + 1] = (acadoVariables.y[ (j+1) * NY + 4] - acadoVariables.y[ j * NY + 4]) / DELTA_T;
-    }
     // End control: duplicate the preceding control
     acadoVariables.u[ (N-1) * NU ] = acadoVariables.u[ (N-2) * NU ];
     acadoVariables.u[ (N-1) * NU + 1] = acadoVariables.u[ (N-2) * NU + 1 ];
-    
-    //~ /* Initialize the final point. */
-    //~ {
-        //~ TrajectoryPoint final_time_point = reference_trajectory->getCurrentPoint(current_time + HORIZON_T);
-        
-        //~ BaseSpeed bs(
-            //~ final_time_point.linearVelocity,
-            //~ final_time_point.angularVelocity
-        //~ );
-        //~ WheelSpeed ws =
-            //~ dt_kinematics_mpc.inverseKinematics(bs);
-        
-        //~ acadoVariables.xN[0] = final_time_point.position.x / 1000.0;
-        //~ acadoVariables.xN[1] = final_time_point.position.y / 1000.0;
-        //~ acadoVariables.xN[2] = final_time_point.position.theta;
-        //~ acadoVariables.xN[3] = ws.right;
-        //~ acadoVariables.xN[4] = ws.left;
-    //~ }
 }
 
 
@@ -108,27 +69,15 @@ TrajectoryPoint solve_MPC_problem(
     /* Some temporary variables. */
     acado_timer t;
 
-    {
-        //~ BaseSpeed current_base_speed(
-            //~ current_trajectory_point.linearVelocity,
-            //~ current_trajectory_point.angularVelocity
-        //~ );
-        //~ /* MPC: initialize the current state feedback. */
-        //~ WheelSpeed ws =
-            //~ dt_kinematics_mpc.inverseKinematics(current_base_speed);
-        
-        acadoVariables.x0[0] = current_trajectory_point.position.x / 1000.0;
-        acadoVariables.x0[1] = current_trajectory_point.position.y / 1000.0;
-        acadoVariables.x0[2] = current_trajectory_point.position.theta;
-        acadoVariables.x0[3] = current_trajectory_point.linearVelocity / 1000.0;
-        acadoVariables.x0[4] = current_trajectory_point.angularVelocity;
-        
-        acadoVariables.x[0] = current_trajectory_point.position.x / 1000.0;
-        acadoVariables.x[1] = current_trajectory_point.position.y / 1000.0;
-        acadoVariables.x[2] = current_trajectory_point.position.theta;
-        acadoVariables.x[3] = current_trajectory_point.linearVelocity / 1000.0;
-        acadoVariables.x[4] = current_trajectory_point.angularVelocity;
-    }
+    // Initial state
+    acadoVariables.x0[0] = current_trajectory_point.position.x / 1000.0;
+    acadoVariables.x0[1] = current_trajectory_point.position.y / 1000.0;
+    acadoVariables.x0[2] = current_trajectory_point.position.theta;
+    
+    // Initial state
+    acadoVariables.x[0] = current_trajectory_point.position.x / 1000.0;
+    acadoVariables.x[1] = current_trajectory_point.position.y / 1000.0;
+    acadoVariables.x[2] = current_trajectory_point.position.theta;
     
     /* Initialize the measurements/reference. */
     for (int j = 0; j < N; j++) {
@@ -136,38 +85,25 @@ TrajectoryPoint solve_MPC_problem(
         
         TrajectoryPoint current_time_point = reference_trajectory->getCurrentPoint(current_time + _current_time_offset);
         
-        BaseSpeed bs(
-            current_time_point.linearVelocity,
-            current_time_point.angularVelocity
-        );
-        WheelSpeed ws =
-            dt_kinematics_mpc.inverseKinematics(bs);
-        
+        // State
         acadoVariables.y[ j * NY ] = current_time_point.position.x / 1000.0;
         acadoVariables.y[ j * NY + 1] = current_time_point.position.y / 1000.0;
         acadoVariables.y[ j * NY + 2] = current_time_point.position.theta;
+        
+        // Control
         acadoVariables.y[ j * NY + 3] = current_time_point.linearVelocity / 1000.0;
         acadoVariables.y[ j * NY + 4] = current_time_point.angularVelocity ;
     }
     
 
     /* Initialize the final point. */
-    {
-        TrajectoryPoint final_time_point = reference_trajectory->getCurrentPoint(current_time + HORIZON_T);
-        
-        //~ BaseSpeed bs(
-            //~ final_time_point.linearVelocity,
-            //~ final_time_point.angularVelocity
-        //~ );
-        //~ WheelSpeed ws =
-            //~ dt_kinematics_mpc.inverseKinematics(bs);
-        
-        acadoVariables.yN[0] = final_time_point.position.x / 1000.0;
-        acadoVariables.yN[1] = final_time_point.position.y / 1000.0;
-        acadoVariables.yN[2] = final_time_point.position.theta;
-        //~ acadoVariables.yN[3] = ws.right;
-        //~ acadoVariables.yN[4] = ws.left;
-    }
+    
+    TrajectoryPoint final_time_point = reference_trajectory->getCurrentPoint(current_time + HORIZON_T);
+    
+    // State
+    acadoVariables.yN[0] = final_time_point.position.x / 1000.0;
+    acadoVariables.yN[1] = final_time_point.position.y / 1000.0;
+    acadoVariables.yN[2] = final_time_point.position.theta;
 
     if( VERBOSE ) acado_printHeader();
 
@@ -182,42 +118,40 @@ TrajectoryPoint solve_MPC_problem(
 
     /* Apply the new control immediately to the process, first NU components. */
 
-    if( VERBOSE ) printf("\t KKT Tolerance = %.3e\n\n", acado_getKKT() );
+    if( VERBOSE ) printf("\t KKT Tolerance = %.3e\n", acado_getKKT() );
 
     /* Read the elapsed time. */
     real_t te = acado_toc( &t );
 
-    if( VERBOSE ) printf("\n\n Average time of one real-time iteration:   %.3g microseconds\n\n", 1e6 * te);
+    if( VERBOSE ) printf("Average time of one real-time iteration:   %.3g microseconds\n", 1e6 * te);
 
-    if (VERBOSE )
-    {
-        acado_printDifferentialVariables();
-        acado_printControlVariables();
-    }
+    //~ if (VERBOSE )
+    //~ {
+        //~ acado_printDifferentialVariables();
+        //~ acado_printControlVariables();
+    //~ }
     
-    for (int i=0; i<NX; i++)
-    {
-        std::cout << acadoVariables.x[i] << " ";
+    if( VERBOSE ) {
+        for (int i=0; i<NX; i++)
+        {
+            std::cout << acadoVariables.x[i] << " ";
+        }
+        std::cout << std::endl;
     }
-    std::cout << std::endl;
     
     /* Get the updated trajectory point at t + n_delay * DELTA_T */
-    int n_delay = 1;
+    int n_delay = 0;
+    
     TrajectoryPoint updated_current_trajectory_point;
-    {
-        //~ WheelSpeed ws(
-            //~ acadoVariables.x[n_delay * 5 + 3],
-            //~ acadoVariables.x[n_delay * 5 + 4]
-        //~ );
-        //~ BaseSpeed bs =
-            //~ dt_kinematics_mpc.forwardKinematics(ws, false);
-        
-        updated_current_trajectory_point.position.x = acadoVariables.x[n_delay * 5 + 0] * 1000.0;
-        updated_current_trajectory_point.position.y = acadoVariables.x[n_delay * 5 + 1] * 1000.0;
-        updated_current_trajectory_point.position.theta = acadoVariables.x[n_delay * 5 + 2];
-        updated_current_trajectory_point.linearVelocity = acadoVariables.x[n_delay * 5 + 3] * 1000.0;
-        updated_current_trajectory_point.angularVelocity = acadoVariables.x[n_delay * 5 + 4];
-    }
+    
+    // States
+    updated_current_trajectory_point.position.x = acadoVariables.x[n_delay * 3 + 0] * 1000.0;
+    updated_current_trajectory_point.position.y = acadoVariables.x[n_delay * 3 + 1] * 1000.0;
+    updated_current_trajectory_point.position.theta = acadoVariables.x[n_delay * 3 + 2];
+    
+    // Controls
+    updated_current_trajectory_point.linearVelocity = acadoVariables.u[n_delay * 2 + 0] * 1000.0;
+    updated_current_trajectory_point.angularVelocity = acadoVariables.u[n_delay * 2 + 1];
     
     return updated_current_trajectory_point;
 }
