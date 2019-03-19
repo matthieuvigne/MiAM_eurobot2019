@@ -9,15 +9,10 @@ using namespace robotdimensions;
 
 // Weights of the QP solver
 // Along trajectory
-double mu_traj = 100 * 50.0;
-double mu_theta = 100 * 20.0;
-double mu_vel = 0.01;
-//~ double mu_control = 0.3;
-// At the end
-double mu_end_traj = 100 * 50.0;
-double mu_end_theta = 100 * 20.0;
-//~ double mu_end_vel = 0.01;
-//~ double mu_end_control = 0.3 * 5;
+double mu_traj = 1 * 50.0;
+double mu_theta = 1 * 20.0;
+double mu_vlin = 0.01;
+double mu_vang = 0.01;
 
 
 DrivetrainKinematics drivetrain_kinematics(
@@ -33,47 +28,40 @@ int main()
     USING_NAMESPACE_ACADO
     
     // Number of time intervals
-    int N = 20;
+    int N = 10;
     
     // Duration of the timestep
     // 10 ms
-    double dt = 0.01;
+    double dt = 0.015;
     
     // Final time
     double T = N * dt;
 
-    DifferentialState        x, y, theta, vr, vl    ;
-    Control                  wr, wl     ;   
+    DifferentialState        x, y, theta, v, w    ;
+    Control                  vu, wu     ;   
     DifferentialEquation     f( 0.0, T );
-    
-    IntermediateState v, w ;
-    
-    v = (vr + vl) * wheelRadius / 2.0 / 1000.0;
-    w = (vr - vl) * wheelRadius / 2.0 / wheelSpacing;
 
     f << dot(x) == v * cos(theta) ;
     f << dot(y) == v * sin(theta) ;
     f << dot(theta) == w;
-    f << dot(vr) == wr;
-    f << dot(vl) == wl;
+    f << dot(v) == vu;
+    f << dot(w) == wu;
     
     Function h, hN;
-    h << x << y << theta << vr << vl;
-    hN << x << y << theta ;//<< vr << vl;
+    h << x << y << theta << v << w ;
+    hN << x << y << theta ;
 
     DMatrix W ( h.getDim(), h.getDim() );
     W(0, 0) = mu_traj;
     W(1, 1) = mu_traj;
     W(2, 2) = mu_theta;
-    W(3, 3) = mu_vel;
-    W(4, 4) = mu_vel;
+    W(3, 3) = mu_vlin;
+    W(4, 4) = mu_vang;
     
     DMatrix WN ( hN.getDim(), hN.getDim() );
-    WN(0, 0) = mu_end_traj;
-    WN(1, 1) = mu_end_traj;
-    WN(2, 2) = mu_end_theta;
-    //~ WN(3, 3) = mu_end_vel;
-    //~ WN(4, 4) = mu_end_vel;    
+    WN(0, 0) = 10.0 * mu_traj;
+    WN(1, 1) = 10.0 * mu_traj;
+    WN(2, 2) = 10.0 * mu_theta;
 
     //
     // Optimal Control Problem
@@ -87,10 +75,8 @@ int main()
     
     
     // Relaxing some constraints
-    ocp.subjectTo( -maxWheelSpeed * wheelRadius * 1.1 / 1000.0 <= vr <= maxWheelSpeed * wheelRadius * 1.1 / 1000.0   );     // the control input u,
-    ocp.subjectTo( -maxWheelSpeed * wheelRadius * 1.1 / 1000.0 <= vl <= maxWheelSpeed * wheelRadius * 1.1 / 1000.0   );     // the control input u,
-    ocp.subjectTo( -maxWheelAcceleration * wheelRadius * 1.2 / 1000.0 <= wr <= maxWheelAcceleration * wheelRadius * 1.2 / 1000.0   );     // the control input u,
-    ocp.subjectTo( -maxWheelAcceleration * wheelRadius * 1.2 / 1000.0 <= wl <= maxWheelAcceleration * wheelRadius * 1.2 / 1000.0   );     // the control input u,
+    ocp.subjectTo( -maxWheelSpeed * 1.2 / 1000.0 <= v + (wheelSpacing / 1000.0) * w <= maxWheelSpeed * 1.2 / 1000.0   );     // the control input u,
+    ocp.subjectTo( -maxWheelAcceleration * 1.2 / 1000.0 <= vu + (wheelSpacing / 1000.0) * wu <= maxWheelAcceleration * 1.2 / 1000.0   );     // the control input u,
 
     // Export the code:
     OCPexport mpc( ocp );
@@ -99,13 +85,10 @@ int main()
     mpc.set( DISCRETIZATION_TYPE,         SINGLE_SHOOTING );
     mpc.set( INTEGRATOR_TYPE,             INT_RK4         );
     mpc.set( NUM_INTEGRATOR_STEPS,        N              );
-    //~ mpc.set( FIX_INITIAL_STATE,           YES              );
 
     mpc.set( QP_SOLVER,                   QP_QPOASES      );
-//     mpc.set( HOTSTART_QP,                 YES             );
-//     mpc.set( LEVENBERG_MARQUARDT,         1.0e-4          );
-    mpc.set( GENERATE_TEST_FILE,          YES             );
-    mpc.set( GENERATE_MAKE_FILE,          YES             );
+    mpc.set( GENERATE_TEST_FILE,          NO             );
+    mpc.set( GENERATE_MAKE_FILE,          NO             );
     mpc.set( GENERATE_MATLAB_INTERFACE,   NO             );
     mpc.set( GENERATE_SIMULINK_INTERFACE, NO             );
 
