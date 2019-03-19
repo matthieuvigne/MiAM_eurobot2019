@@ -35,6 +35,7 @@ int main() {
 	}
     
     TrajectoryPoint current_trajectory_point = sampled_trajectory.getCurrentPoint(0.0);
+    TrajectoryPoint current_trajectory_point_uncorrected = sampled_trajectory.getCurrentPoint(0.0);
     current_trajectory_point.position.x -= 20;
     current_trajectory_point.position.y -= 10;
     
@@ -90,13 +91,23 @@ int main() {
             current_trajectory_point.position, 
             false
             );
+        drivetrain_kinematics.integratePosition(
+            drivetrain_kinematics.inverseKinematics(
+                BaseSpeed(refctp.linearVelocity * 0.01, refctp.angularVelocity * 0.01)
+                ), 
+            current_trajectory_point_uncorrected.position, 
+            false
+            );
         cout << "Position after " << current_trajectory_point.position << endl;
+        cout << "Uncorrected position after " << current_trajectory_point_uncorrected.position << endl;
         current_trajectory_point.linearVelocity = ctp.linearVelocity;
         current_trajectory_point.angularVelocity = ctp.angularVelocity;
         
         // Perturbation
-        current_trajectory_point.position.x -= 10* cos(current_trajectory_point.position.theta + 0.05) * 0.01 * (current_time > 0.5 & current_time < 2.0 ? 1 : 0);
-        current_trajectory_point.position.y -= 10* sin(current_trajectory_point.position.theta + 0.05) * 0.01 * (current_time > 0.5 & current_time < 2.0 ? 1 : 0);
+        current_trajectory_point.position.x -= 10* cos(current_trajectory_point.position.theta + 0.05) * 0.01 * (current_time > 0.5 & current_time < 3.0 ? 1 : 0);
+        current_trajectory_point.position.y -= 10* sin(current_trajectory_point.position.theta + 0.05) * 0.01 * (current_time > 0.5 & current_time < 3.0 ? 1 : 0);
+        current_trajectory_point_uncorrected.position.x -= 10* cos(current_trajectory_point_uncorrected.position.theta + 0.05) * 0.01 * (current_time > 0.5 & current_time < 3.0 ? 1 : 0);
+        current_trajectory_point_uncorrected.position.y -= 10* sin(current_trajectory_point_uncorrected.position.theta + 0.05) * 0.01 * (current_time > 0.5 & current_time < 3.0 ? 1 : 0);
         
         // Increment time
         current_time += 0.01;
