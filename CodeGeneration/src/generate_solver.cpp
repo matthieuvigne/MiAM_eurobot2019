@@ -10,9 +10,9 @@ using namespace robotdimensions;
 // Weights of the QP solver
 // Along trajectory
 double mu_traj = 1 * 50.0;
-double mu_theta = 1 * 20.0;
-double mu_vlin = 0.01;
-double mu_vang = 0.01;
+double mu_theta = 1 * 50.0;
+double mu_vlin = 5.0;
+double mu_vang = 5.0;
 
 
 DrivetrainKinematics drivetrain_kinematics(
@@ -32,20 +32,21 @@ int main()
     
     // Duration of the timestep
     // 10 ms
-    double dt = 0.015;
+    double dt = 0.02;
     
     // Final time
     double T = N * dt;
 
-    DifferentialState        x, y, theta, v, w    ;
-    Control                  vu, wu     ;   
+    DifferentialState        x, y, theta;//, v, w    ;
+    //~ Control                  vu, wu     ;   
+    Control                  v, w     ;   
     DifferentialEquation     f( 0.0, T );
 
     f << dot(x) == v * cos(theta) ;
     f << dot(y) == v * sin(theta) ;
     f << dot(theta) == w;
-    f << dot(v) == vu;
-    f << dot(w) == wu;
+    //~ f << dot(v) == vu;
+    //~ f << dot(w) == wu;
     
     Function h, hN;
     h << x << y << theta << v << w ;
@@ -76,7 +77,7 @@ int main()
     
     // Relaxing some constraints
     ocp.subjectTo( -maxWheelSpeed * 1.2 / 1000.0 <= v + (wheelSpacing / 1000.0) * w <= maxWheelSpeed * 1.2 / 1000.0   );     // the control input u,
-    ocp.subjectTo( -maxWheelAcceleration * 1.2 / 1000.0 <= vu + (wheelSpacing / 1000.0) * wu <= maxWheelAcceleration * 1.2 / 1000.0   );     // the control input u,
+    //~ ocp.subjectTo( -maxWheelAcceleration * 1.2 / 1000.0 <= vu + (wheelSpacing / 1000.0) * wu <= maxWheelAcceleration * 1.2 / 1000.0   );     // the control input u,
 
     // Export the code:
     OCPexport mpc( ocp );
