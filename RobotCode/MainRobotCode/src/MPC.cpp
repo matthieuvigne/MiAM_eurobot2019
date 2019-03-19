@@ -122,6 +122,12 @@ TrajectoryPoint solve_MPC_problem(
         acadoVariables.x0[2] = current_trajectory_point.position.theta;
         acadoVariables.x0[3] = ws.right;
         acadoVariables.x0[4] = ws.left;
+        
+        acadoVariables.x[0] = current_trajectory_point.position.x / 1000.0;
+        acadoVariables.x[1] = current_trajectory_point.position.y / 1000.0;
+        acadoVariables.x[2] = current_trajectory_point.position.theta;
+        acadoVariables.x[3] = ws.right;
+        acadoVariables.x[4] = ws.left;
     }
     
     /* Initialize the measurements/reference. */
@@ -159,8 +165,8 @@ TrajectoryPoint solve_MPC_problem(
         acadoVariables.yN[0] = final_time_point.position.x / 1000.0;
         acadoVariables.yN[1] = final_time_point.position.y / 1000.0;
         acadoVariables.yN[2] = final_time_point.position.theta;
-        acadoVariables.yN[3] = ws.right;
-        acadoVariables.yN[4] = ws.left;
+        //~ acadoVariables.yN[3] = ws.right;
+        //~ acadoVariables.yN[4] = ws.left;
     }
 
     if( VERBOSE ) acado_printHeader();
@@ -188,6 +194,12 @@ TrajectoryPoint solve_MPC_problem(
         acado_printDifferentialVariables();
         acado_printControlVariables();
     }
+    
+    for (int i=0; i<NX; i++)
+    {
+        std::cout << acadoVariables.x[i] << " ";
+    }
+    std::cout << std::endl;
     
     /* Get the updated trajectory point at t + n_delay * DELTA_T */
     int n_delay = 1;
