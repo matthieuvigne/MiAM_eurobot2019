@@ -50,7 +50,7 @@ int main() {
     
     // Starting simulation
     double current_time = 0.0;
-    while(current_time < sampled_trajectory.getDuration() + 0.1)
+    while(current_time < sampled_trajectory.getDuration() + 1.0)
     {
         
         cout << "Cur time: " << current_time << endl;
@@ -95,8 +95,8 @@ int main() {
         current_trajectory_point.angularVelocity = ctp.angularVelocity;
         
         // Perturbation
-        //~ current_trajectory_point.position.x -= 10* cos(current_trajectory_point.position.theta + 0.05) * 0.01 * (current_time > 0.5 & current_time < 2.0 ? 1 : 0);
-        //~ current_trajectory_point.position.y -= 10* sin(current_trajectory_point.position.theta + 0.05) * 0.01 * (current_time > 0.5 & current_time < 2.0 ? 1 : 0);
+        current_trajectory_point.position.x -= 10* cos(current_trajectory_point.position.theta + 0.05) * 0.01 * (current_time > 0.5 & current_time < 2.0 ? 1 : 0);
+        current_trajectory_point.position.y -= 10* sin(current_trajectory_point.position.theta + 0.05) * 0.01 * (current_time > 0.5 & current_time < 2.0 ? 1 : 0);
         
         // Increment time
         current_time += 0.01;

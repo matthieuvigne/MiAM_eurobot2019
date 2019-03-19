@@ -78,11 +78,11 @@ extern "C"
 /** Number of references/measurements per node on the first N nodes. */
 #define ACADO_NY 5
 /** Number of references/measurements on the last (N + 1)st node. */
-#define ACADO_NYN 5
+#define ACADO_NYN 3
 /** Total number of QP optimization variables. */
 #define ACADO_QP_NV 40
 /** Number of integration steps per shooting interval. */
-#define ACADO_RK_NIS 2
+#define ACADO_RK_NIS 1
 /** Number of Runge-Kutta stages per integration step. */
 #define ACADO_RK_NSTAGES 4
 /** Single versus double precision data type representation. */
@@ -124,11 +124,11 @@ real_t u[ 40 ];
  */
 real_t y[ 100 ];
 
-/** Column vector of size: 5
+/** Column vector of size: 3
  * 
  *  Reference/measurement vector for the 21. node.
  */
-real_t yN[ 5 ];
+real_t yN[ 3 ];
 
 /** Column vector of size: 5
  * 
@@ -147,8 +147,8 @@ real_t x0[ 5 ];
  */
 typedef struct ACADOworkspace_
 {
-/** Column vector of size: 24 */
-real_t rhs_aux[ 24 ];
+/** Column vector of size: 45 */
+real_t rhs_aux[ 45 ];
 
 real_t rk_ttt;
 
@@ -164,8 +164,8 @@ real_t state[ 42 ];
 /** Column vector of size: 100 */
 real_t Dy[ 100 ];
 
-/** Column vector of size: 5 */
-real_t DyN[ 5 ];
+/** Column vector of size: 3 */
+real_t DyN[ 3 ];
 
 /** Matrix of size: 100 x 5 (row major format) */
 real_t evGx[ 500 ];
