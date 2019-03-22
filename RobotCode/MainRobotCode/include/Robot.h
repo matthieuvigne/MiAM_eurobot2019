@@ -107,16 +107,17 @@
     class Robot
     {
         public:
-            miam::L6470 stepperMotors_; ///< Robot driving motors.
-            ServoHandler servos_; ///< Interface for the servo driver.
 
             /// \brief Constructor: do nothing for now.
             Robot();
 
-            /// \brief Initialize the robot.
-            /// \details This function only performs object initialization, but does not start the low-level thread.
-            /// \return true if initialize is successful, false otherwise.
-            bool init();
+            /// \brief Initialize every system of the robot.
+            /// \details This function tries to initialize every component of the robot, by creating the software
+            ///          object and, when applicable, testing the connection with the real component.
+            ///          This function can be called several times, and only tries to re-initialize a component
+            ///          if previous initializations failed.
+            /// \return true if all components were initialized successfully, false otherwise.
+            bool initSystem();
 
             /// \brief Get current robot position.
             /// \return Current robot position.
@@ -155,6 +156,9 @@
             ///          It also logs everything in a log file.
             void lowLevelThread();
 
+            // List of all system on the robot, public for easy external access (they might be moved latter on).
+            miam::L6470 stepperMotors_; ///< Robot driving motors.
+            ServoHandler servos_; ///< Interface for the servo driver.
         private:
             /// \brief Update the logfile with current values.
             void updateLog();
@@ -203,6 +207,11 @@
 
             // Kinematics
             DrivetrainKinematics kinematics_;
+
+            // Init variables.
+            bool isStepperInit_; ///< Boolean representing the initialization of the stepper motors.
+            bool isServosInit_; ///< Boolean representing the initialization of the stepper motors.
+            bool isArduinoInit_; ///< Boolean representing the initialization of the slave arduino board.
     };
 
     extern Robot robot;    ///< The robot instance, representing the current robot.

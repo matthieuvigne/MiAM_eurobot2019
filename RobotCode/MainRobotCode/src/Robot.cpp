@@ -1,4 +1,5 @@
 #include "Robot.h"
+#include "uCListener.h"
 
 #include <iostream>
 
@@ -86,7 +87,10 @@ static inline std::string getHeaderStringList()
 
 
 Robot::Robot():
-    currentTime_(0.0)
+    currentTime_(0.0),
+    isStepperInit_(false),
+    isServosInit_(false),
+    isArduinoInit_(false)
 {
     motorSpeed_.push_back(0.0);
     motorSpeed_.push_back(0.0);
@@ -96,15 +100,16 @@ Robot::Robot():
                                       robotdimensions::wheelSpacing,
                                       robotdimensions::encoderWheelRadius,
                                       robotdimensions::encoderWheelSpacing);
-}
+    // Update trajectory config.
+    miam::trajectory::setTrajectoryGenerationConfig(robotdimensions::maxWheelSpeed,
+                                                    robotdimensions::maxWheelAcceleration,
+                                                    robotdimensions::wheelSpacing);
 
-bool Robot::init()
-{
     // Create logger.
     std::time_t t = std::time(nullptr);
     char timestamp[100];
     std::strftime(timestamp, sizeof(timestamp), "%Y%m%dT%H%M%SZ", std::localtime(&t));
-    std::string filename = "log" + std::string(timestamp) + ".csv";
+    std::string filename = "/tmp/log" + std::string(timestamp) + ".csv";
     std::string headers = getHeaderStringList();
     // Log robot dimensions in header.
     std::string info = "wheelRadius:" + std::to_string(robotdimensions::wheelRadius) + \
@@ -125,8 +130,60 @@ bool Robot::init()
     // Set PIDs.
     PIDLinear_ = miam::PID(controller::linearKp, controller::linearKd, controller::linearKi, 0.2);
     PIDAngular_ = miam::PID(controller::rotationKp, controller::rotationKd, controller::rotationKi, 0.15);
+}
 
-    return true;
+bool Robot::initSystem()
+{
+    bool allInitSuccessful = true;
+
+    if (!isArduinoInit_)
+    {
+        isArduinoInit_ = uCListener_start("/dev/arduinoUno");
+        if(!isArduinoInit_)
+        {
+            #ifdef DEBUG
+                std::cout << "[Robot] Failed to init communication with Arduino." << std::endl;
+            #endif
+            allInitSuccessful = false;
+        }
+    }
+
+    if (!isStepperInit_)
+    {
+        // Motor config values.
+        const int MOTOR_KVAL_HOLD = 0x30;
+        const int MOTOR_BEMF[4] = {0x3B, 0x1430, 0x22, 0x53};
+
+        // Compute max stepper motor speed.
+        int maxSpeed = robotdimensions::maxWheelSpeed / robotdimensions::wheelRadius / robotdimensions::stepSize;
+        int maxAcceleration = robotdimensions::maxWheelAcceleration / robotdimensions::wheelRadius / robotdimensions::stepSize;
+        // Initialize both motors.
+        stepperMotors_ = miam::L6470(RPI_SPI_00, 2);
+        isStepperInit_ = stepperMotors_.init(maxSpeed, maxAcceleration, MOTOR_KVAL_HOLD,
+                                             MOTOR_BEMF[0], MOTOR_BEMF[1], MOTOR_BEMF[2], MOTOR_BEMF[3]);
+        if (!isStepperInit_)
+        {
+            #ifdef DEBUG
+                std::cout << "[Robot] Failed to init communication with stepper motors." << std::endl;
+            #endif
+            allInitSuccessful = false;
+        }
+    }
+
+    if (!isServosInit_)
+    {
+        isServosInit_ = servos_.init("/dev/ttyACM0"); // Todo: use symbolic link instead.
+        if (!isServosInit_)
+        {
+            #ifdef DEBUG
+                std::cout << "[Robot] Failed to init communication with servo driver." << std::endl;
+            #endif
+            allInitSuccessful = false;
+        }
+    }
+
+
+    return allInitSuccessful;
 }
 
 RobotPosition Robot::getCurrentPosition()
@@ -335,15 +392,15 @@ void Robot::lowLevelThread()
         // Perform trajectory tracking.
         double dt = currentTime_ - lastTime;
         updateTrajectoryFollowingTarget(dt);
-        
+
         // Get current encoder speeds (in rad/s)
         WheelSpeed instantWheelSpeedEncoder;
         instantWheelSpeedEncoder.right = encoderIncrement.right / dt;
         instantWheelSpeedEncoder.left = encoderIncrement.left / dt;
-        
+
         // Get base speed
         currentBaseSpeed_ = kinematics_.forwardKinematics(instantWheelSpeedEncoder, true);
-        
+
         // Update log.
         updateLog();
     }

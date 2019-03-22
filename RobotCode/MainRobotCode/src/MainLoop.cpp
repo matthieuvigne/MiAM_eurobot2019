@@ -12,10 +12,6 @@
 
 Robot robot;
 
-// Motor values.
-const int MOTOR_KVAL_HOLD = 0x30;
-const int MOTOR_BEMF[4] = {0x3B, 0x1430, 0x22, 0x53};
-
 
 // Stop motor before exit.
 void killCode(int x)
@@ -34,43 +30,37 @@ int main(int argc, char **argv)
     signal(SIGTERM, killCode);
 
     // Init raspberry serial ports and GPIO.
-    RPi_enablePorts();
+    //~ RPi_enablePorts();
 
     // Init robot - this only creates the log for now.
-    robot.init();
-
-    // Update trajectory config.
-    miam::trajectory::setTrajectoryGenerationConfig(robotdimensions::maxWheelSpeed,
-                                                    robotdimensions::maxWheelAcceleration,
-                                                    robotdimensions::wheelSpacing);
-
-    // Compute max stepper motor speed.
-    int maxSpeed = robotdimensions::maxWheelSpeed / robotdimensions::wheelRadius / robotdimensions::stepSize;
-    int maxAcceleration = robotdimensions::maxWheelAcceleration / robotdimensions::wheelRadius / robotdimensions::stepSize;
-
-    std::cout << "max speed:" << maxSpeed << std::endl;
-    std::cout << "max acceleration:" << maxAcceleration << std::endl;
-
-    // Initialize both motors.
-
-    robot.stepperMotors_ = miam::L6470(RPI_SPI_00, 2);
-    bool areMotorsInit = robot.stepperMotors_.init(maxSpeed, maxAcceleration, MOTOR_KVAL_HOLD,
-                                             MOTOR_BEMF[0], MOTOR_BEMF[1], MOTOR_BEMF[2], MOTOR_BEMF[3]);
-
-    if(!areMotorsInit)
+    bool isInit = robot.initSystem();
+    if (!isInit)
     {
-        printf("Failed to init stepper motors.\n");
-        exit(0);
+        std::cout << "Failed to init robot" << std::endl;
+        exit(-1);
     }
 
-    // Init communication with arduino.
-    bool isArduinoInit = uCListener_start("/dev/arduinoUno");
-    if(!isArduinoInit)
-    {
-        std::cout << "Failed to talk to Arduino" << std::endl;
-        exit(0);
-    }
 
+    //~ RPi_setupGPIO(4, PI_GPIO_OUTPUT);
+
+    //~ robot.servos_.turnOffPump();
+
+
+    //~ robot.servos_.tapClose();
+    //~ robot.servos_.closeTube(0);
+    //~ robot.servos_.closeTube(2);
+    //~ robot.servos_.openTube(1);
+    //~ robot.servos_.turnOnPump();
+    //~ RPi_writeGPIO(4, HIGH);
+    //~ usleep(5000000);
+    //~ robot.servos_.closeTube(1);
+    //~ usleep(1000000);
+    //~ robot.servos_.turnOffPump();
+    //~ usleep(5000000);
+    //~ robot.servos_.openTube(0);
+    //~ robot.servos_.openTube(1);
+    //~ robot.servos_.openTube(2);
+    //~ robot.servos_.tapOpen();
 
     // Start low-level thread.
     std::thread lowLevelThread(&Robot::lowLevelThread, &robot);
@@ -84,8 +74,8 @@ int main(int argc, char **argv)
 
     //~ std::shared_ptr<Trajectory> t = std::shared_ptr<Trajectory>(new miam::trajectory::PointTurn(robot.getCurrentPosition(), G_PI_2));
     //~ traj.push_back(t);
-    robot.setTrajectoryToFollow(traj);
-    robot.waitForTrajectoryFinished();
+    //~ robot.setTrajectoryToFollow(traj);
+    //~ robot.waitForTrajectoryFinished();
 
     //~ std::vector<int> position;
     //~ position.push_back(500.0 / G_PI / robotdimensions::wheelRadius * 600);
