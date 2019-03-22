@@ -59,7 +59,7 @@ int gpio_digitalWrite(int const& pin, int const& value)
 }
 
 
-int gpio_exportPin(int pin, std::string const& direction)
+int gpio_exportPin(int const& pin, std::string const& direction)
 {
     // Export pin value.
     std::ofstream file;

@@ -85,7 +85,4 @@ void BBB_enableCape()
         gpio_exportPin(CAPE_LED[i], "out");
         gpio_digitalWrite(CAPE_LED[i], 0);
     }
-
-    // Init analog readers.
-    gpio_initAnalogReaders();
 }
