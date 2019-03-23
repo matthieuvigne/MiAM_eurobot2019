@@ -251,12 +251,9 @@ bool Robot::followTrajectory(Trajectory *traj, double const& timeInTrajectory, d
 {
     
     if(MAINROBOTCODE_USE_MPC)
-    {
-        
-        // NOTE: the MPC problem must be initialized when following a new traj
-        // initialize_MPC_problem()
-        
+    {        
         // TODO here time is hardcoded
+        // Add some check condition on the target instead.
         if (timeInTrajectory >= traj->getDuration()) 
         {
              // Just stop the robot.
@@ -277,7 +274,7 @@ bool Robot::followTrajectory(Trajectory *traj, double const& timeInTrajectory, d
         current_trajectory_point.angularVelocity = current_base_speed.angular;
         
         // Solve MPC
-        miam::trajectory::TrajectoryPoint forward_traj_point = solve_MPC_problem(
+        miam::trajectory::TrajectoryPoint forward_traj_point = miam::MPCsolver::solve_MPC_problem(
             traj,
             current_trajectory_point,
             timeInTrajectory
@@ -389,21 +386,6 @@ void Robot::updateTrajectoryFollowingTarget(double const& dt)
     {
         // Load first trajectory, look if we are done following it.
         Trajectory *traj = currentTrajectories_.at(0).get();
-        
-        if (MAINROBOTCODE_USE_MPC)
-        {
-            // If the trajectory has never been seen, init MPC problem with it
-            if(!traj->seenOnce)
-            {
-                initialize_MPC_problem
-                (
-                    traj,
-                    currentTime_ - trajectoryStartTime_
-                );
-                traj->seenOnce = true;
-                std::cout << "Initialized new MPC problem" << std::endl;
-            }
-        }
         
         // Look if first trajectory is done.
         double timeInTrajectory = currentTime_ - trajectoryStartTime_;
