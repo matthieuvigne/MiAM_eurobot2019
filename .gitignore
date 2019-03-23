@@ -42,3 +42,4 @@ MANIFEST
 
 # Doxygen documentation directory.
 html/
+.Rproj.user

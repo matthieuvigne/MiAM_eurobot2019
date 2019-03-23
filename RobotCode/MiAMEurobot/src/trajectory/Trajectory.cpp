@@ -26,7 +26,6 @@ namespace miam{
         Trajectory::Trajectory()
         {
             duration_ = 0.0;
-            seenOnce = false;
         }
 
         double Trajectory::getDuration()
