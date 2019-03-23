@@ -4,7 +4,7 @@
 #include <Robot.h>
 #include <stdio.h>
 
-
+using namespace std;
 using namespace miam;
 using namespace miam::trajectory;
 
@@ -19,26 +19,37 @@ using namespace miam::trajectory;
 
 #define N           ACADO_N   /* Number of intervals in the horizon. */
 
-#define VERBOSE     1         /* Show iterations: 1, silent: 0.  */
+#define VERBOSE     0         /* Show iterations: 1, silent: 0.  */
 
 
 /*
  * Parameters with which the custom solver was compiled
  */
-#define DELTA_T    0.02
+#define DELTA_T    0.01
 #define HORIZON_T   DELTA_T * N
 
 /* Global variables used by the solver. */
 ACADOvariables acadoVariables;
 ACADOworkspace acadoWorkspace;
 
+/* Initialize static variables*/
+Trajectory* miam::MPCsolver::_mpc_current_trajectory = nullptr;
+bool miam::MPCsolver::_mpc_solver_initialized = false;
 
-void initialize_MPC_problem(
+
+void miam::MPCsolver::initialize_MPC_solver() 
+{
+    /* Initialize the solver. */
+    cout << "Initializing solver" << endl;
+    acado_initializeSolver();
+}    
+
+
+void miam::MPCsolver::initialize_MPC_problem(
     Trajectory* reference_trajectory,
     double current_time
 ) {
-    /* Initialize the solver. */
-    acado_initializeSolver();
+    /* Initialize the initial guesses. */
     
     for (int j = 0; j < N+1; j++) {
         double _current_time_offset = HORIZON_T * j / N;
@@ -60,11 +71,24 @@ void initialize_MPC_problem(
 }
 
 
-TrajectoryPoint solve_MPC_problem(
+TrajectoryPoint miam::MPCsolver::solve_MPC_problem(
     Trajectory* reference_trajectory,
     TrajectoryPoint current_trajectory_point,
     double current_time
 ) {
+    
+    if (!miam::MPCsolver::_mpc_solver_initialized)
+    {
+        initialize_MPC_solver();
+        miam::MPCsolver::_mpc_solver_initialized = true;
+    }
+    
+    if (miam::MPCsolver::_mpc_current_trajectory != reference_trajectory)
+    {
+        cout << "solve_MPC_problem: new traj detected" << endl;
+        initialize_MPC_problem(reference_trajectory, current_time);
+        miam::MPCsolver::_mpc_current_trajectory = reference_trajectory;
+    }
     
     /* Some temporary variables. */
     acado_timer t;
@@ -97,7 +121,6 @@ TrajectoryPoint solve_MPC_problem(
     
 
     /* Initialize the final point. */
-    
     TrajectoryPoint final_time_point = reference_trajectory->getCurrentPoint(current_time + HORIZON_T);
     
     // State
@@ -134,9 +157,9 @@ TrajectoryPoint solve_MPC_problem(
     if( VERBOSE ) {
         for (int i=0; i<NX; i++)
         {
-            std::cout << acadoVariables.x[i] << " ";
+            cout << acadoVariables.x[i] << " ";
         }
-        std::cout << std::endl;
+        cout << endl;
     }
     
     /* Get the updated trajectory point at t + n_delay * DELTA_T */
@@ -145,13 +168,13 @@ TrajectoryPoint solve_MPC_problem(
     TrajectoryPoint updated_current_trajectory_point;
     
     // States
-    updated_current_trajectory_point.position.x = acadoVariables.x[n_delay * 3 + 0] * 1000.0;
-    updated_current_trajectory_point.position.y = acadoVariables.x[n_delay * 3 + 1] * 1000.0;
-    updated_current_trajectory_point.position.theta = acadoVariables.x[n_delay * 3 + 2];
+    updated_current_trajectory_point.position.x = acadoVariables.x[n_delay * NX + 0] * 1000.0;
+    updated_current_trajectory_point.position.y = acadoVariables.x[n_delay * NX + 1] * 1000.0;
+    updated_current_trajectory_point.position.theta = acadoVariables.x[n_delay * NX + 2];
     
     // Controls
-    updated_current_trajectory_point.linearVelocity = acadoVariables.u[n_delay * 2 + 0] * 1000.0;
-    updated_current_trajectory_point.angularVelocity = acadoVariables.u[n_delay * 2 + 1];
+    updated_current_trajectory_point.linearVelocity = acadoVariables.u[n_delay * NU + 0] * 1000.0;
+    updated_current_trajectory_point.angularVelocity = acadoVariables.u[n_delay * NU + 1];
     
     return updated_current_trajectory_point;
 }

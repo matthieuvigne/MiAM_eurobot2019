@@ -9,10 +9,10 @@ using namespace robotdimensions;
 
 // Weights of the QP solver
 // Along trajectory
-double mu_traj = 1 * 50.0;
-double mu_theta = 1 * 50.0;
-double mu_vlin = 5.0;
-double mu_vang = 5.0;
+double mu_traj = 1 * 1000.0;
+double mu_theta = 1 * 10.0;
+double mu_vlin = 1.0;
+double mu_vang = 1.0;
 
 
 DrivetrainKinematics drivetrain_kinematics(
@@ -32,7 +32,7 @@ int main()
     
     // Duration of the timestep
     // 10 ms
-    double dt = 0.02;
+    double dt = 0.01;
     
     // Final time
     double T = N * dt;
@@ -60,9 +60,9 @@ int main()
     W(4, 4) = mu_vang;
     
     DMatrix WN ( hN.getDim(), hN.getDim() );
-    WN(0, 0) = 10.0 * mu_traj;
-    WN(1, 1) = 10.0 * mu_traj;
-    WN(2, 2) = 10.0 * mu_theta;
+    WN(0, 0) = 5.0 * mu_traj;
+    WN(1, 1) = 5.0 * mu_traj;
+    WN(2, 2) = 5.0 * mu_theta;
 
     //
     // Optimal Control Problem

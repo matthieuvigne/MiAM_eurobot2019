@@ -1,5 +1,8 @@
 #include <iostream>
 #include <chrono>
+#include <sstream>
+#include <string>
+#include <fstream>
 
 #include <MiAMEurobot/trajectory/DrivetrainKinematics.h>
 #include <MiAMEurobot/io/IOTrajectory.h>
@@ -23,6 +26,25 @@ DrivetrainKinematics drivetrain_kinematics(
 );
 
 
+void appendToStream(
+    stringstream& stream,
+    double t,
+    TrajectoryPoint tp,
+    string type
+    ) 
+{
+    
+    stream << t << ";" 
+        << tp.position.x << ";" 
+        << tp.position.y << ";" 
+        << tp.position.theta << ";"
+        << tp.linearVelocity << ";"
+        << tp.angularVelocity << ";"
+        << type << endl;
+    
+};
+
+
 int main() {
     
     SampledTrajectory sampled_trajectory =
@@ -35,19 +57,24 @@ int main() {
 	}
     
     TrajectoryPoint current_trajectory_point = sampled_trajectory.getCurrentPoint(0.0);
-    TrajectoryPoint current_trajectory_point_uncorrected = sampled_trajectory.getCurrentPoint(0.0);
     current_trajectory_point.position.x -= 20;
     current_trajectory_point.position.y -= 10;
     
+    
+    TrajectoryPoint current_trajectory_point_uncorrected = current_trajectory_point;
+    
     cout << "Current point: " << current_trajectory_point.position << endl;
     
-    
-    initialize_MPC_problem(
-        &sampled_trajectory,
-        0.0
-    );
-    
     vector<TrajectoryPoint > actual_trajectory;
+    
+    stringstream output_sstream;
+    output_sstream << "t" << ";" 
+        << "x" << ";" 
+        << "y" << ";" 
+        << "theta" << ";"
+        << "v" << ";"
+        << "w" << ";"
+        << "type" << endl;
     
     // Starting simulation
     double current_time = 0.0;
@@ -60,12 +87,11 @@ int main() {
         actual_tp = current_trajectory_point;
         actual_trajectory.push_back(actual_tp);
         
-        
         std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 
         
         // Compute control
-        TrajectoryPoint ctp = solve_MPC_problem(
+        TrajectoryPoint ctp = MPCsolver::solve_MPC_problem(
             &sampled_trajectory,
             current_trajectory_point,
             max(0.0, current_time)
@@ -80,6 +106,27 @@ int main() {
         cout << "CUR " << current_trajectory_point.linearVelocity << ", " << current_trajectory_point.angularVelocity << ", " << current_trajectory_point.position << endl;
         cout << "MPC " << ctp.linearVelocity << ", " << ctp.angularVelocity << ", " << ctp.position << endl;
         cout << "REF " << refctp.linearVelocity << ", " << refctp.angularVelocity << ", " << refctp.position << endl;
+        
+        
+        appendToStream(
+            output_sstream,
+            current_time,
+            current_trajectory_point,
+            "CUR"
+        );
+        appendToStream(
+            output_sstream,
+            current_time,
+            current_trajectory_point_uncorrected,
+            "UNC"
+        );
+        appendToStream(
+            output_sstream,
+            current_time,
+            refctp,
+            "REF"
+        );
+        
         
         // Feedback
         //~ cout << "Reference position " << refctp.position << endl;
@@ -98,6 +145,9 @@ int main() {
             current_trajectory_point_uncorrected.position, 
             false
             );
+        current_trajectory_point_uncorrected.linearVelocity = refctp.linearVelocity;
+        current_trajectory_point_uncorrected.angularVelocity = refctp.angularVelocity;
+        
         cout << "Position after " << current_trajectory_point.position << endl;
         cout << "Uncorrected position after " << current_trajectory_point_uncorrected.position << endl;
         current_trajectory_point.linearVelocity = ctp.linearVelocity;
@@ -115,6 +165,13 @@ int main() {
     
     SampledTrajectory actual_sampled_trajectory(actual_trajectory, sampled_trajectory.getDuration());
     io::writeSampledTrajectoryToFile(actual_sampled_trajectory, "actual_tr");
+    
+    // Write output
+    std::ofstream ofs ("output.csv", std::ofstream::out);
+
+    ofs << output_sstream.str();
+
+    ofs.close();
     
     
     return 0;
