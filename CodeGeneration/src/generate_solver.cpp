@@ -77,7 +77,9 @@ int main()
     
     // Relaxing some constraints
     ocp.subjectTo( -maxWheelSpeed * 1.2 / 1000.0 <= v + (wheelSpacing / 1000.0) * w <= maxWheelSpeed * 1.2 / 1000.0   );     // the control input u,
+    ocp.subjectTo( -maxWheelSpeed * 1.2 / 1000.0 <= v - (wheelSpacing / 1000.0) * w <= maxWheelSpeed * 1.2 / 1000.0   );     // the control input u,
     //~ ocp.subjectTo( -maxWheelAcceleration * 1.2 / 1000.0 <= vu + (wheelSpacing / 1000.0) * wu <= maxWheelAcceleration * 1.2 / 1000.0   );     // the control input u,
+    //~ ocp.subjectTo( -maxWheelAcceleration * 1.2 / 1000.0 <= vu - (wheelSpacing / 1000.0) * wu <= maxWheelAcceleration * 1.2 / 1000.0   );     // the control input u,
 
     // Export the code:
     OCPexport mpc( ocp );
