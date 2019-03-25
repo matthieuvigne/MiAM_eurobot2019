@@ -14,7 +14,7 @@
 
 // Length of the message to receive from the uC.
 // The message consists of two 0xFF 0xFF bytes, then n bytes.
-#define MESSAGE_LENGTH 5
+#define MESSAGE_LENGTH 7
 
 // Encoder resolution: ticks to rad.
 const double ENCODER_RESOLUTION = 2 * M_PI / (1024 * 4);
@@ -106,6 +106,10 @@ void uCListener_listenerThread(int const& port)
                             listenerData.encoderValues[i] += encoderIncrement;
                             uCMutex.unlock();
                         }
+                        // Potentiometer value.
+                        uCMutex.lock();
+                        listenerData.potentiometerPosition = (buffer[4] << 8) + buffer[5];
+                        uCMutex.unlock();
                     }
                 }
             }

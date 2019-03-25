@@ -76,7 +76,11 @@ void setup()
   Serial.write("MiAMSlave");
 }
 
+int potentiometerPosition = 0;
+
 void loop() {
+ // Read potentiometer position.
+ potentiometerPosition = analogRead(A0);
  Serial.write(0xFF);
  Serial.write(0xFF);
  // Compute checksum
@@ -90,6 +94,10 @@ void loop() {
   checksum += (encoderComp >> 8) & 0xFF;
   checksum += encoderComp & 0xFF;
  }
+ Serial.write((potentiometerPosition >> 8) & 0xFF);
+ Serial.write(potentiometerPosition & 0xFF);
+ checksum += (potentiometerPosition >> 8) & 0xFF;
+ checksum += potentiometerPosition & 0xFF;
  Serial.write(checksum);
  delayMicroseconds(2000);
 }

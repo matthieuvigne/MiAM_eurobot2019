@@ -34,6 +34,7 @@ const double LOOP_PERIOD = 0.010;
     f(LOGGER_TRACKING_LONGITUDINAL_ERROR) \
     f(LOGGER_TRACKING_TRANSVERSE_ERROR) \
     f(LOGGER_TRACKING_ANGLE_ERROR) \
+    f(LOGGER_RAIL_POSITION) \
 
 #define GENERATE_ENUM(ENUM) ENUM,
 
@@ -430,5 +431,7 @@ void Robot::updateLog()
     logger_.setData(LOGGER_TRACKING_LONGITUDINAL_ERROR, trackingLongitudinalError_);
     logger_.setData(LOGGER_TRACKING_TRANSVERSE_ERROR, trackingTransverseError_);
     logger_.setData(LOGGER_TRACKING_ANGLE_ERROR, trackingAngleError_);
+
+    logger_.setData(LOGGER_RAIL_POSITION, microcontrollerData_.potentiometerPosition);
     logger_.writeLine();
 }

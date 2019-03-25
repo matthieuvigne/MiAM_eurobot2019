@@ -6,10 +6,18 @@ set(PROJECT_DESCRIPTION "Code for the main robot for Eurobot")
 
 # Set compiler to arm compiler (cross-compile)
 set(CMAKE_CXX_COMPILER "arm-linux-gnueabihf-g++")
-set(CMAKE_CXX_FLAGS_DEBUG "-DDEBUG")
 
-# Set C compiler flags.
+# Set C++ compiler flags.
 set(CMAKE_CXX_FLAGS "-Wall -Wno-psabi -fdiagnostics-color -lpthread")
+
+# Set build-type specific flags
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    message("Build mode: debug.")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ggdb -DDEBUG")
+else (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    message("Build mode: release build - optimization enabled.")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
+endif (CMAKE_BUILD_TYPE STREQUAL "Debug")
 
 # Use pkg-config to find external libraries : Glib (compiled for arm) and BBBEurobot.
 find_package(PkgConfig REQUIRED)

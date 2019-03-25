@@ -13,6 +13,7 @@
 
     typedef struct {
         double encoderValues[2]; ///<< Current position of the two encoders, in rad.
+        int potentiometerPosition; ///<< Position of the vertical rail potentiometer.
     }uCData;
 
     /// \brief Start a background thread listening to the arduino microcontroller.
