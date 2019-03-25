@@ -46,11 +46,7 @@ namespace miam
     {
         // Stop motors, reset devices.
         highZ();
-        sendCommand(dSPIN_ACTION_RESET);
-        // Set full step mode.
-        setParam(dSPIN_STEP_MODE, 0);
-        sendCommand(dSPIN_RESET_POS);
-        setVelocityProfile(maxSpeed, maxAcceleration, maxAcceleration);
+        sendCommand(dSPIN_RESET_DEVICE);
 
         // Set config param.
         uint32_t configValue = dSPIN_CONFIG_PWM_DIV_1          | dSPIN_CONFIG_PWM_MUL_2
@@ -62,6 +58,11 @@ namespace miam
         setParam(dSPIN_STALL_TH, 90);
         // Set overcurrent detection at 2.6A.
         setParam(dSPIN_OCD_TH, dSPIN_OCD_TH_2625mA);
+
+        // Set full step mode.
+        setParam(dSPIN_STEP_MODE, 0);
+        sendCommand(dSPIN_RESET_POS);
+        setVelocityProfile(maxSpeed, maxAcceleration, maxAcceleration);
 
         // Set back-emf constants.
         setParam(dSPIN_KVAL_HOLD, k_hld);
