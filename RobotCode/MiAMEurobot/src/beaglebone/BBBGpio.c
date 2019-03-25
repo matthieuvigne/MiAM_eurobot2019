@@ -92,3 +92,38 @@ int gpio_analogRead(int const& pin)
 
     return std::stoi(filecontent);
 }
+
+
+int gpio_setPWM(int const& port, int const& period_ns, int const& duty_ns)
+{
+    if(port != 0 && port != 1)
+        return -1;
+    std::string folderName = "/sys/class/pwm/pwm" + std::to_string(port) + "/";
+    // Set period.
+    std::ofstream file;
+    file.open(folderName + "period_ns", std::fstream::app);
+    if(!file.is_open())
+        return -1;
+    file << period_ns << std::endl;
+    file.close();
+    // Set duty cycle.
+    file.open(folderName + "duty_ns", std::fstream::app);
+    if(!file.is_open())
+        return -1;
+    file << duty_ns << std::endl;
+    file.close();
+    // Enable.
+    file.open(folderName + "run", std::fstream::app);
+    if(!file.is_open())
+        return -1;
+    file << "1" << std::endl;
+    file.close();
+    return 0;
+}
+
+
+int gpio_servoPWM(int const& port, int const& servoPosition)
+{
+    return gpio_setPWM(port, 20000000, 1000 * servoPosition);
+}
+

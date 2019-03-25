@@ -57,4 +57,19 @@
     /// \return port voltage, between 0 and 4095 on success.
     ///         Negative value on failre: -1 on invalid pin number, -2 on any other failure.
     int gpio_analogRead(int const& pin);
+
+    /// \brief Read value from analog port.
+    ///
+    /// \param[in] pin Pin number, 0 or 1 to represent EHRPWM2A or B port.
+    /// \param[in] period_ns Period, in nanoseconds.
+    /// \param[in] duty_ns Duty cycle, i.e. time high, in ns.
+    /// \return Negative value on failre: -1 on invalid pin number, -2 on any other failure.
+    int gpio_setPWM(int const& port, int const& period_ns, int const& duty_ns);
+
+    /// \brief Generate pwm signal for a servomotor.
+    ///
+    /// \param[in] pin Pin number, 0 or 1 to represent EHRPWM2A or B port.
+    /// \param[in] servoPosition Servo pulse width, in microseconds.
+    /// \return Negative value on failre: -1 on invalid pin number, -2 on any other failure.
+    int gpio_servoPWM(int const& port, int const& servoPosition);
 #endif

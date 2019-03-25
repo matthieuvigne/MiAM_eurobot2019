@@ -58,6 +58,7 @@ void BBB_enableCape()
         }
         // Enable the overlay.
         system("echo Eurobot > /sys/devices/bone_capemgr.9/slots");
+        system("echo BB-PWM2 > /sys/devices/bone_capemgr.9/slots");
 
         // Check that the overlay is indeed enabled.
         if(!isEurobotEnabled())
@@ -85,4 +86,7 @@ void BBB_enableCape()
         gpio_exportPin(CAPE_LED[i], "out");
         gpio_digitalWrite(CAPE_LED[i], 0);
     }
+    // Enable PWM ports.
+    system("echo 0 > /sys/class/pwm/export");
+    system("echo 1 > /sys/class/pwm/export");
 }
