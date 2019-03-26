@@ -45,9 +45,12 @@
                 /// \param[in] int_spd Value of the SPIN_INT_SPD register.
                 /// \param[in] st_slp Value of the SPIN_ST_SLP register.
                 /// \param[in] slp_acc Value of the SPIN_FN_SLP_ACC and SPIN_FN_SLP_DEC registers.
+                /// \param[in] hasCrystal True to use external 16MHz crystal as clock. Otherwise, the internal oscillator
+                ///                       is used. Note that this oscillator can be wrong by around 5%.
                 /// \return true is all devices responded, false otherwise.
                 bool init(uint32_t const& maxSpeed, const uint32_t& maxAcceleration, uint32_t const& k_hld, uint32_t const& k_mv,
-                          uint32_t  const& int_spd, uint32_t const& st_slp, uint32_t const& slp_acc);
+                          uint32_t  const& int_spd, uint32_t const& st_slp, uint32_t const& slp_acc,
+                          bool hasCrystal = true);
 
                 /// \brief Set a parameter register.
                 ///

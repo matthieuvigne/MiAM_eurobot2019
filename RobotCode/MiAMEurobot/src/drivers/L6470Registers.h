@@ -21,6 +21,10 @@ typedef enum DSPIN_OVERCURRENT_CONST
 
 } DSPIN_OVERCURRENT_CONST;
 
+// Default value of the config register.
+#define dSPIN_DEFAULT_CONFIG 11912
+
+double STEPSEC_TO_VELOCITY_REG = 250e-9 * (1<<28); // Conversion ratio from step/s to velocity register value.
 
 typedef enum DSPIN_REG_CONST
 {

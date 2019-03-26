@@ -42,17 +42,23 @@ namespace miam
 
 
     bool L6470::init(uint32_t const& maxSpeed, uint32_t const& maxAcceleration, uint32_t const& k_hld,
-                     uint32_t const& k_mv, uint32_t  const& int_spd, uint32_t const& st_slp, uint32_t const& slp_acc)
+                     uint32_t const& k_mv, uint32_t  const& int_spd, uint32_t const& st_slp, uint32_t const& slp_acc,
+                     bool hasCrystal)
     {
         // Stop motors, reset devices.
-        highZ();
+        sendCommand(dSPIN_HARD_STOP);
+        usleep(10000);
+        sendCommand(dSPIN_HARD_HIZ);
+        usleep(10000);
         sendCommand(dSPIN_RESET_DEVICE);
 
-        // Set config param.
-        uint32_t configValue = dSPIN_CONFIG_PWM_DIV_1          | dSPIN_CONFIG_PWM_MUL_2
-                               | dSPIN_CONFIG_SR_290V_us       | dSPIN_CONFIG_OC_SD_DISABLE
-                               | dSPIN_CONFIG_VS_COMP_DISABLE| dSPIN_CONFIG_SW_USER
-                               | dSPIN_CONFIG_INT_16MHZ;
+        // Set config param : disable SW hard stop.
+        uint32_t configValue = dSPIN_DEFAULT_CONFIG & ~dSPIN_CONFIG_SW_MODE | dSPIN_CONFIG_SW_USER;
+        if(hasCrystal)
+        {
+            configValue = configValue & ~dSPIN_CONFIG_OSC_SEL;
+            configValue |= dSPIN_CONFIG_EXT_16MHZ_XTAL_DRIVE;
+        }
         setParam(dSPIN_CONFIG, configValue);
         // Set stall thershold at 2.8A.
         setParam(dSPIN_STALL_TH, 90);
@@ -154,13 +160,11 @@ namespace miam
 
     std::vector<double> L6470::getSpeed()
     {
-        std::vector<double> speeds;
-        // Register value to steps/s.
-        double const conversionRatio = 0.01490116119;
-
         std::vector<uint32_t> value = getParam(dSPIN_SPEED);
+        // Register value to steps/s.
+        std::vector<double> speeds;
         for(uint i = 0; i < numberOfDevices_; i++)
-            speeds.push_back(conversionRatio * value[i]);
+            speeds.push_back(value[i] / STEPSEC_TO_VELOCITY_REG);
         return speeds;
     }
 
@@ -183,7 +187,7 @@ namespace miam
             commands.push_back(command);
 
             // Register value.
-            uint32_t registerValue = (std::abs(speed) * 67.108864) + 0.5;
+            uint32_t registerValue = (std::abs(speed) * STEPSEC_TO_VELOCITY_REG) + 0.5;
             // Clamp
             if(registerValue > 0xFFFFF)
                 registerValue = 0xFFFFF;
