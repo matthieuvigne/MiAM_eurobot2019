@@ -24,7 +24,7 @@ int gpio_digitalRead(int const& pin)
         return -1;
 
     // Check file is an input.
-    if (filecontent != "in\n")
+    if (filecontent != "in")
         return -2;
 
     // Read gpio value.
@@ -45,7 +45,7 @@ int gpio_digitalWrite(int const& pin, int const& value)
         return -1;
 
     // Check file is an output.
-    if (filecontent != "out\n")
+    if (filecontent != "out")
         return -2;
 
     filename = "/sys/class/gpio/gpio" + std::to_string(pin) + "/value";

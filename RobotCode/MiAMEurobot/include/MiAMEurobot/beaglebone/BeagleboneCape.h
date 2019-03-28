@@ -18,7 +18,6 @@
     extern const std::string SPI_10; ///<  Second SPI port.
     extern const std::string SPI_11; ///<  Third SPI port.
     extern I2CAdapter I2C_1; ///<  First I2C port.
-    extern I2CAdapter I2C_2; ///<  Second I2C port.
     extern const int CAPE_ANALOG[CAPE_N_ANALOG]; ///<  Analong input.
     extern const int CAPE_DIGITAL[CAPE_N_DIGITAL]; ///<  Digital GPIO.
     extern const int CAPE_LED[CAPE_N_LED]; ///<  LED output.

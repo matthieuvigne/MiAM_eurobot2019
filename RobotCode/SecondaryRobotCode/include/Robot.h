@@ -159,6 +159,7 @@
 
             // List of all system on the robot, public for easy external access (they might be moved latter on).
             miam::L6470 stepperMotors_; ///< Robot driving motors.
+            IMU imu_; ///< Robot driving motors.
         private:
             /// \brief Update the logfile with current values.
             void updateLog();
@@ -209,6 +210,7 @@
 
             // Init variables.
             bool isStepperInit_; ///< Boolean representing the initialization of the stepper motors.
+            bool isIMUInit_; ///< Boolean representing the initialization of the IMU.
     };
 
     extern Robot robot;    ///< The robot instance, representing the current robot.

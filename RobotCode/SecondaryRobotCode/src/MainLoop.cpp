@@ -37,7 +37,7 @@ int main(int argc, char **argv)
     if (!isInit)
     {
         std::cout << "Failed to init robot" << std::endl;
-        exit(-1);
+        //~ exit(-1);
     }
 
     // Move servos to their initial position.
@@ -51,7 +51,6 @@ int main(int argc, char **argv)
     //~ position.push_back(500.0 / G_PI / robotdimensions::wheelRadius * 600);
     //~ std::cout << "nsteps" << 500.0 / G_PI / robotdimensions::wheelRadius * 600 << std::endl;
     //~ robot.stepperMotors_.moveNSteps(position);
-
     printf("done\n");
     while(true) ;;
     return 0;

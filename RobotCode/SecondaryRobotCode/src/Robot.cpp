@@ -87,6 +87,7 @@ static inline std::string getHeaderStringList()
 
 Robot::Robot():
     currentTime_(0.0),
+    isIMUInit_(false),
     isStepperInit_(false)
 {
     motorSpeed_.push_back(0.0);
@@ -133,6 +134,17 @@ bool Robot::initSystem()
 {
     bool allInitSuccessful = true;
 
+    if (!isIMUInit_)
+    {
+        isIMUInit_ = imu_initDefault(&imu_, &I2C_1, false);
+        if (!isIMUInit_)
+        {
+            #ifdef DEBUG
+                std::cout << "[Robot] Failed to init communication with IMU." << std::endl;
+            #endif
+            allInitSuccessful = false;
+        }
+    }
     if (!isStepperInit_)
     {
         // Motor config values - 42BYGHW810, 2.0A.
@@ -143,7 +155,7 @@ bool Robot::initSystem()
         int maxSpeed = robotdimensions::maxWheelSpeed / robotdimensions::wheelRadius / robotdimensions::stepSize;
         int maxAcceleration = robotdimensions::maxWheelAcceleration / robotdimensions::wheelRadius / robotdimensions::stepSize;
         // Initialize both motors.
-        stepperMotors_ = miam::L6470(SPI_10, 2);
+        stepperMotors_ = miam::L6470("/dev/spidev1.0", 2);
         isStepperInit_ = stepperMotors_.init(maxSpeed, maxAcceleration, MOTOR_KVAL_HOLD,
                                              MOTOR_BEMF[0], MOTOR_BEMF[1], MOTOR_BEMF[2], MOTOR_BEMF[3]);
         if (!isStepperInit_)
@@ -154,7 +166,10 @@ bool Robot::initSystem()
             allInitSuccessful = false;
         }
     }
-
+    if(allInitSuccessful)
+        gpio_digitalWrite(CAPE_LED[1], 0);
+    else
+        gpio_digitalWrite(CAPE_LED[1], 1);
     return allInitSuccessful;
 }
 
@@ -411,5 +426,14 @@ void Robot::updateLog()
 
 void Robot::moveServos(bool down)
 {
-    // TODO
+    if(down)
+    {
+        gpio_servoPWM(0, 1500);
+        gpio_servoPWM(1, 1500);
+    }
+    else
+    {
+        gpio_servoPWM(0, 1600);
+        gpio_servoPWM(1, 1600);
+    }
 }

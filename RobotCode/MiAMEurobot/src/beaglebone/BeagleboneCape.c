@@ -10,7 +10,6 @@ const std::string SPI_0 = "/dev/spidev1.0";
 const std::string SPI_10 = "/dev/spidev2.0";
 const std::string SPI_11 = "/dev/spidev2.1";
 I2CAdapter I2C_1;
-I2CAdapter I2C_2;
 const int CAPE_ANALOG[CAPE_N_ANALOG] = {0, 1, 2, 3, 4, 5, 6};
 const int CAPE_DIGITAL[CAPE_N_DIGITAL] = {66, 67, 69, 68, 45, 44, 26};
 const int CAPE_LED[CAPE_N_LED] = {47, 46};
@@ -32,7 +31,7 @@ bool isEurobotEnabled()
     {
         std::string line;
         getline(file, line);
-        if(line.find("Eurobot") != std::string::npos)
+        if(line.find("ADAFRUIT-SPI1") != std::string::npos)
         {
             isEurobotEnabled = true;
             break;
@@ -48,17 +47,18 @@ void BBB_enableCape()
     // Check if the overlay is already enabled.
     if(!isEurobotEnabled())
     {
-        std::string overlayFile = "/lib/firmware/Eurobot-00A0.dtbo";
+        //~ std::string overlayFile = "/lib/firmware/Eurobot-00A0.dtbo";
         // Else, let us first check that the overlay file exists.
-        std::ifstream f(overlayFile);
-        if (!f.good())
-        {
-            printf("Enabling serial ports failed: cannot find overlay (%s).\n", overlayFile);
-            exit(-1);
-        }
+        //~ std::ifstream f(overlayFile);
+        //~ if (!f.good())
+        //~ {
+            //~ printf("Enabling serial ports failed: cannot find overlay (%s).\n", overlayFile);
+            //~ exit(-1);
+        //~ }
         // Enable the overlay.
-        system("echo Eurobot > /sys/devices/bone_capemgr.9/slots");
         system("echo BB-PWM2 > /sys/devices/bone_capemgr.9/slots");
+        system("echo ADAFRUIT-SPI1 > /sys/devices/bone_capemgr.9/slots");
+        system("echo PyBBIO-ADC > /sys/devices/bone_capemgr.9/slots");
 
         // Check that the overlay is indeed enabled.
         if(!isEurobotEnabled())
@@ -70,7 +70,6 @@ void BBB_enableCape()
 
     // Open file descriptors for I2C interfaces.
     bool i2cStarted = i2c_open(&I2C_1, "/dev/i2c-1");
-    i2cStarted &= i2c_open(&I2C_2, "/dev/i2c-2");
     if(!i2cStarted)
     {
         printf("Could not open I2C port; perhaps overlay file is invalid ? Exiting...\n");
