@@ -21,7 +21,6 @@ RPLidarHandler::RPLidarHandler() :
     detectedRobots_(),
     lidar(NULL),
     lidarMode_(0),
-    lastPointAngle_(0),
     blobNPoints_(1),
     blobDistance_(0),
     nPointsOutsideBlob_(50)
@@ -72,15 +71,9 @@ void RPLidarHandler::update()
         // Compute new point.
         LidarPoint newPoint(data[i].dist_mm_q2 /4.0f, 2 * M_PI -(data[i].angle_z_q14 * ANGLE_CONVERSION));
 
-        // Add it to debugging buffer.
-        debuggingBuffer_[debuggingBufferPosition_] = newPoint;
-        debuggingBufferPosition_ = (debuggingBufferPosition_ + 1) % DEBUGGING_BUFFER_LENGTH;
-
         // If new point is not in order (recall scan is done in decreasing angle), just discard the new data point.
-        if (modulo(lastPointAngle_ - newPoint.theta) > 2 * M_PI - M_PI_4)
+        if (modulo(lastPoint_.theta - newPoint.theta) > 2 * M_PI - M_PI_4)
             continue;
-
-        lastPointAngle_ = newPoint.theta;
 
         // Remove robots in the list that are more than a cycle old.
         // Element in the queue will be sorted by decreasing angle, so we just need to pop the elements.
@@ -103,18 +96,20 @@ void RPLidarHandler::update()
         else
         {
             // Determine if the current point is to be added to the blob or not.
-            if(std::abs(blobDistance_ - newPoint.r) < BLOB_THICKNESS)
+            if(std::abs(lastPoint_.r - newPoint.r) < BLOB_THICKNESS)
             {
                 nPointsOutsideBlob_ = 0;
                 // Add point to blob.
                 blobNPoints_ ++;
                 blobDistance_ = ((blobNPoints_ - 1) * blobDistance_ + newPoint.r) / blobNPoints_;
+
+                newPoint.blobNumber = currentBlobNumber_;
             }
             else
                 nPointsOutsideBlob_++;
         }
 
-        if (nPointsOutsideBlob_ > BLOB_BREAK)
+        if (nPointsOutsideBlob_ >= BLOB_BREAK)
         {
             // The blob is over: look to see if it corresponds to a beacon.
             if (blobDistance_ < MAX_DISTANCE && blobNPoints_ >= MIN_POINTS)
@@ -136,7 +131,18 @@ void RPLidarHandler::update()
             blobDistance_ = newPoint.r;
             blobStartAngle_ = newPoint.theta;
             nPointsOutsideBlob_ = 0;
+
+            currentBlobNumber_ = (currentBlobNumber_ + 1) % 5;
+            if(currentBlobNumber_ == 0)
+                currentBlobNumber_ = 1;
+            newPoint.blobNumber = currentBlobNumber_;
         }
+
+        lastPoint_ = newPoint;
+
+        // Add new point to debugging buffer.
+        debuggingBuffer_[debuggingBufferPosition_] = newPoint;
+        debuggingBufferPosition_ = (debuggingBufferPosition_ + 1) % DEBUGGING_BUFFER_LENGTH;
     }
 
 }

@@ -21,13 +21,13 @@
     const double LIDAR_RPM = 600.0;    ///< Lidar velocity, in rpm.
     const double MAX_DISTANCE = 2000.0; ///< Maximum distance for processing, in mm: points above that distance are discarded.
 
-    const double BLOB_THICKNESS = 100.0; //80 ///< Distance from bloc center to consider a point in the blob, in mm.
-    const double BLOB_MIN_SIZE = 60.0; //60 ///< Minimum size of the blob to consider it as a robot.
-    const double BLOB_MAX_SIZE = 140.0; //140 ///< Maximum size of the blob to consider it as a robot.
+    const double BLOB_THICKNESS = 30.0; //80 ///< Distance between two adjacent points to consider that they belong to the same blob, in mm.
+    const double BLOB_MIN_SIZE = 50.0; //60 ///< Minimum size of the blob to consider it as a robot.
+    const double BLOB_MAX_SIZE = 150.0; //140 ///< Maximum size of the blob to consider it as a robot.
 
     const int BLOB_BREAK = 2; //2 ///< Number of points needed to consider that a block has come to an endMinimum number of points to be a valid obstacle.
 
-    const int MIN_POINTS = 4; // 4 ///< Minimum number of points inside a blob to be considered a robot.
+    const int MIN_POINTS = 5; // 4 ///< Minimum number of points inside a blob to be considered a robot.
                              ///< At 1.5m, 600rpm, 8ksamples/s, a circle of 70mm corresponds to 6 points.
 
     /// \brief Structure representing a data point returned by the lidar.
@@ -37,7 +37,8 @@
             r(1000.0),
             theta(2 * M_PI),
             x(1000.0),
-            y(0)
+            y(0),
+            blobNumber(0)
         {
         }
 
@@ -45,7 +46,8 @@
             r(rIn),
             theta(thetaIn),
             x(rIn * std::cos(thetaIn)),
-            y(rIn * std::sin(thetaIn))
+            y(rIn * std::sin(thetaIn)),
+            blobNumber(0)
         {
         }
 
@@ -53,6 +55,7 @@
         double theta;
         double x;
         double y;
+        int blobNumber; // For debugging only.
     };
 
     //~ struct Blob {
@@ -134,10 +137,12 @@
             rp::standalone::rplidar::RPlidarDriver *lidar; ///< The lidar instance.
             int lidarMode_; ///< Scan mode for the lidar.
 
-            double lastPointAngle_; ///< Angle of the last point, used to discard point in the wrong order.
+            LidarPoint lastPoint_; ///< Last point seen by the lidar.
             int blobNPoints_; ///< Number of points in current blob.
             double blobDistance_; ///< Current blob distance.
             double blobStartAngle_; ///< Start angle of the current blob.
             int nPointsOutsideBlob_; ///< Number of consecutive points outside of the current blob.
+
+            int currentBlobNumber_; ///< Current blob number, for display coloring.
     };
 #endif
