@@ -62,8 +62,8 @@ namespace miam
         setParam(dSPIN_CONFIG, configValue);
         // Set stall thershold at 2.8A.
         setParam(dSPIN_STALL_TH, 90);
-        // Set overcurrent detection at 2.6A.
-        setParam(dSPIN_OCD_TH, dSPIN_OCD_TH_2625mA);
+        // Set overcurrent detection at 3.7A.
+        setParam(dSPIN_OCD_TH, dSPIN_OCD_TH_3750mA);
 
         // Set full step mode.
         setParam(dSPIN_STEP_MODE, 0);

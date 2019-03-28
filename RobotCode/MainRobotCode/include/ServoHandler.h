@@ -25,6 +25,10 @@
                 void tapClose(); ///< Close air tap.
 
 				void shutdownServos(); ///< Turn off all servos.
+
+                void turnOnPump();
+                void turnOffPump();
+
             private:
                 MaestroDriver maestro_;
         };

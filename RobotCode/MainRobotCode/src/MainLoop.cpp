@@ -16,6 +16,7 @@ Robot robot;
 // Stop motor before exit.
 void killCode(int x)
 {
+    robot.servos_.shutdownServos();
     robot.stepperMotors_.hardStop();
     usleep(50000);
     robot.stepperMotors_.highZ();
@@ -30,14 +31,16 @@ int main(int argc, char **argv)
     signal(SIGTERM, killCode);
 
     // Init raspberry serial ports and GPIO.
-    //~ RPi_enablePorts();
+    RPi_enablePorts();
+    RPi_setupGPIO(21, PI_GPIO_INPUT_PULLUP); // Starting cable.
+
 
     // Init robot - this only creates the log for now.
     bool isInit = robot.initSystem();
     if (!isInit)
     {
         std::cout << "Failed to init robot" << std::endl;
-        exit(-1);
+        //~ exit(-1);
     }
 
 
@@ -46,10 +49,10 @@ int main(int argc, char **argv)
     //~ robot.servos_.turnOffPump();
 
 
-    //~ robot.servos_.tapClose();
-    //~ robot.servos_.closeTube(0);
-    //~ robot.servos_.closeTube(2);
-    //~ robot.servos_.openTube(1);
+    robot.servos_.tapClose();
+    robot.servos_.closeTube(0);
+    robot.servos_.closeTube(2);
+    robot.servos_.openTube(1);
     //~ robot.servos_.turnOnPump();
     //~ RPi_writeGPIO(4, HIGH);
     //~ usleep(5000000);
@@ -74,8 +77,9 @@ int main(int argc, char **argv)
 
     //~ std::shared_ptr<Trajectory> t = std::shared_ptr<Trajectory>(new miam::trajectory::PointTurn(robot.getCurrentPosition(), G_PI_2));
     //~ traj.push_back(t);
-    //~ robot.setTrajectoryToFollow(traj);
+    robot.setTrajectoryToFollow(traj);
     //~ robot.waitForTrajectoryFinished();
+    //~ robot.servos_.turnOnPump();
 
     //~ std::vector<int> position;
     //~ position.push_back(500.0 / G_PI / robotdimensions::wheelRadius * 600);
@@ -83,7 +87,8 @@ int main(int argc, char **argv)
     //~ std::cout << "nsteps" << 500.0 / G_PI / robotdimensions::wheelRadius * 600 << std::endl;
     //~ robot.stepperMotors_.moveNSteps(position);
 
-    usleep(2000000);
+    usleep(200000);
+    //~ robot.servos_.turnOffPump();
     printf("done\n");
     while(true) ;;
     return 0;

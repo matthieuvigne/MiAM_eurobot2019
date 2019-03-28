@@ -89,9 +89,13 @@ static inline std::string getHeaderStringList()
 
 Robot::Robot():
     currentTime_(0.0),
+    isScreenInit_(false),
     isStepperInit_(false),
     isServosInit_(false),
-    isArduinoInit_(false)
+    isArduinoInit_(false),
+    isPlayingRightSide_(true),
+    hasMatchStarted_(false),
+    matchStartTime_(0.0)
 {
     motorSpeed_.push_back(0.0);
     motorSpeed_.push_back(0.0);
@@ -137,6 +141,23 @@ bool Robot::initSystem()
 {
     bool allInitSuccessful = true;
 
+    if (!isScreenInit_)
+    {
+        isScreenInit_ = screen_.init("/dev/LCDScreen");
+        if(!isScreenInit_)
+        {
+            #ifdef DEBUG
+                std::cout << "[Robot] Failed to init communication with LCD screen." << std::endl;
+            #endif
+            allInitSuccessful = false;
+        }
+        else
+        {
+            screen_.setText("Initializing", 0);
+        }
+
+    }
+
     if (!isArduinoInit_)
     {
         isArduinoInit_ = uCListener_start("/dev/arduinoUno");
@@ -173,7 +194,7 @@ bool Robot::initSystem()
 
     if (!isServosInit_)
     {
-        isServosInit_ = servos_.init("/dev/ttyACM0"); // Todo: use symbolic link instead.
+        isServosInit_ = servos_.init("/dev/ttyACM2");
         if (!isServosInit_)
         {
             #ifdef DEBUG
@@ -356,6 +377,15 @@ void Robot::updateTrajectoryFollowingTarget(double const& dt)
 }
 
 
+bool Robot::setupBeforeMatchStart()
+{
+    // Once the match has started, nothing remains to be done.
+    if (hasMatchStarted_)
+        return true;
+    return true;
+}
+
+
 void Robot::lowLevelThread()
 {
     std::cout << "Low-level thread started." << std::endl;
@@ -363,36 +393,48 @@ void Robot::lowLevelThread()
     // Create metronome
     Metronome metronome(LOOP_PERIOD * 1e9);
     currentTime_ = 0;
-
     double lastTime = 0;
 
-    while(true)
+    // Loop until start of the match, then for 100 seconds after the start of the match.
+    while(!hasMatchStarted_ || (currentTime_ < 100.0 + matchStartTime_))
     {
         // Wait for next tick.
         lastTime = currentTime_;
         metronome.wait();
         currentTime_ = metronome.getElapsedTime();
+        double dt = currentTime_ - lastTime;
+
+        // If match hasn't started, look at switch value to see if it has.
+        if (!hasMatchStarted_)
+        {
+            hasMatchStarted_ = setupBeforeMatchStart();
+            if (hasMatchStarted_)
+                matchStartTime_ = currentTime_;
+        }
 
         // Update arduino data.
         uCData oldData = microcontrollerData_;
         microcontrollerData_ = uCListener_getData();
 
-        // Update motor position.
-        motorPosition_ = stepperMotors_.getPosition();
-
-
-        // Update position through integration of encoders measurements.
+        // Compute encoder update.
         WheelSpeed encoderIncrement;
         encoderIncrement.right = microcontrollerData_.encoderValues[RIGHT] - oldData.encoderValues[RIGHT];
         encoderIncrement.left = microcontrollerData_.encoderValues[LEFT] - oldData.encoderValues[LEFT];
 
-        RobotPosition currentPosition = currentPosition_.get();
-        kinematics_.integratePosition(encoderIncrement, currentPosition);
-        currentPosition_.set(currentPosition);
+        // Update motor position.
+        motorPosition_ = stepperMotors_.getPosition();
 
-        // Perform trajectory tracking.
-        double dt = currentTime_ - lastTime;
-        updateTrajectoryFollowingTarget(dt);
+        // Update position and perform tracking only after match start.
+        if (hasMatchStarted_)
+        {
+            // Integrate encoder measurements.
+            RobotPosition currentPosition = currentPosition_.get();
+            kinematics_.integratePosition(encoderIncrement, currentPosition);
+            currentPosition_.set(currentPosition);
+
+            // Perform trajectory tracking.
+            updateTrajectoryFollowingTarget(dt);
+        }
 
         // Get current encoder speeds (in rad/s)
         WheelSpeed instantWheelSpeedEncoder;
@@ -405,6 +447,11 @@ void Robot::lowLevelThread()
         // Update log.
         updateLog();
     }
+    std::cout << "End of the match: low-level thread ends" << std::endl;
+    robot.stepperMotors_.hardStop();
+    usleep(50000);
+    robot.stepperMotors_.highZ();
+    exit(0);
 }
 
 void Robot::updateLog()

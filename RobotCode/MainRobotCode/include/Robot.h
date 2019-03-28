@@ -10,6 +10,7 @@
 
     ///< Global includes
     #include <MiAMEurobot/MiAMEurobot.h>
+    #include <MiAMEurobot/drivers/USBLCDDriver.h>
     #include <MiAMEurobot/raspberry_pi/RaspberryPi.h>
     #include <MiAMEurobot/trajectory/PointTurn.h>
     #include <MiAMEurobot/trajectory/Utilities.h>
@@ -159,6 +160,7 @@
             // List of all system on the robot, public for easy external access (they might be moved latter on).
             miam::L6470 stepperMotors_; ///< Robot driving motors.
             ServoHandler servos_; ///< Interface for the servo driver.
+            USBLCD screen_; ///< LCD screen and buttons.
         private:
             /// \brief Update the logfile with current values.
             void updateLog();
@@ -177,6 +179,14 @@
             /// \param[in] dt Time since last servoing call, for PID controller.
             /// \return True if trajectory following should continue, false if trajectory following is completed.
             bool followTrajectory(Trajectory *traj, double const& timeInTrajectory, double const& dt);
+
+            /// \brief Perform robot setup, return wheather the match has started or not.
+            ///
+            /// \details This function is called periodically before the match starts. It is responsible for
+            ///          updating the display and status according to user input. It returns true whenever the match
+            ///          has started.
+            bool setupBeforeMatchStart();
+
 
             // Current robot status.
             ProtectedPosition currentPosition_; ///< Current robot position, thread-safe.
@@ -209,9 +219,14 @@
             DrivetrainKinematics kinematics_;
 
             // Init variables.
+            bool isScreenInit_; ///< Boolean representing the initialization of the screen motors.
             bool isStepperInit_; ///< Boolean representing the initialization of the stepper motors.
             bool isServosInit_; ///< Boolean representing the initialization of the stepper motors.
             bool isArduinoInit_; ///< Boolean representing the initialization of the slave arduino board.
+
+            bool isPlayingRightSide_; ///< True if robot is playing on the right (purple) side of the field.
+            bool hasMatchStarted_;    ///< Boolean flag to indicate match status.
+            double matchStartTime_;   ///< Start time of the match, for end timer.
     };
 
     extern Robot robot;    ///< The robot instance, representing the current robot.
