@@ -53,7 +53,11 @@ namespace miam
         sendCommand(dSPIN_RESET_DEVICE);
 
         // Set config param : disable SW hard stop.
-        uint32_t configValue = dSPIN_DEFAULT_CONFIG & ~dSPIN_CONFIG_SW_MODE | dSPIN_CONFIG_SW_USER;
+        uint32_t configValue = dSPIN_CONFIG_PWM_DIV_1          | dSPIN_CONFIG_PWM_MUL_2
+                               | dSPIN_CONFIG_SR_290V_us       | dSPIN_CONFIG_OC_SD_ENABLE
+                               | dSPIN_CONFIG_VS_COMP_DISABLE| dSPIN_CONFIG_SW_USER
+                               | dSPIN_CONFIG_INT_16MHZ;
+
         if(hasCrystal)
         {
             configValue = configValue & ~dSPIN_CONFIG_OSC_SEL;
@@ -63,7 +67,7 @@ namespace miam
         // Set stall thershold at 2.8A.
         setParam(dSPIN_STALL_TH, 90);
         // Set overcurrent detection at 3.7A.
-        setParam(dSPIN_OCD_TH, dSPIN_OCD_TH_3750mA);
+        setParam(dSPIN_OCD_TH, dSPIN_OCD_TH_5250mA);
 
         // Set full step mode.
         setParam(dSPIN_STEP_MODE, 0);
@@ -280,21 +284,21 @@ namespace miam
 
             if((status[i] & dSPIN_STATUS_STEP_LOSS_A) == 0)
             {
-                //~ // Stall is non-verbose as too frequent.
+                // Stall is non-verbose as too frequent.
                 error |= dSPIN_ERR_STALLA;
-                errorMessage += "Stall A ";
+                // errorMessage += "Stall A ";
             }
 
             if((status[i] & dSPIN_STATUS_STEP_LOSS_B) == 0)
             {
-                //~ // Stall is non-verbose as too frequent.
+                // Stall is non-verbose as too frequent.
                 error |= dSPIN_ERR_STALLB;
-                errorMessage += "Stall B ";
+                // errorMessage += "Stall B ";
             }
 
 
             #ifdef DEBUG
-                if(error > 0)
+                if(errorMessage.length() > 0)
                     std::cout <<  "dualL6470: " << i << " controller error: " << errorMessage << std::endl;
             #endif
             errors.push_back(error);
