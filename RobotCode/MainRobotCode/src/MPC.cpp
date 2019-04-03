@@ -61,13 +61,15 @@ void miam::MPCsolver::initialize_MPC_problem(
         acadoVariables.x[ j * NX + 2] = current_time_point.position.theta;
     
         /* Initialize the controls. */
-        acadoVariables.u[ j * NU ] = current_time_point.linearVelocity / 1000.0;
-        acadoVariables.u[ j * NU + 1] = current_time_point.angularVelocity;
+        //~ acadoVariables.u[ j * NU ] = current_time_point.linearVelocity / 1000.0;
+        //~ acadoVariables.u[ j * NU + 1] = current_time_point.angularVelocity;
+        acadoVariables.x[ j * NU + 3] = current_time_point.linearVelocity / 1000.0;
+        acadoVariables.x[ j * NU + 4] = current_time_point.angularVelocity;
     }
     
     // End control: duplicate the preceding control
-    acadoVariables.u[ (N-1) * NU ] = acadoVariables.u[ (N-2) * NU ];
-    acadoVariables.u[ (N-1) * NU + 1] = acadoVariables.u[ (N-2) * NU + 1 ];
+    //~ acadoVariables.u[ (N-1) * NU ] = acadoVariables.u[ (N-2) * NU ];
+    //~ acadoVariables.u[ (N-1) * NU + 1] = acadoVariables.u[ (N-2) * NU + 1 ];
 }
 
 
@@ -97,11 +99,16 @@ TrajectoryPoint miam::MPCsolver::solve_MPC_problem(
     acadoVariables.x0[0] = current_trajectory_point.position.x / 1000.0;
     acadoVariables.x0[1] = current_trajectory_point.position.y / 1000.0;
     acadoVariables.x0[2] = current_trajectory_point.position.theta;
+    acadoVariables.x0[3] = current_trajectory_point.linearVelocity / 1000.0;
+    acadoVariables.x0[4] = current_trajectory_point.angularVelocity;
     
     // Initial state
     acadoVariables.x[0] = current_trajectory_point.position.x / 1000.0;
     acadoVariables.x[1] = current_trajectory_point.position.y / 1000.0;
     acadoVariables.x[2] = current_trajectory_point.position.theta;
+    acadoVariables.x[3] = current_trajectory_point.linearVelocity / 1000.0;
+    acadoVariables.x[4] = current_trajectory_point.angularVelocity;
+    
     
     /* Initialize the measurements/reference. */
     for (int j = 0; j < N; j++) {
@@ -127,6 +134,8 @@ TrajectoryPoint miam::MPCsolver::solve_MPC_problem(
     acadoVariables.yN[0] = final_time_point.position.x / 1000.0;
     acadoVariables.yN[1] = final_time_point.position.y / 1000.0;
     acadoVariables.yN[2] = final_time_point.position.theta;
+    //~ acadoVariables.yN[3] = final_time_point.linearVelocity;
+    //~ acadoVariables.yN[4] = final_time_point.angularVelocity;
 
     if( VERBOSE ) acado_printHeader();
 
@@ -163,7 +172,7 @@ TrajectoryPoint miam::MPCsolver::solve_MPC_problem(
     }
     
     /* Get the updated trajectory point at t + n_delay * DELTA_T */
-    int n_delay = 0;
+    int n_delay = 1;
     
     TrajectoryPoint updated_current_trajectory_point;
     
@@ -173,8 +182,10 @@ TrajectoryPoint miam::MPCsolver::solve_MPC_problem(
     updated_current_trajectory_point.position.theta = acadoVariables.x[n_delay * NX + 2];
     
     // Controls
-    updated_current_trajectory_point.linearVelocity = acadoVariables.u[n_delay * NU + 0] * 1000.0;
-    updated_current_trajectory_point.angularVelocity = acadoVariables.u[n_delay * NU + 1];
+    //~ updated_current_trajectory_point.linearVelocity = acadoVariables.u[n_delay * NU + 0] * 1000.0;
+    //~ updated_current_trajectory_point.angularVelocity = acadoVariables.u[n_delay * NU + 1];
+    updated_current_trajectory_point.linearVelocity = acadoVariables.x[n_delay * NX + 3] * 1000.0;
+    updated_current_trajectory_point.angularVelocity = acadoVariables.x[n_delay * NX + 4];
     
     return updated_current_trajectory_point;
 }
