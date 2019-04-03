@@ -237,7 +237,7 @@ void Robot::setTrajectoryToFollow(std::vector<std::shared_ptr<Trajectory>> const
 
 bool Robot::waitForTrajectoryFinished()
 {
-    while(currentTrajectories_.size() > 0)
+    while(newTrajectories_.size() > 0 || currentTrajectories_.size() > 0)
         usleep(2.0 * 1000000 * LOOP_PERIOD);
     return true;
 }

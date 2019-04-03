@@ -68,7 +68,7 @@
     namespace robotdimensions
     {
         double const wheelRadius = 49.3; ///< Wheel radius, in mm - identified during open loop experiments.
-        double const wheelSpacing = 98.6; ///< Wheel spacing from robot center, in mm - identified during open loop experiments.
+        double const wheelSpacing = 100.5; ///< Wheel spacing from robot center, in mm - identified during open loop experiments.
         double const encoderWheelRadius = 25.3; ///< Radius of encoder wheels, in mm.
         double const encoderWheelSpacing = 140.0; ///< Encoder wheel spacing from robot center, in mm.
 
