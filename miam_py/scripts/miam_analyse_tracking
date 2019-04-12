@@ -116,14 +116,16 @@ if __name__ == "__main__":
     axs[0][0].plot(time, trajectory_theta, label="Target angle")
     axs[0][0].plot(time, [theta[i] - trajectory_theta[i] for i in range(len(theta))], label="Error")
 
-    position_error = [np.sqrt((x[i] - trajectory_x[i])**2 + (y[i] - trajectory_y[i])**2) for i in range(len(x))]
-    axs[0][1].plot(time, position_error, label="Position error")
+    axs[0][1].plot(time, logfile.data['trackingLongitudinalError'], label="Longitudinal error")
+    axs[0][1].plot(time, logfile.data['trackingTransverseError'], label="Transverse error")
 
     axs[1][0].plot(time, v, label="Linear velocity")
     axs[1][0].plot(time, trajectory_v, label="Trajectory linear velocity")
+    axs[1][0].plot(time, logfile.data['linearPIDCorrection'], label="PID correction")
 
     axs[1][1].plot(time, omega, label="Angular velocity")
     axs[1][1].plot(time, trajectory_omega, label="Trajectory angular velocity")
+    axs[1][1].plot(time, logfile.data['angularPIDCorrection'], label="PID correction")
 
     for ax in axs:
         for a in ax:

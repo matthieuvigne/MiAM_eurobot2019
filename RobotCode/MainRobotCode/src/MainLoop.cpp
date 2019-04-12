@@ -70,22 +70,36 @@ int main(int argc, char **argv)
 
     // Servo along a trajectory.
     RobotPosition endPosition = robot.getCurrentPosition();
+    std::cout << "Playing first trajectory" << std::endl;
     endPosition.x += 500;
-    //~ endPosition.y += 300;
     std::vector<std::shared_ptr<Trajectory>> traj;
     traj = miam::trajectory::computeTrajectoryStaightLineToPoint(robot.getCurrentPosition(), endPosition);
-
-    //~ std::shared_ptr<Trajectory> t = std::shared_ptr<Trajectory>(new miam::trajectory::PointTurn(robot.getCurrentPosition(), G_PI_2));
-    //~ traj.push_back(t);
     robot.setTrajectoryToFollow(traj);
-    //~ robot.waitForTrajectoryFinished();
-    //~ robot.servos_.turnOnPump();
+    robot.waitForTrajectoryFinished();
 
-    //~ std::vector<int> position;
-    //~ position.push_back(500.0 / G_PI / robotdimensions::wheelRadius * 600);
-    //~ position.push_back(500.0 / G_PI / robotdimensions::wheelRadius * 600);
-    //~ std::cout << "nsteps" << 500.0 / G_PI / robotdimensions::wheelRadius * 600 << std::endl;
-    //~ robot.stepperMotors_.moveNSteps(position);
+    //~ std::cout << "Playing second trajectory" << std::endl;
+    //~ RobotPosition startPosition = endPosition;
+    //~ endPosition.y += 500;
+    //~ traj = miam::trajectory::computeTrajectoryStaightLineToPoint(startPosition, endPosition);
+    //~ robot.setTrajectoryToFollow(traj);
+    //~ robot.waitForTrajectoryFinished();
+
+    //~ std::cout << "Playing third trajectory" << std::endl;
+    //~ endPosition.theta = M_PI_2;
+    //~ startPosition = endPosition;
+    //~ endPosition.x -= 500;
+    //~ traj = miam::trajectory::computeTrajectoryStaightLineToPoint(startPosition, endPosition);
+    //~ robot.setTrajectoryToFollow(traj);
+    //~ robot.waitForTrajectoryFinished();
+    //~ startPosition = endPosition;
+
+    //~ std::cout << "Playing fourth trajectory" << std::endl;
+    //~ endPosition.theta = M_PI;
+    //~ startPosition = endPosition;
+    //~ endPosition.y -= 500;
+    //~ traj = miam::trajectory::computeTrajectoryStaightLineToPoint(startPosition, endPosition);
+    //~ robot.setTrajectoryToFollow(traj);
+    //~ robot.waitForTrajectoryFinished();
 
     usleep(200000);
     //~ robot.servos_.turnOffPump();

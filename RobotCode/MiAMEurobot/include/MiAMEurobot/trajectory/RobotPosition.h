@@ -78,6 +78,13 @@
                 /// \return The cross product, i.e. x * secondVector.y - y * secondVector.x
                 double cross(RobotPosition const& secondVector) const;
 
+
+                /// \brief Rotate the position by a given angle.
+                ///
+                /// \param[in] thetaIn Rotation angle.
+                /// \return Position rotated by the given angle.
+                RobotPosition rotate(double const& thetaIn);
+
                 double x;    ///< X coordinate of the robot, in mm.
                 double y;    ///< Y coordinate of the robot, in mm. Notice that y axis is taken positive when pointing downward.
                 double theta;    ///< Angle of the robot, in rad.

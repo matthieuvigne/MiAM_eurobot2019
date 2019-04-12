@@ -92,6 +92,16 @@ namespace miam{
     }
 
 
+    RobotPosition RobotPosition::rotate(double const& thetaIn)
+    {
+        RobotPosition p;
+        p.theta = this-> theta + thetaIn;
+        p.x = std::cos(thetaIn) * this->x - std::sin(thetaIn) * this->y;
+        p.y = std::sin(thetaIn) * this->x + std::cos(thetaIn) * this->y;
+        return p;
+    }
+
+
     std::ostream& operator<<(std::ostream& os, const RobotPosition& p)
     {
         os << "x: " << p.x;

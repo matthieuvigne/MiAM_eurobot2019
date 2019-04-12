@@ -7,7 +7,8 @@ namespace miam{
         Ki_(0.0),
         maxIntegral_(0.0),
         integral_(0.0),
-        previousError_(0.0)
+        previousError_(0.0),
+        lastCorrection_(0.0)
     {
     }
 
@@ -18,7 +19,8 @@ namespace miam{
         Ki_(Ki),
         maxIntegral_(maxIntegral),
         integral_(0.0),
-        previousError_(0.0)
+        previousError_(0.0),
+        lastCorrection_(0.0)
     {
 
     }
@@ -42,12 +44,19 @@ namespace miam{
                 integral_ = -maxIntegral_ / Ki_;
         }
         // Return result - minus because error is defined as current - target.
-        return -Kp_ * (error + Kd_ * derivative + Ki_ * integral_);
+        lastCorrection_ = -Kp_ * (error + Kd_ * derivative + Ki_ * integral_);
+        return lastCorrection_;
     }
 
 
     void PID::resetIntegral(double const& value)
     {
         integral_ = value;
+    }
+
+
+    double PID::getCorrection()
+    {
+        return lastCorrection_;
     }
 }

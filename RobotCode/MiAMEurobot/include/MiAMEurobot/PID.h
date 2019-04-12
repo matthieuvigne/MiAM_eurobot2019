@@ -25,6 +25,8 @@
                 /// \brief Reset the integral to a specific value (default 0)
                 void resetIntegral(double const& value = 0.0);
 
+                double getCorrection();
+
             private:
                 double Kp_; ///< Proportional gain.
                 double Kd_; ///< Derivative gain.
@@ -32,6 +34,7 @@
                 double maxIntegral_; ///< Maximum integral value.
                 double integral_; ///< Current integral value.
                 double previousError_; ///< Previous error, used to compute derivative.
+                double lastCorrection_; ///< Last correction value computed.
         };
     }
 #endif

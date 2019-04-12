@@ -74,8 +74,11 @@
 
         double const stepSize = 2 * M_PI / 600.0; ///< Size of a motor step, in rad.
 
-        double const maxWheelSpeed = 400; ///< Maximum wheel speed, in mm/s.
-        double const maxWheelAcceleration = 400; ///< Maximum wheel acceleration, in mm/s^2.
+        double const maxWheelSpeed = 600; ///< Maximum wheel speed, in mm/s.
+        double const maxWheelAcceleration = 800; ///< Maximum wheel acceleration, in mm/s^2.
+
+        double const maxWheelSpeedTrajectory = 400; ///< Maximum wheel speed, in mm/s, for trajectory generation.
+        double const maxWheelAccelerationTrajectory = 400; ///< Maximum wheel acceleration, in mm/s^2, for trajectory generation.
     }
 
     // Controller parameters
@@ -83,18 +86,18 @@
     {
         //~ double const transverseKp = 0.1;
 
-        //~ double const linearKp = 0.5;
-        //~ double const linearKd = 0.0;
-        //~ double const linearKi = 0.05;
+        double const linearKp = 0.4;
+        double const linearKd = 0.0;
+        double const linearKi = 0.15;
 
         //~ double const rotationKp = 0.15;
         //~ double const rotationKd = 0.0;
         //~ double const rotationKi = 0.05;
         double const transverseKp = 0.0;
 
-        double const linearKp = 0.0;
-        double const linearKd = 0.0;
-        double const linearKi = 0.00;
+        //~ double const linearKp = 0.0;
+        //~ double const linearKd = 0.0;
+        //~ double const linearKi = 0.00;
 
         double const rotationKp = 0.0;
         double const rotationKd = 0.0;
