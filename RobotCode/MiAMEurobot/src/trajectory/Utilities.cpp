@@ -12,11 +12,12 @@ namespace miam{
         RobotPosition computeCircleCenter(RobotPosition const& startingPosition, double const& radius, rotationside const& side)
         {
             RobotPosition circleCenter;
-            double centerAngle = startingPosition.theta - M_PI / 2.0;
+            double centerAngle = startingPosition.theta + M_PI / 2.0;
             if(side == rotationside::RIGHT)
                 centerAngle += M_PI;
             circleCenter.x = startingPosition.x + std::abs(radius) * std::cos(centerAngle);
-            circleCenter.y = startingPosition.y - std::abs(radius) * std::sin(centerAngle);
+            circleCenter.y = startingPosition.y + std::abs(radius) * std::sin(centerAngle);
+            // Absolue angle of segment [center, startPoint]
             circleCenter.theta = centerAngle - M_PI;
             return circleCenter;
         }
@@ -117,22 +118,16 @@ namespace miam{
                 circleIntersection.theta = startPoint.theta;
 
                 // Compute direction of the circle, based on cross-product.
-                rotationside side = rotationside::RIGHT;
+                rotationside side = rotationside::LEFT;
                 if(firstVector.cross(secondVector) > 0.0)
-                    side = rotationside::LEFT;
+                    side = rotationside::RIGHT;
 
-                // Compute end angle.
-                double endAngle = std::atan2(-secondVector.y, secondVector.x);
+                // Compute end angle: minus the angle of secondVector.
+                double endAngle = std::atan2(secondVector.y, secondVector.x);
                 if(side == rotationside::LEFT)
-                {
                     endAngle -= M_PI_2;
-                    std::cout << "right side" << std::endl;
-                }
                 else
-                {
                     endAngle += M_PI_2;
-                    std::cout << "right side" << std::endl;
-                }
                 // Compute trajectory.
                 std::shared_ptr<StraightLine> line(new StraightLine(startPoint, circleIntersection, transitionLinearVelocity, transitionLinearVelocity));
                 trajectories.push_back(line);
