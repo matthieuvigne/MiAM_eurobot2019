@@ -12,6 +12,9 @@
 
 #define MAINROBOTCODE_USE_MPC true
 
+#define MAINROBOTCODE_MA_LIN_VEL_LEN 4 
+#define MAINROBOTCODE_MA_ANG_VEL_LEN 4 
+
 // Update loop frequency
 const double LOOP_PERIOD = 0.010;
 
@@ -139,6 +142,15 @@ Robot::Robot():
     currentPosition_.set(initialPosition);
     currentBaseSpeed_.linear = 0;
     currentBaseSpeed_.angular = 0;
+    
+    // Prepare moving averages
+    movingAverageLinearVelocity_ = new double[MAINROBOTCODE_MA_LIN_VEL_LEN]();
+    movingAverageAngularVelocity_ = new double[MAINROBOTCODE_MA_ANG_VEL_LEN]();
+    // TODO Assume that the initial velocities (when robot starts) are zero
+    // If not we should initially fill the moving average vectors with a
+    // suitable value
+    //~ movingAverageFilledOnce_ = false;
+    
 
     // Set PIDs.
     PIDLinear_ = miam::PID(controller::linearKp, controller::linearKd, controller::linearKi, 0.2);
@@ -491,7 +503,28 @@ void Robot::lowLevelThread()
         instantWheelSpeedEncoder.left = encoderIncrement.left / dt;
 
         // Get base speed
-        currentBaseSpeed_ = kinematics_.forwardKinematics(instantWheelSpeedEncoder, true);
+        BaseSpeed instantBaseSpeed = kinematics_.forwardKinematics(instantWheelSpeedEncoder, true);
+        
+        // Moving averages
+        double averagedLinearVelocity = 0;
+        for (int k=0; k<MAINROBOTCODE_MA_LIN_VEL_LEN-1; k++) {
+            movingAverageLinearVelocity_[k] = movingAverageLinearVelocity_[k+1];
+            averagedLinearVelocity += movingAverageLinearVelocity_[k];
+        }
+        movingAverageLinearVelocity_[MAINROBOTCODE_MA_LIN_VEL_LEN-1] = instantBaseSpeed.linear;
+        averagedLinearVelocity += movingAverageLinearVelocity_[MAINROBOTCODE_MA_LIN_VEL_LEN-1];
+        averagedLinearVelocity /= MAINROBOTCODE_MA_LIN_VEL_LEN;
+        
+        double averagedAngularVelocity = 0;
+        for (int k=0; k<MAINROBOTCODE_MA_ANG_VEL_LEN-1; k++) {
+            movingAverageAngularVelocity_[k] = movingAverageAngularVelocity_[k+1];
+            averagedAngularVelocity += movingAverageAngularVelocity_[k];
+        }
+        movingAverageAngularVelocity_[MAINROBOTCODE_MA_ANG_VEL_LEN-1] = instantBaseSpeed.angular;
+        averagedAngularVelocity += movingAverageAngularVelocity_[MAINROBOTCODE_MA_ANG_VEL_LEN-1];
+        averagedAngularVelocity /= MAINROBOTCODE_MA_ANG_VEL_LEN;
+        
+        currentBaseSpeed_ = BaseSpeed(averagedLinearVelocity, averagedAngularVelocity);
 
         // Update log.
         updateLog();
