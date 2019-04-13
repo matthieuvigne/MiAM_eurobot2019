@@ -191,6 +191,10 @@
             // Current robot status.
             ProtectedPosition currentPosition_; ///< Current robot position, thread-safe.
             BaseSpeed currentBaseSpeed_; ///< Current robot base speed.
+            
+            double* movingAverageLinearVelocity_;
+            double* movingAverageAngularVelocity_;
+            
             miam::trajectory::TrajectoryPoint trajectoryPoint_; ///< Current trajectory point.
             double currentTime_; ///< Current robot time, counted by low-level thread.
             std::vector<double> motorSpeed_; ///< Current motor speed.
