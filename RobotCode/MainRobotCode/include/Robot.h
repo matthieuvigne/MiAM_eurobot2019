@@ -70,7 +70,8 @@
         double const wheelRadius = 49.3; ///< Wheel radius, in mm - identified during open loop experiments.
         double const wheelSpacing = 100.5; ///< Wheel spacing from robot center, in mm - identified during open loop experiments.
         double const encoderWheelRadius = 25.3; ///< Radius of encoder wheels, in mm.
-        double const encoderWheelSpacing = 140.0; ///< Encoder wheel spacing from robot center, in mm.
+        //~ double const encoderWheelSpacing = 140.0; ///< Encoder wheel spacing from robot center, in mm.
+        double const encoderWheelSpacing = 141.5; ///< Encoder wheel spacing from robot center, in mm.
 
         double const stepSize = 2 * M_PI / 600.0; ///< Size of a motor step, in rad.
 
@@ -86,21 +87,16 @@
     {
         //~ double const transverseKp = 0.1;
 
-        double const linearKp = 0.4;
+        //~ double const linearKp = 3.0;
+        double const linearKp = 0.0;
         double const linearKd = 0.0;
-        double const linearKi = 0.15;
+        double const linearKi = 0.1;
 
-        //~ double const rotationKp = 0.15;
-        //~ double const rotationKd = 0.0;
-        //~ double const rotationKi = 0.05;
         double const transverseKp = 0.0;
 
-        //~ double const linearKp = 0.0;
-        //~ double const linearKd = 0.0;
-        //~ double const linearKi = 0.00;
-
+        //~ double const rotationKp = 10.0;
         double const rotationKp = 0.0;
-        double const rotationKd = 0.0;
+        double const rotationKd = 0.01;
         double const rotationKi = 0.0;
     }
 
@@ -159,6 +155,11 @@
             ///          estimates the position of the robot on the table, and performs motor servoing.
             ///          It also logs everything in a log file.
             void lowLevelThread();
+
+            /// \brief Move the rail.
+            ///
+            /// \param position Relative rail position, form 0 (down) to 1 (up).
+            void moveRail(double position);
 
             // List of all system on the robot, public for easy external access (they might be moved latter on).
             miam::L6470 stepperMotors_; ///< Robot driving motors.

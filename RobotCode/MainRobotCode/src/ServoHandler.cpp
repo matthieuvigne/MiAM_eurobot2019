@@ -49,9 +49,9 @@ void ServoHandler::closeTube(int tubeNumber)
 {
 	switch(tubeNumber)
 	{
-		case 0: maestro_.setPosition(SERVO_TUBE[tubeNumber], 1855); break;
-		case 1: maestro_.setPosition(SERVO_TUBE[tubeNumber], 1850); break;
-		case 2: maestro_.setPosition(SERVO_TUBE[tubeNumber], 1810); break;
+		case 0: maestro_.setPosition(SERVO_TUBE[tubeNumber], 1865); break;
+		case 1: maestro_.setPosition(SERVO_TUBE[tubeNumber], 1865); break;
+		case 2: maestro_.setPosition(SERVO_TUBE[tubeNumber], 1820); break;
 		default: break;
 	}
 }
@@ -73,7 +73,7 @@ void ServoHandler::shutdownServos()
 	for(int i = 0; i < 18; i++)
 	{
 		maestro_.setPosition(i, 0);
-		usleep(50);
+		usleep(80);
 	}
 }
 
@@ -85,4 +85,26 @@ void ServoHandler::turnOnPump()
 void ServoHandler::turnOffPump()
 {
     RPi_writeGPIO(PUMP_PWM, LOW);
+}
+
+
+void ServoHandler::moveSuction(bool high)
+{
+    if(high)
+    {
+        maestro_.setPosition(SERVO_SUCTION[0], 1800);
+        maestro_.setPosition(SERVO_SUCTION[1], 1650);
+        maestro_.setPosition(SERVO_SUCTION[2], 1800);
+    }
+    else
+    {
+        maestro_.setPosition(SERVO_SUCTION[0], 1300);
+        maestro_.setPosition(SERVO_SUCTION[1], 1150);
+        maestro_.setPosition(SERVO_SUCTION[2], 1300);
+    }
+}
+
+void ServoHandler::moveRail(int velocity)
+{
+    maestro_.setPosition(SERVO_VERTICAL_TRANSLATION, velocity);
 }

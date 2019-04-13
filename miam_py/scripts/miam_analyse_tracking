@@ -69,7 +69,13 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Load log file.
-    logfile = miam_py.LogLoader(args.input)
+    logname = args.input
+    if logname == 'latest':
+        logfiles = [i for i in os.listdir('.') if 'log' in i]
+        logname = sorted(logfiles)[-1]
+        print("Loading log: {}".format(logname))
+
+    logfile = miam_py.LogLoader(logname)
     # Get robot parameters from file.
 
     dimensions =logfile.log_info[1].split('_')

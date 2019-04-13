@@ -17,6 +17,7 @@ Robot robot;
 void killCode(int x)
 {
     robot.servos_.shutdownServos();
+    robot.servos_.turnOffPump();
     robot.stepperMotors_.hardStop();
     usleep(50000);
     robot.stepperMotors_.highZ();
@@ -40,8 +41,9 @@ int main(int argc, char **argv)
     if (!isInit)
     {
         std::cout << "Failed to init robot" << std::endl;
-        //~ exit(-1);
+        exit(-1);
     }
+
 
 
     //~ RPi_setupGPIO(4, PI_GPIO_OUTPUT);
@@ -49,33 +51,47 @@ int main(int argc, char **argv)
     //~ robot.servos_.turnOffPump();
 
 
+    // Start low-level thread.
+    std::thread lowLevelThread(&Robot::lowLevelThread, &robot);
+
+    usleep(100000);
+    robot.moveRail(1);
+    robot.servos_.moveSuction(true);
+
+    robot.servos_.openTube(0);
+    robot.servos_.openTube(1);
+    robot.servos_.openTube(2);
+    robot.servos_.tapOpen();
+    robot.servos_.turnOnPump();
+    usleep(2000000);
     robot.servos_.tapClose();
     robot.servos_.closeTube(0);
     robot.servos_.closeTube(2);
     robot.servos_.openTube(1);
-    //~ robot.servos_.turnOnPump();
-    //~ RPi_writeGPIO(4, HIGH);
-    //~ usleep(5000000);
-    //~ robot.servos_.closeTube(1);
-    //~ usleep(1000000);
-    //~ robot.servos_.turnOffPump();
-    //~ usleep(5000000);
-    //~ robot.servos_.openTube(0);
-    //~ robot.servos_.openTube(1);
-    //~ robot.servos_.openTube(2);
-    //~ robot.servos_.tapOpen();
 
-    // Start low-level thread.
-    std::thread lowLevelThread(&Robot::lowLevelThread, &robot);
+    usleep(5000000);
+    robot.servos_.closeTube(1);
+    usleep(1000000);
+    robot.servos_.turnOffPump();
+
+    usleep(1000000);
+    robot.moveRail(0);
+    usleep(1000000);
+    robot.servos_.moveSuction(false);
+    usleep(1000000);
+    robot.servos_.openTube(0);
+    robot.servos_.openTube(1);
+    robot.servos_.openTube(2);
+    robot.servos_.tapOpen();
 
     // Servo along a trajectory.
-    RobotPosition endPosition = robot.getCurrentPosition();
-    std::cout << "Playing first trajectory" << std::endl;
-    endPosition.x += 500;
-    std::vector<std::shared_ptr<Trajectory>> traj;
-    traj = miam::trajectory::computeTrajectoryStaightLineToPoint(robot.getCurrentPosition(), endPosition);
-    robot.setTrajectoryToFollow(traj);
-    robot.waitForTrajectoryFinished();
+    //~ RobotPosition endPosition = robot.getCurrentPosition();
+    //~ std::cout << "Playing first trajectory" << std::endl;
+    //~ endPosition.x += 500;
+    //~ std::vector<std::shared_ptr<Trajectory>> traj;
+    //~ traj = miam::trajectory::computeTrajectoryStaightLineToPoint(robot.getCurrentPosition(), endPosition);
+    //~ robot.setTrajectoryToFollow(traj);
+    //~ robot.waitForTrajectoryFinished();
 
     //~ std::cout << "Playing second trajectory" << std::endl;
     //~ RobotPosition startPosition = endPosition;

@@ -450,6 +450,31 @@ void Robot::lowLevelThread()
     exit(0);
 }
 
+
+void Robot::moveRail(double position)
+{
+    // Compute target potentiometer value.
+    int const LOW_VALUE = 760;
+    int const HIGH_VALUE = 590;
+
+    int targetValue = 760 - (LOW_VALUE - HIGH_VALUE) * position;
+
+    if (microcontrollerData_.potentiometerPosition > targetValue)
+    {
+        robot.servos_.moveRail(1000);
+        while (microcontrollerData_.potentiometerPosition > targetValue)
+            usleep(20000);
+    }
+    else
+    {
+        robot.servos_.moveRail(2000);
+        while (microcontrollerData_.potentiometerPosition < targetValue)
+            usleep(20000);
+    }
+    robot.servos_.moveRail(1450);
+}
+
+
 void Robot::updateLog()
 {
     logger_.setData(LOGGER_TIME, currentTime_);
