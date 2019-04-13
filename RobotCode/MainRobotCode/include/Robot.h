@@ -126,8 +126,9 @@
             ///          has started.
             bool setupBeforeMatchStart();
 
-
-
+            double* movingAverageLinearVelocity_;
+            double* movingAverageAngularVelocity_;
+            
             uCData microcontrollerData_; ///< Data structure containing informations from the arduino board.
             Logger logger_; ///< Logger object.
 
