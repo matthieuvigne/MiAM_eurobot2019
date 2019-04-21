@@ -37,22 +37,18 @@ int main(int argc, char **argv)
     if (!isInit)
     {
         std::cout << "Failed to init robot" << std::endl;
-        //~ exit(-1);
+        exit(-1);
     }
-
     // Move servos to their initial position.
     robot.moveServos(false);
 
-    // Start low-level thread.
-    std::thread lowLevelThread(&Robot::lowLevelThread, &robot);
+    // Lower servos.
+    usleep(1000000);
+    robot.moveServos(true);
 
-    //~ std::vector<int> position;
-    //~ position.push_back(500.0 / G_PI / robotdimensions::wheelRadius * 600);
-    //~ position.push_back(500.0 / G_PI / robotdimensions::wheelRadius * 600);
-    //~ std::cout << "nsteps" << 500.0 / G_PI / robotdimensions::wheelRadius * 600 << std::endl;
-    //~ robot.stepperMotors_.moveNSteps(position);
-    printf("done\n");
-    while(true) ;;
+    // Start low-level loop.
+    robot.lowLevelLoop();
+
     return 0;
 }
 
