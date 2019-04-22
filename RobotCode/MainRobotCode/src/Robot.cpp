@@ -1,5 +1,8 @@
-#include "Robot.h"
 #include <unistd.h>
+#include <thread>
+
+#include "Robot.h"
+
 
 // Update loop frequency
 const double LOOP_PERIOD = 0.010;
@@ -130,12 +133,14 @@ bool Robot::setupBeforeMatchStart()
 
 void Robot::lowLevelLoop()
 {
-    std::cout << "Low-level thread started." << std::endl;
+    std::cout << "Low-level loop started." << std::endl;
 
     // Create metronome
     Metronome metronome(LOOP_PERIOD * 1e9);
     currentTime_ = 0;
     double lastTime = 0;
+
+    std::thread strategyThread;
 
     // Loop until start of the match, then for 100 seconds after the start of the match.
     while(!hasMatchStarted_ || (currentTime_ < 100.0 + matchStartTime_))
@@ -151,7 +156,11 @@ void Robot::lowLevelLoop()
         {
             hasMatchStarted_ = setupBeforeMatchStart();
             if (hasMatchStarted_)
+            {
                 matchStartTime_ = currentTime_;
+                // Start strategy thread.
+                strategyThread = std::thread(&matchStrategy);
+            }
         }
 
         // Update arduino data.
@@ -189,11 +198,10 @@ void Robot::lowLevelLoop()
         // Update log.
         updateLog();
     }
-    std::cout << "End of the match: low-level thread ends" << std::endl;
-    robot.stepperMotors_.hardStop();
-    usleep(50000);
-    robot.stepperMotors_.highZ();
-    exit(0);
+    // End of the match.
+    std::cout << "Match end" << std::endl;
+    pthread_cancel(strategyThread.native_handle());
+    stopMotors();
 }
 
 

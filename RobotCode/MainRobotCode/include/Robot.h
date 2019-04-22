@@ -151,4 +151,6 @@
     };
 
     extern Robot robot;    ///< The robot instance, representing the current robot.
+
+    void matchStrategy(); ///< Robot strategy, to be run as a separate thread.
  #endif

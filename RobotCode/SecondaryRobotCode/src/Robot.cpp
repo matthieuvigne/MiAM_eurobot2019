@@ -165,7 +165,7 @@ void Robot::lowLevelLoop()
             {
                 matchStartTime_ = currentTime_;
                 // Start strategy thread.
-                strategyThread = std::thread(&strategy, this);
+                strategyThread = std::thread(&matchStrategy);
             }
         }
 
@@ -203,9 +203,7 @@ void Robot::lowLevelLoop()
     // End of the match.
     std::cout << "Match end" << std::endl;
     pthread_cancel(strategyThread.native_handle());
-    stepperMotors_.hardStop();
-    usleep(50000);
-    stepperMotors_.highZ();
+    stopMotors();
 }
 
 void Robot::updateLog()
