@@ -6,6 +6,7 @@
 #ifndef MIAM_EUROBOT
 #define MIAM_EUROBOT
 
+    #include <MiAMEurobot/AbstractRobot.h>
     #include <MiAMEurobot/KalmanFilter.h>
     #include <MiAMEurobot/Logger.h>
     #include <MiAMEurobot/Metronome.h>

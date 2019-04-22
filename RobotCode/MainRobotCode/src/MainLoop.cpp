@@ -18,9 +18,7 @@ void killCode(int x)
 {
     robot.servos_.shutdownServos();
     robot.servos_.turnOffPump();
-    robot.stepperMotors_.hardStop();
-    usleep(50000);
-    robot.stepperMotors_.highZ();
+    robot.stopMotors();
     exit(0);
 }
 

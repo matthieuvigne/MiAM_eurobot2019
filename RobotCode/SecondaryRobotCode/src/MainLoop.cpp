@@ -16,9 +16,7 @@ Robot robot;
 // Stop motor before exit.
 void killCode(int x)
 {
-    robot.stepperMotors_.hardStop();
-    usleep(50000);
-    robot.stepperMotors_.highZ();
+    robot.stopMotors();
     exit(0);
 }
 

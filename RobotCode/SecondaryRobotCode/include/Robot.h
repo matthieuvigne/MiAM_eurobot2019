@@ -66,11 +66,7 @@
         double const rotationKi = 0.0;
     }
 
-    /// \brief Class representing the robot wheeled base.
-    /// \details This class simply centralizes variables linked to robot motion.
-    ///          It implements the low-level thread of the robot, responsible for driving it around the table, and logging.
-    ///          Comunication with this thread is done through this class, in a thread-safe way when needed.
-    class Robot
+    class Robot: public AbstractRobot
     {
         public:
 
@@ -84,37 +80,6 @@
             ///          if previous initializations failed.
             /// \return true if all components were initialized successfully, false otherwise.
             bool initSystem();
-
-            /// \brief Get current robot position.
-            /// \return Current robot position.
-            RobotPosition getCurrentPosition();
-
-            /// \brief Get current robot base speed.
-            /// \return Current robot base speed.
-            BaseSpeed getCurrentBaseSpeed();
-
-            /// \brief Reset the position of the robot on the table.
-            ///
-            /// \details This function might be used for example when the robot is put in contact with a side of the table,
-            ///             to gain back absolute position accuracy.
-            ///
-            /// \param[in] resetPosition The position to which reset the robot.
-            /// \param[in] resetX Wheather or not to reset the X coordinate.
-            /// \param[in] resetY Wheather or not to reset the Y coordinate.
-            /// \param[in] resetTheta Wheather or not to reset the angle.
-            void resetPosition(RobotPosition const& resetPosition, bool const& resetX, bool const& resetY, bool const& resetTheta);
-
-            /// \brief Set new trajectory set to follow.
-            /// \details This function is used to set the trajectories which will be followed by
-            ///          the low-level thread. This function simply gives the input to the low-level thread
-            ///          and returns immediately: use waitForTrajectoryFinish
-            ///
-            /// \param[in] trajectories Vector of trajectory to follow.
-            void setTrajectoryToFollow(std::vector<std::shared_ptr<Trajectory>> const& trajectories);
-
-            /// \brief Wait for the current trajectory following to be finished.
-            /// \return true if trajectory following was successful, false otherwise.
-            bool waitForTrajectoryFinished();
 
             /// \brief The low-level thread of the robot.
             /// \details This thread runs a periodic loop. At each iteration, it updates sensor values,
@@ -130,10 +95,8 @@
             void moveServos(bool down = true);
 
             // List of all system on the robot, public for easy external access (they might be moved latter on).
-            miam::L6470 stepperMotors_; ///< Robot driving motors.
             IMU imu_; ///< Robot driving motors.
             LCD screen_;
-
 
         private:
             /// \brief Update the logfile with current values.
@@ -168,22 +131,7 @@
             ///
             bool handleDetection();
 
-            // Current robot status.
-            ProtectedPosition currentPosition_; ///< Current robot position, thread-safe.
-            BaseSpeed currentBaseSpeed_; ///< Current robot base speed.
-            miam::trajectory::TrajectoryPoint trajectoryPoint_; ///< Current trajectory point.
-            double currentTime_; ///< Current robot time, counted by low-level thread.
-            std::vector<double> motorSpeed_; ///< Current motor speed.
-            std::vector<int> motorPosition_; ///< Current motor position.
             Logger logger_; ///< Logger object.
-
-            // Trajectory definition.
-            std::vector<std::shared_ptr<Trajectory>> newTrajectories_; ///< Vector of new trajectories to follow.
-            std::vector<std::shared_ptr<Trajectory>> currentTrajectories_; ///< Current trajectories being followed.
-
-            // Trajectory following timing.
-            double trajectoryStartTime_; ///< Time at which the last trajectory following started.
-            double lastTrajectoryFollowingCallTime_; ///< Time at which the last trajectory following started.
 
             // Traking errors.
             double trackingLongitudinalError_; ///< Tracking error along tangent to trajectory.
@@ -198,9 +146,10 @@
             DrivetrainKinematics kinematics_;
 
             // Init variables.
-            bool isStepperInit_; ///< Boolean representing the initialization of the stepper motors.
             bool isIMUInit_; ///< Boolean representing the initialization of the IMU.
             bool isScreenInit_; ///< Boolean representing the initialization of the LCD screen.
+
+            // Robot detection
             int IRFrontLeft_; ///< Value of the front left IR sensor.
             int IRFrontRight_; ///< Value of the front right IR sensor.
             int IRBackLeft_; ///< Value of the back left IR sensor.
@@ -209,10 +158,6 @@
             bool isBackDetectionActive_; ///< True if a robot is visible behind of the robot.
             bool hasDetectionStoppedRobot_; ///< True if robot is stopped due to a detection.
             double detectionStopTime_; ///< Time at which the robot stopped due to a detection.
-
-            bool isPlayingRightSide_; ///< True if robot is playing on the right (purple) side of the field.
-            bool hasMatchStarted_;    ///< Boolean flag to indicate match status.
-            double matchStartTime_;   ///< Start time of the match, for end timer.
     };
 
     extern Robot robot;    ///< The robot instance, representing the current robot.

@@ -1,110 +1,15 @@
 #include "Robot.h"
-#include "uCListener.h"
-
-#include <iostream>
-
-#include <algorithm>
-#include <string>
 #include <unistd.h>
-#include <ctime>
 
 // Update loop frequency
 const double LOOP_PERIOD = 0.010;
 
-// Logger-related variables.
-/// \brief List of values to log.
-/// \details Elements of this list determine both the enum values and the header string.
-/// \note Values should be uppercase and start with LOGGER_
-#define LOGGER_VALUES(f) \
-    f(LOGGER_TIME)   \
-    f(LOGGER_COMMAND_VELOCITY_RIGHT)  \
-    f(LOGGER_COMMAND_VELOCITY_LEFT)   \
-    f(LOGGER_MOTOR_POSITION_RIGHT)  \
-    f(LOGGER_MOTOR_POSITION_LEFT)  \
-    f(LOGGER_ENCODER_RIGHT)  \
-    f(LOGGER_ENCODER_LEFT)  \
-    f(LOGGER_CURRENT_POSITION_X)  \
-    f(LOGGER_CURRENT_POSITION_Y)  \
-    f(LOGGER_CURRENT_POSITION_THETA) \
-    f(LOGGER_TARGET_POSITION_X)  \
-    f(LOGGER_TARGET_POSITION_Y)  \
-    f(LOGGER_TARGET_POSITION_THETA) \
-    f(LOGGER_TARGET_LINEAR_VELOCITY) \
-    f(LOGGER_TARGET_ANGULAR_VELOCITY) \
-    f(LOGGER_TRACKING_LONGITUDINAL_ERROR) \
-    f(LOGGER_TRACKING_TRANSVERSE_ERROR) \
-    f(LOGGER_TRACKING_ANGLE_ERROR) \
-    f(LOGGER_RAIL_POSITION) \
-    f(LOGGER_CURRENT_VELOCITY_LINEAR) \
-    f(LOGGER_CURRENT_VELOCITY_ANGULAR) \
-    f(LOGGER_LINEAR_P_I_D_CORRECTION) \
-    f(LOGGER_ANGULAR_P_I_D_CORRECTION) \
-
-#define GENERATE_ENUM(ENUM) ENUM,
-
-///< Logger field enum.
-typedef enum{
-    LOGGER_VALUES(GENERATE_ENUM)
-}LoggerFields;
-
-
-// Create header string.
-#define GENERATE_STRING(STRING) #STRING,
-static const char *LOGGER_HEADERS[] = {
-    LOGGER_VALUES(GENERATE_STRING)
-    NULL
-};
-
-// Process input string to go from enum name to string name.
-std::string enumToHeaderString(std::string const& s)
-{
-    std::string outputString = s;
-    // Remove logger_ prefix.
-    outputString = outputString.substr(7);
-    // Put it in lowercase.
-    std::transform(outputString.begin(), outputString.end(), outputString.begin(), ::tolower);
-    //Iterate over string, looking for underscores.
-    for(unsigned int i = 0; i < outputString.length(); i++)
-    {
-        if(outputString[i] == '_')
-        {
-            outputString.erase(i, 1);
-            outputString[i] = std::toupper(outputString[i]);
-        }
-    }
-    return outputString;
-}
-/// \brief Create a comma-separated formated string list from LoggerFields enum.
-/// \details This string is meant to be given to the Logger object. It consits of the LoggerFields names, lowercase
-///          and without the LOGGER_ prefix.
-/// \return A string of all headers, comma-separated. The returned string should be freed when no longer needed.
-static inline std::string getHeaderStringList()
-{
-    std::string headerString = enumToHeaderString(LOGGER_HEADERS[0]);
-    int i = 1;
-    while(LOGGER_HEADERS[i] != NULL)
-    {
-        headerString = headerString + "," + enumToHeaderString(LOGGER_HEADERS[i]);
-        i++;
-    }
-    return headerString;
-}
-
-
 Robot::Robot():
-    currentTime_(0.0),
+    AbstractRobot(),
     isScreenInit_(false),
-    isStepperInit_(false),
     isServosInit_(false),
-    isArduinoInit_(false),
-    isPlayingRightSide_(true),
-    hasMatchStarted_(false),
-    matchStartTime_(0.0)
+    isArduinoInit_(false)
 {
-    motorSpeed_.push_back(0.0);
-    motorSpeed_.push_back(0.0);
-    motorPosition_.push_back(0);
-    motorPosition_.push_back(0);
     kinematics_ = DrivetrainKinematics(robotdimensions::wheelRadius,
                                       robotdimensions::wheelSpacing,
                                       robotdimensions::encoderWheelRadius,
@@ -140,6 +45,7 @@ Robot::Robot():
     PIDLinear_ = miam::PID(controller::linearKp, controller::linearKd, controller::linearKi, 0.2);
     PIDAngular_ = miam::PID(controller::rotationKp, controller::rotationKd, controller::rotationKi, 0.15);
 }
+
 
 bool Robot::initSystem()
 {
@@ -210,166 +116,6 @@ bool Robot::initSystem()
 
 
     return allInitSuccessful;
-}
-
-RobotPosition Robot::getCurrentPosition()
-{
-    return currentPosition_.get();
-}
-
-BaseSpeed Robot::getCurrentBaseSpeed()
-{
-    return currentBaseSpeed_;
-}
-
-void Robot::resetPosition(RobotPosition const& resetPosition, bool const& resetX, bool const& resetY, bool const& resetTheta)
-{
-    RobotPosition position = currentPosition_.get();
-    if(resetX)
-        position.x = resetPosition.x;
-    if(resetY)
-        position.y = resetPosition.y;
-    if(resetTheta)
-        position.theta = resetPosition.theta;
-    currentPosition_.set(position);
-}
-
-void Robot::setTrajectoryToFollow(std::vector<std::shared_ptr<Trajectory>> const& trajectories)
-{
-    newTrajectories_ = trajectories;
-}
-
-bool Robot::waitForTrajectoryFinished()
-{
-    while(newTrajectories_.size() > 0 || currentTrajectories_.size() > 0)
-        usleep(2.0 * 1000000 * LOOP_PERIOD);
-    return true;
-}
-
-
-bool Robot::followTrajectory(Trajectory *traj, double const& timeInTrajectory, double const & dt)
-{
-    // Get current trajectory state.
-    trajectoryPoint_ = traj->getCurrentPoint(timeInTrajectory);
-
-    // Compute targets for rotation and translation motors.
-    BaseSpeed targetSpeed;
-
-    // Feedforward.
-    targetSpeed.linear = trajectoryPoint_.linearVelocity;
-    targetSpeed.angular = trajectoryPoint_.angularVelocity;
-
-    // Compute error.
-    RobotPosition currentPosition = currentPosition_.get();
-    RobotPosition error = currentPosition - trajectoryPoint_.position;
-
-    // Rotate by -theta to express the error in the tangent frame.
-    RobotPosition rotatedError = error.rotate(-trajectoryPoint_.position.theta);
-
-    trackingLongitudinalError_ = rotatedError.x;
-    trackingTransverseError_ = rotatedError.y;
-
-    // Change sign if going backward.
-    if(trajectoryPoint_.linearVelocity < 0)
-        trackingTransverseError_ = - trackingTransverseError_;
-    trackingAngleError_ = currentPosition.theta - trajectoryPoint_.position.theta;
-
-    // If we are beyon trajector end, look to see if we are close enough to the target point to stop.
-    if(traj->getDuration() <= timeInTrajectory)
-    {
-        if(trackingLongitudinalError_ < 3 && trackingAngleError_ < 0.02 && motorSpeed_[RIGHT] < 100 && motorSpeed_[LEFT] < 100)
-        {
-            // Just stop the robot.
-            motorSpeed_[0] = 0.0;
-            motorSpeed_[1] = 0.0;
-            return true;
-        }
-    }
-
-    // Compute correction terms.
-
-    // If trajectory has an angular velocity but no linear velocity, it's a point turn:
-    // disable corresponding position servoing.
-    if(std::abs(trajectoryPoint_.linearVelocity) > 0.1 || std::abs(trajectoryPoint_.angularVelocity) < 1e-4)
-        targetSpeed.linear += PIDLinear_.computeValue(trackingLongitudinalError_, dt);
-
-    // Modify angular PID target based on transverse error, if we are going fast enough.
-    double angularPIDError = trackingAngleError_;
-    if(std::abs(trajectoryPoint_.linearVelocity) > 0.1 * robotdimensions::maxWheelSpeed)
-        angularPIDError += controller::transverseKp * trajectoryPoint_.linearVelocity / robotdimensions::maxWheelSpeed * trackingTransverseError_;
-    targetSpeed.angular += PIDAngular_.computeValue(angularPIDError, dt);
-
-    // Convert from base velocity to motor wheel velocity.
-    WheelSpeed wheelSpeed = kinematics_.inverseKinematics(targetSpeed);
-    // Convert to motor unit.
-    motorSpeed_[RIGHT] = wheelSpeed.right / robotdimensions::stepSize;
-    motorSpeed_[LEFT] = wheelSpeed.left / robotdimensions::stepSize;
-
-    return false;
-}
-
-void Robot::updateTrajectoryFollowingTarget(double const& dt)
-{
-    // Load new trajectories, if needed.
-    if(!newTrajectories_.empty())
-    {
-        // We have new trajectories, erase the current trajectories and follow the new one.
-        currentTrajectories_ = newTrajectories_;
-        trajectoryStartTime_ = currentTime_;
-        newTrajectories_.clear();
-        std::cout << "Recieved new trajectory" << std::endl;
-    }
-
-    // If we have no trajectory to follow, do nothing.
-    if(currentTrajectories_.empty())
-    {
-        motorSpeed_[0] = 0.0;
-        motorSpeed_[1] = 0.0;
-    }
-    else
-    {
-        // Load first trajectory, look if we are done following it.
-        Trajectory *traj = currentTrajectories_.at(0).get();
-        // Look if first trajectory is done.
-        double timeInTrajectory = currentTime_ - trajectoryStartTime_;
-        if(timeInTrajectory > traj->getDuration())
-        {
-            // If we still have a trajectory after that, immediately switch to the next trajectory.
-            if(currentTrajectories_.size() > 1)
-            {
-                // Not obtimal, could be improved.
-                currentTrajectories_.erase(currentTrajectories_.begin());
-                traj = currentTrajectories_.at(0).get();
-                trajectoryStartTime_ = currentTime_;
-                timeInTrajectory = 0.0;
-                std::cout << "Trajectory done, going to next one" << std::endl;
-            }
-        }
-        // If we are more than 1 second after the end of the trajectory, stop it anyway.
-        // We hope to have servoed the robot is less than that anyway.
-        if(timeInTrajectory - 1.0 >  traj->getDuration())
-        {
-            std::cout << "Timeout on trajectory following" << std::endl;
-            currentTrajectories_.erase(currentTrajectories_.begin());
-            motorSpeed_[0] = 0.0;
-            motorSpeed_[1] = 0.0;
-        }
-        else
-        {
-            // Servo robot on current trajectory.
-            bool trajectoryDone = followTrajectory(traj, timeInTrajectory, dt);
-            // If we finished the last trajectory, we can just end it straight away.
-            if(trajectoryDone && currentTrajectories_.size() == 1)
-            {
-                currentTrajectories_.erase(currentTrajectories_.begin());
-                motorSpeed_[0] = 0.0;
-                motorSpeed_[1] = 0.0;
-            }
-        }
-    }
-
-    // Send target to motors.
-    stepperMotors_.setSpeed(motorSpeed_);
 }
 
 

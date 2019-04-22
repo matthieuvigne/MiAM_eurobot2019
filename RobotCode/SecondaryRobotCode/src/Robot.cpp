@@ -1,38 +1,23 @@
 #include "Robot.h"
-
-#include <iostream>
-
-#include <string>
-#include <unistd.h>
-#include <ctime>
 #include <thread>
+#include <unistd.h>
 
 // Update loop frequency
 const double LOOP_PERIOD = 0.010;
 
-
-
 Robot::Robot():
-    currentTime_(0.0),
+    AbstractRobot(),
     isIMUInit_(false),
-    isStepperInit_(false),
     isScreenInit_(false),
     IRFrontLeft_(0),
     IRFrontRight_(0),
     IRBackLeft_(0),
     IRBackRight_(0),
-    isPlayingRightSide_(true),
-    hasMatchStarted_(false),
-    matchStartTime_(0.0),
     isFrontDetectionActive_(false),
     isBackDetectionActive_(false),
     hasDetectionStoppedRobot_(false),
     detectionStopTime_(0.0)
 {
-    motorSpeed_.push_back(0.0);
-    motorSpeed_.push_back(0.0);
-    motorPosition_.push_back(0);
-    motorPosition_.push_back(0);
     kinematics_ = DrivetrainKinematics(robotdimensions::wheelRadius,
                                       robotdimensions::wheelSpacing,
                                       robotdimensions::encoderWheelRadius,
@@ -128,40 +113,6 @@ bool Robot::initSystem()
     return allInitSuccessful;
 }
 
-RobotPosition Robot::getCurrentPosition()
-{
-    return currentPosition_.get();
-}
-
-BaseSpeed Robot::getCurrentBaseSpeed()
-{
-    return currentBaseSpeed_;
-}
-
-void Robot::resetPosition(RobotPosition const& resetPosition, bool const& resetX, bool const& resetY, bool const& resetTheta)
-{
-    RobotPosition position = currentPosition_.get();
-    if(resetX)
-        position.x = resetPosition.x;
-    if(resetY)
-        position.y = resetPosition.y;
-    if(resetTheta)
-        position.theta = resetPosition.theta;
-    currentPosition_.set(position);
-}
-
-void Robot::setTrajectoryToFollow(std::vector<std::shared_ptr<Trajectory>> const& trajectories)
-{
-    newTrajectories_ = trajectories;
-}
-
-bool Robot::waitForTrajectoryFinished()
-{
-    while(currentTrajectories_.size() > 0 || newTrajectories_.size() > 0)
-        usleep(2.0 * 1000000 * LOOP_PERIOD);
-    return true;
-}
-
 
 bool Robot::setupBeforeMatchStart()
 {
@@ -170,6 +121,7 @@ bool Robot::setupBeforeMatchStart()
         return true;
     return true;
 }
+
 
 void Robot::lowLevelLoop()
 {
@@ -288,6 +240,7 @@ void Robot::updateLog()
     logger_.setData(LOGGER_BACK_DETECTION, isBackDetectionActive_);
     logger_.writeLine();
 }
+
 
 void Robot::moveServos(bool down)
 {

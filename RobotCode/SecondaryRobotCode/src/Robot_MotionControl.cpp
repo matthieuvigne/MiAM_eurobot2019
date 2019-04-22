@@ -1,9 +1,5 @@
 #include "Robot.h"
 
-#include <iostream>
-
-#include <string>
-
 // Control of the robot motion on the table.
 // Trajectory list handling, trajectory following, obstacle avoidance.
 
