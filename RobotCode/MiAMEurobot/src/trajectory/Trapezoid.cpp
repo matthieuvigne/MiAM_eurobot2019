@@ -83,7 +83,7 @@ namespace miam{
                 else
                 {
                     #ifdef DEBUG
-                        std::cout << "Trapezoid: impossible trapezoid requested, cropping it" << std::endl;
+                        std::cout << "Trapezoid: cannot reach maximum velocity." << std::endl;
                     #endif
                     // We can't reach terminal velocity, so we will be constantly accelerating / decelerating.
                     if(vi > ve)

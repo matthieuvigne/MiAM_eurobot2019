@@ -72,6 +72,15 @@
             std::vector<std::shared_ptr<Trajectory>> computeTrajectoryRoundedCorner(std::vector<RobotPosition> const& positions,
                                                                                     double radius,
                                                                                     double transitionVelocityFactor = 0.5);
+
+            /// \brief Compute a simple trajectory: going forward for a given distance.
+            ///
+            /// \details The output trajectory consists of only one straight line, no rotation is added.
+            ///
+            /// \param[in, out] position The starting position ; this is updated to the end position of the trajectory.
+            /// \param[in] distance Travel distance ; can be negative, in which case the robot will go backward.
+            /// \return The trajectory.
+            std::vector<std::shared_ptr<Trajectory>> computeTrajectoryStraightLine(RobotPosition & position, double const& distance);
         }
     }
 #endif

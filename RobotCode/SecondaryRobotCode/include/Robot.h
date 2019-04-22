@@ -22,8 +22,8 @@
     #include "LoggerFields.h"
 
     // Right and left macros, for array addressing.
-    #define RIGHT 0
-    #define LEFT 1
+    int const RIGHT = 0;
+    int const LEFT = 1;
 
     using miam::RobotPosition;
     using miam::ProtectedPosition;

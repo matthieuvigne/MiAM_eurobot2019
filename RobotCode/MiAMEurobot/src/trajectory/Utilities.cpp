@@ -48,9 +48,9 @@ namespace miam{
         }
 
         std::vector<std::shared_ptr<Trajectory>> computeTrajectoryStaightLineToPoint(RobotPosition const& startPosition,
-                                                                     RobotPosition const& endPosition,
-                                                                     double const& endVelocity,
-                                                                     bool const& backward)
+                                                                                     RobotPosition const& endPosition,
+                                                                                     double const& endVelocity,
+                                                                                     bool const& backward)
         {
             std::vector<std::shared_ptr<Trajectory>> vector;
             std::shared_ptr<StraightLine> line(new StraightLine(startPosition, endPosition, 0.0, endVelocity, backward));
@@ -133,7 +133,6 @@ namespace miam{
             }
             // Append final straight line.
             RobotPosition currentPoint = trajectories.back()->getEndPoint().position;
-            std::cout << "end line" <<  currentPoint.theta << std::endl;
             RobotPosition endPoint = positions.back();
             std::shared_ptr<StraightLine> line(new StraightLine(currentPoint, endPoint, transitionLinearVelocity, 0.0));
             trajectories.push_back(line);
@@ -141,5 +140,17 @@ namespace miam{
             return trajectories;
         }
 
+        std::vector<std::shared_ptr<Trajectory>> computeTrajectoryStraightLine(RobotPosition & position, double const& distance)
+        {
+            RobotPosition endPosition = position + RobotPosition(distance, 0.0, 0.0).rotate(position.theta);
+            endPosition.theta = position.theta;
+
+            std::vector<std::shared_ptr<Trajectory>> vector;
+            std::shared_ptr<StraightLine> line(new StraightLine(position, endPosition, 0.0, 0.0, (distance < 0)));
+
+            vector.push_back(std::shared_ptr<Trajectory>(line));
+            position = endPosition;
+            return vector;
+        }
     }
 }
