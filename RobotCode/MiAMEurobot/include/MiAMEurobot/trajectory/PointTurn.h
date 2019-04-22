@@ -26,10 +26,17 @@
 
                     TrajectoryPoint getCurrentPoint(double const& currentTime);
 
+                    void replanify(double const& replanificationTime);
                 private:
+                    void make(RobotPosition const& startPoint); ///< Build (or rebuild) the trajectory.
+
                     RobotPosition startPoint_; ///< Point where the trajectory started.
                     int motionSign_; ///< 1 or -1, to indicate direction of motion (trapezoid is always positive).
                     Trapezoid trapezoid_; ///< Velocity trapezoid.
+
+                    double endAngle_;     ///< End angle.
+                    double maxVelocity_; ///< Maximum velocity.
+                    double maxAcceleration_; ///< Maximum acceleration.
             };
         }
     }

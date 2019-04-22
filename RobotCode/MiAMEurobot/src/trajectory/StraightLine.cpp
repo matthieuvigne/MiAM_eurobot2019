@@ -9,24 +9,36 @@ namespace miam{
                                    RobotPosition const& endPoint,
                                    double const& startVelocity,
                                    double const& endVelocity,
-                                   bool const& backward,
+                                   bool const& backward_,
                                    double maxVelocity,
                                    double maxAcceleration):
-             startPoint_(startPoint),
-             motionSign_(1.0)
+             endPoint_(endPoint),
+             endVelocity_(endVelocity),
+             backward_(backward_),
+             maxVelocity_(maxVelocity),
+             maxAcceleration_(maxAcceleration)
         {
-            if(backward)
+            make(startPoint, startVelocity);
+        }
+
+
+        void StraightLine::make(RobotPosition const& startPoint, double const& startVelocity)
+        {
+            startPoint_ = startPoint;
+            motionSign_ = 1.0;
+
+            if(backward_)
                 motionSign_ = -1.0;
             // Create trapezoid.
-            double length = distance(startPoint, endPoint);
-            trapezoid_ = Trapezoid(length, startVelocity, endVelocity, maxVelocity, maxAcceleration);
+            double length = distance(startPoint, endPoint_);
+            trapezoid_ = Trapezoid(length, startVelocity, endVelocity_, maxVelocity_, maxAcceleration_);
 
             duration_ = trapezoid_.getDuration();
 
             // Compute angle.
-            startPoint_.theta += computeShortestAngle(startPoint, endPoint);
+            startPoint_.theta += computeShortestAngle(startPoint, endPoint_);
 
-            if(backward)
+            if(backward_)
             {
                 // Add or remove pi if going backward.
                 if(startPoint_.theta < 0)
@@ -49,6 +61,13 @@ namespace miam{
             output.position.y += motionSign_ * state.position * std::sin(startPoint_.theta);
 
             return output;
+        }
+
+
+        void StraightLine::replanify(double const& replanificationTime)
+        {
+            RobotPosition startPoint = getCurrentPoint(replanificationTime).position;
+            make(startPoint, 0.0);
         }
 
 

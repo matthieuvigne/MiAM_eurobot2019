@@ -52,7 +52,7 @@ int main(int argc, char **argv)
 
 
     // Start low-level thread.
-    std::thread lowLevelThread(&Robot::lowLevelThread, &robot);
+    std::thread lowLevelLoop(&Robot::lowLevelLoop, &robot);
 
     usleep(100000);
     robot.moveRail(1);

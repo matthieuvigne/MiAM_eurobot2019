@@ -32,14 +32,24 @@
 
                     TrajectoryPoint getCurrentPoint(double const& currentTime);
 
+                    void replanify(double const& replanificationTime);
+
                     /// \brief Return line angle.
                     ///
                     /// \return Line angle
                     double getAngle();
                 private:
+                    void make(RobotPosition const& startPoint, double const& startVelocity); ///< Build (or rebuild) the trajectory.
+
                     RobotPosition startPoint_; ///< Point where the trajectory started.
                     int motionSign_; ///< 1 or -1, to indicate direction of motion.
                     Trapezoid trapezoid_; ///< Velocity trapezoid.
+
+                    RobotPosition endPoint_; ///< End position.
+                    double endVelocity_; ///< End velocity.
+                    bool backward_;     ///< True if going backward.
+                    double maxVelocity_; ///< Maximum velocity.
+                    double maxAcceleration_; ///< Maximum acceleration.
             };
         }
     }

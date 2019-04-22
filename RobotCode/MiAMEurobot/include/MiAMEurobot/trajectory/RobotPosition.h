@@ -4,6 +4,7 @@
 #define MIAM_ROBOT_POSITION
 
     #include <iostream>
+    #include <mutex>
 
     namespace miam{
         /// \brief Robot coordinates on the table.
@@ -91,5 +92,35 @@
         };
 
         std::ostream& operator<<(std::ostream& os, const RobotPosition& p);
+
+        /// \brief Simple class to provide thread-safe access to a robot position.
+        class ProtectedPosition{
+            public:
+                ProtectedPosition():
+                    position_(),
+                    mutex_()
+                {
+                }
+
+                RobotPosition get()
+                {
+                    RobotPosition p;
+                    mutex_.lock();
+                    p = position_;
+                    mutex_.unlock();
+                    return p;
+                }
+
+                void set(RobotPosition const& p)
+                {
+                    mutex_.lock();
+                    position_ = p;
+                    mutex_.unlock();
+                }
+
+            private:
+                RobotPosition position_;
+                std::mutex mutex_;
+        };
     }
 #endif

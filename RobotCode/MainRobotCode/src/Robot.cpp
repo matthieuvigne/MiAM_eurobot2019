@@ -382,7 +382,7 @@ bool Robot::setupBeforeMatchStart()
 }
 
 
-void Robot::lowLevelThread()
+void Robot::lowLevelLoop()
 {
     std::cout << "Low-level thread started." << std::endl;
 

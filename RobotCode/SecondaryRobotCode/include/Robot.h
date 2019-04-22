@@ -26,38 +26,8 @@
     #define LEFT 1
 
     using miam::RobotPosition;
+    using miam::ProtectedPosition;
     using miam::trajectory::Trajectory;
-
-
-    /// \brief Simple class to provide thread-safe access to the robot position.
-    class ProtectedPosition{
-        public:
-            ProtectedPosition():
-                position_(),
-                mutex_()
-            {
-            }
-
-            RobotPosition get()
-            {
-                RobotPosition p;
-                mutex_.lock();
-                p = position_;
-                mutex_.unlock();
-                return p;
-            }
-
-            void set(RobotPosition const& p)
-            {
-                mutex_.lock();
-                position_ = p;
-                mutex_.unlock();
-            }
-
-        private:
-            RobotPosition position_;
-            std::mutex mutex_;
-    };
 
     // Dimensions of the robot
     namespace robotdimensions
@@ -190,7 +160,6 @@
             ///          updating the display and status according to user input. It returns true whenever the match
             ///          has started.
             bool setupBeforeMatchStart();
-
 
             /// \brief Opponent robot detection.
             ///

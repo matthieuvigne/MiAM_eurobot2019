@@ -108,10 +108,7 @@ namespace miam{
 
                 double circleRadius = std::min(radius, std::min(firstNorm, secondNorm) / coefficient * 0.99);
 
-                // Compute circle center.
-                RobotPosition center = roundedCornerPoint + circleRadius * coefficient * (firstVector + secondVector);
-
-                // Finally, compute point where the circle intersects both trajectories: get the first point and the
+                // Compute point where the circle intersects both trajectories: get the first point and the
                 // angle.
                 RobotPosition circleIntersection = roundedCornerPoint + circleRadius * coefficient * firstVector;
                 // Put back right angle.

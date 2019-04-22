@@ -176,8 +176,8 @@ void Robot::updateTrajectoryFollowingTarget(double const& dt)
             {
                 hasDetectionStoppedRobot_ = false;
                 // Robot was previously stopped but there is no longer any obstacle.
-                // We need to replanify the trajectory.
-                // FIXME: trajectory replannification.
+                // We replanify the trajectory and restart following.
+                traj->replanify(currentTime_ - trajectoryStartTime_);
                 trajectoryStartTime_ = currentTime_;
             }
 

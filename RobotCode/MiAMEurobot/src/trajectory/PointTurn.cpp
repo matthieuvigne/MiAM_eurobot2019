@@ -10,20 +10,11 @@ namespace miam{
                              double const& endAngle,
                              double maxVelocity,
                              double maxAcceleration):
-             startPoint_(startPoint),
-             motionSign_(1.0)
+             endAngle_(endAngle),
+             maxVelocity_(maxVelocity),
+             maxAcceleration_(maxAcceleration)
         {
-            // Create trapezoid.
-            double length = moduloTwoPi(endAngle - startPoint.theta);
-            if(length < 0)
-                motionSign_ = -1.0;
-
-            // Compute max angular velocity and acceleration, taking into account wheel spacing.
-            double maxRobotAngularVelocity = maxVelocity / config::robotWheelSpacing;
-            double maxRobotAngularAcceleration = maxAcceleration / config::robotWheelSpacing;
-
-            trapezoid_ = Trapezoid(length, 0.0, 0.0, maxRobotAngularVelocity, maxRobotAngularAcceleration);
-            duration_ = trapezoid_.getDuration();
+            make(startPoint);
         }
 
         TrajectoryPoint PointTurn::getCurrentPoint(double const& currentTime)
@@ -36,6 +27,31 @@ namespace miam{
             output.angularVelocity = motionSign_ * state.velocity;
 
             return output;
+        }
+
+        void PointTurn::make(RobotPosition const& startPoint)
+        {
+            startPoint_ = startPoint;
+            motionSign_ = 1.0;
+            // Create trapezoid.
+            double length = moduloTwoPi(endAngle_ - startPoint.theta);
+            if(length < 0)
+                motionSign_ = -1.0;
+
+            // Compute max angular velocity and acceleration, taking into account wheel spacing.
+            double maxRobotAngularVelocity = maxVelocity_ / config::robotWheelSpacing;
+            double maxRobotAngularAcceleration = maxAcceleration_ / config::robotWheelSpacing;
+
+            trapezoid_ = Trapezoid(length, 0.0, 0.0, maxRobotAngularVelocity, maxRobotAngularAcceleration);
+            duration_ = trapezoid_.getDuration();
+
+        }
+
+
+        void PointTurn::replanify(double const& replanificationTime)
+        {
+            RobotPosition startPoint = getCurrentPoint(replanificationTime).position;
+            make(startPoint);
         }
 
     }

@@ -31,38 +31,8 @@
     #define LEFT 1
 
     using miam::RobotPosition;
+    using miam::ProtectedPosition;
     using miam::trajectory::Trajectory;
-
-
-    /// \brief Simple class to provide thread-safe access to the robot position.
-    class ProtectedPosition{
-        public:
-            ProtectedPosition():
-                position_(),
-                mutex_()
-            {
-            }
-
-            RobotPosition get()
-            {
-                RobotPosition p;
-                mutex_.lock();
-                p = position_;
-                mutex_.unlock();
-                return p;
-            }
-
-            void set(RobotPosition const& p)
-            {
-                mutex_.lock();
-                position_ = p;
-                mutex_.unlock();
-            }
-
-        private:
-            RobotPosition position_;
-            std::mutex mutex_;
-    };
 
     // Dimensions of the robot
     namespace robotdimensions
@@ -154,7 +124,7 @@
             /// \details This thread runs a periodic loop. At each iteration, it updates sensor values,
             ///          estimates the position of the robot on the table, and performs motor servoing.
             ///          It also logs everything in a log file.
-            void lowLevelThread();
+            void lowLevelLoop();
 
             /// \brief Move the rail.
             ///

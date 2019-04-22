@@ -64,6 +64,13 @@
                     /// \return Position at duration_
                     TrajectoryPoint getEndPoint();
 
+                    /// \brief Replanify the trajectory from the given time.
+                    ///
+                    /// \details Given a time t, replanify the trajectory to have a new trajectory
+                    ///          starting at getCurrentPoint(t) with zero velocity at time t=0.
+                    /// \param[in] replanificationTime Time at which we replanify, in seconds.
+                    virtual void replanify(double const& replanificationTime) = 0;
+
                 protected:
                     double duration_; ///< Trajectory duration.
             };
