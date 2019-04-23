@@ -314,6 +314,7 @@ bool Robot::followTrajectory(Trajectory *traj, double const& timeInTrajectory, d
         // Get current trajectory state.
         trajectoryPoint_ = traj->getCurrentPoint(timeInTrajectory);
 
+
         // Compute targets for rotation and translation motors.
         BaseSpeed targetSpeed;
 
@@ -330,6 +331,7 @@ bool Robot::followTrajectory(Trajectory *traj, double const& timeInTrajectory, d
 
         trackingLongitudinalError_ = rotatedError.x;
         trackingTransverseError_ = rotatedError.y;
+
 
         // Change sign if going backward.
         if(trajectoryPoint_.linearVelocity < 0)
@@ -363,6 +365,7 @@ bool Robot::followTrajectory(Trajectory *traj, double const& timeInTrajectory, d
 
         // Convert from base velocity to motor wheel velocity.
         WheelSpeed wheelSpeed = kinematics_.inverseKinematics(targetSpeed);
+
         // Convert to motor unit.
         motorSpeed_[RIGHT] = wheelSpeed.right / robotdimensions::stepSize;
         motorSpeed_[LEFT] = wheelSpeed.left / robotdimensions::stepSize;
