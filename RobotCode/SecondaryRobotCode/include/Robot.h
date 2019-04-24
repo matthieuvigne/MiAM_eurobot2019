@@ -32,15 +32,18 @@
     // Dimensions of the robot
     namespace robotdimensions
     {
-        double const wheelRadius = 49.3; ///< Wheel radius, in mm - identified during open loop experiments.
-        double const wheelSpacing = 98.6; ///< Wheel spacing from robot center, in mm - identified during open loop experiments.
-        double const encoderWheelRadius = 25.3; ///< Radius of encoder wheels, in mm.
-        double const encoderWheelSpacing = 140.0; ///< Encoder wheel spacing from robot center, in mm.
+        double const wheelRadius = 45.0; ///< Wheel radius, in mm - identified during open loop experiments.
+        double const wheelSpacing = 105.0; ///< Wheel spacing from robot center, in mm - identified during open loop experiments.
+        double const encoderWheelRadius = wheelRadius; ///< Radius of encoder wheels, in mm. Same as motor wheels since this robot has no encoders.
+        double const encoderWheelSpacing = wheelSpacing; ///< Encoder wheel spacing from robot center, in mm. Same as motor wheels since this robot has no encoders.
 
-        double const stepSize = 2 * M_PI / 200.0; ///< Size of a motor step, in rad.
+        double const stepSize = 2 * M_PI / 400.0; ///< Size of a motor step, in rad.
 
-        double const maxWheelSpeed = 400; ///< Maximum wheel speed, in mm/s.
-        double const maxWheelAcceleration = 400; ///< Maximum wheel acceleration, in mm/s^2.
+        double const maxWheelSpeed = 500; ///< Maximum wheel speed, in mm/s.
+        double const maxWheelAcceleration = 600; ///< Maximum wheel acceleration, in mm/s^2.
+
+        double const maxWheelSpeedTrajectory = 400; ///< Maximum wheel speed, in mm/s, for trajectory generation.
+        double const maxWheelAccelerationTrajectory = 400; ///< Maximum wheel acceleration, in mm/s^2, for trajectory generation.
     }
 
     // Controller parameters

@@ -21,16 +21,19 @@ bool Robot::handleDetection()
     IRBackRight_ = gpio_analogRead(CAPE_ANALOG[3]);
 
     // Determine if a robot is visible in front or behind the robot.
-    isFrontDetectionActive_ = (IRFrontLeft_ < FRONT_THRESHOLD || IRFrontRight_ < FRONT_THRESHOLD);
-    isBackDetectionActive_ = (IRBackLeft_ < BACK_THRESHOLD || IRBackRight_ < BACK_THRESHOLD);
+    isFrontDetectionActive_ = (IRFrontLeft_ > FRONT_THRESHOLD || IRFrontRight_ > FRONT_THRESHOLD);
+    isBackDetectionActive_ = (IRBackLeft_ > BACK_THRESHOLD || IRBackRight_ > BACK_THRESHOLD);
+
+    // Set LED status
+    gpio_digitalWrite(CAPE_LED[1], isFrontDetectionActive_ || isBackDetectionActive_);
 
     bool shouldRobotStop = false;
 
     bool isGoingForward = true;
-    // Determine if we are going forward or backward.
-    if (trajectoryPoint_.linearVelocity > 0.01)
+    // Determine if there is an obstacle in the direction we are going,
+    if (trajectoryPoint_.linearVelocity > 0.01 && isFrontDetectionActive_)
         isGoingForward = true;
-    else if (trajectoryPoint_.linearVelocity < -0.01)
+    else if (trajectoryPoint_.linearVelocity < -0.01 && isBackDetectionActive_)
         isGoingForward = false;
     else
         return false; // If we have no forward or backward desired velocity (i.e. point turn), no need to do any detection.
@@ -52,7 +55,7 @@ bool Robot::handleDetection()
     if (!hasMatchStarted_)
         return false;
     if (currentTime_ - matchStartTime_ < IR_START_TIMEOUT)
-        return true;
+        return false;
     return shouldRobotStop;
 }
 
@@ -141,6 +144,7 @@ void Robot::updateTrajectoryFollowingTarget(double const& dt)
 
     // Hande detection.
     bool shouldRobotStop = handleDetection();
+    std::cout << shouldRobotStop << std::endl;
 
     // If we have no trajectory to follow, do nothing.
     if(currentTrajectories_.empty())
@@ -160,10 +164,12 @@ void Robot::updateTrajectoryFollowingTarget(double const& dt)
             detectionStopTime_ = currentTime_;
         }
 
-        if (shouldRobotStop)
+        // Stop for at least a certain time, to remove jitter.
+        if (shouldRobotStop || currentTime_ - detectionStopTime_ < 0.5)
         {
             motorSpeed_[0] = 0.0;
             motorSpeed_[1] = 0.0;
+            stopMotors();
             // TODO: add timeout on detection ?
         }
         else
@@ -173,7 +179,7 @@ void Robot::updateTrajectoryFollowingTarget(double const& dt)
                 hasDetectionStoppedRobot_ = false;
                 // Robot was previously stopped but there is no longer any obstacle.
                 // We replanify the trajectory and restart following.
-                traj->replanify(currentTime_ - trajectoryStartTime_);
+                traj->replanify(detectionStopTime_ - trajectoryStartTime_);
                 trajectoryStartTime_ = currentTime_;
             }
 

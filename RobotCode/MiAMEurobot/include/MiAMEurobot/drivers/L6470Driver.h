@@ -164,8 +164,8 @@
                 std::string portName_;
                 uint numberOfDevices_;
                 int frequency_;
-                std::mutex mutex_;
-
+                std::recursive_mutex mutex_;    ///< Mutex, for thread safety. recursive_mutex that can be locked several
+                                                /// times by the same thread: is this to prevent deadlock when sending a kill signal to the code.
         };
     }
 #endif

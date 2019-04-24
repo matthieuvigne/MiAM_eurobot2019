@@ -20,6 +20,8 @@ void matchStrategy()
 {
     std::cout << "Strategy thread started" << std::endl;
 
+    robot.moveServos(true);
+    usleep(800000);
 
     // Set initial position
     RobotPosition targetPosition;

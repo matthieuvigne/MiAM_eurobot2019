@@ -19,12 +19,12 @@ Robot::Robot():
     detectionStopTime_(0.0)
 {
     kinematics_ = DrivetrainKinematics(robotdimensions::wheelRadius,
-                                      robotdimensions::wheelSpacing,
-                                      robotdimensions::encoderWheelRadius,
-                                      robotdimensions::encoderWheelSpacing);
+                                       robotdimensions::wheelSpacing,
+                                       robotdimensions::encoderWheelRadius,
+                                       robotdimensions::encoderWheelSpacing);
     // Update trajectory config.
-    miam::trajectory::setTrajectoryGenerationConfig(robotdimensions::maxWheelSpeed,
-                                                    robotdimensions::maxWheelAcceleration,
+    miam::trajectory::setTrajectoryGenerationConfig(robotdimensions::maxWheelSpeedTrajectory,
+                                                    robotdimensions::maxWheelAccelerationTrajectory,
                                                     robotdimensions::wheelSpacing);
 
     // Create logger.
@@ -166,6 +166,7 @@ void Robot::lowLevelLoop()
                 matchStartTime_ = currentTime_;
                 // Start strategy thread.
                 strategyThread = std::thread(&matchStrategy);
+                strategyThread.detach();
             }
         }
 
@@ -244,8 +245,8 @@ void Robot::moveServos(bool down)
 {
     if(down)
     {
-        gpio_servoPWM(0, 1140);
-        gpio_servoPWM(1, 1930);
+        gpio_servoPWM(0, 1150);
+        gpio_servoPWM(1, 1910);
     }
     else
     {

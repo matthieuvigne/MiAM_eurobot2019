@@ -16,7 +16,9 @@ Robot robot;
 // Stop motor before exit.
 void killCode(int x)
 {
+    std::cout << "Kill called, shutting down motors" << std::endl;
     robot.stopMotors();
+    std::cout << "Exiting" << std::endl;
     exit(0);
 }
 
