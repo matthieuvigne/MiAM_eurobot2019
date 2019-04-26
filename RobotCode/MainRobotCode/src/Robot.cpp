@@ -160,6 +160,7 @@ void Robot::lowLevelLoop()
                 matchStartTime_ = currentTime_;
                 // Start strategy thread.
                 strategyThread = std::thread(&matchStrategy);
+                strategyThread.detach();
             }
         }
 

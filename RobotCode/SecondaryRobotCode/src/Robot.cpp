@@ -16,7 +16,9 @@ Robot::Robot():
     isFrontDetectionActive_(false),
     isBackDetectionActive_(false),
     hasDetectionStoppedRobot_(false),
-    detectionStopTime_(0.0)
+    detectionStopTime_(0.0),
+    startupStatus_(startupstatus::INIT),
+    initMotorState_(0)
 {
     kinematics_ = DrivetrainKinematics(robotdimensions::wheelRadius,
                                        robotdimensions::wheelSpacing,
@@ -83,6 +85,8 @@ bool Robot::initSystem()
                 std::cout << "[Robot] Failed to init communication with IMU." << std::endl;
             #endif
             allInitSuccessful = false;
+            robot.screen_.setTextCentered("IMU init failed", 0);
+            robot.screen_.setBacklight(true, false, false);
         }
     }
     if (!isStepperInit_)
@@ -104,7 +108,11 @@ bool Robot::initSystem()
                 std::cout << "[Robot] Failed to init communication with stepper motors." << std::endl;
             #endif
             allInitSuccessful = false;
+            robot.screen_.setTextCentered("Motor init failed", 0);
+            robot.screen_.setBacklight(true, false, false);
         }
+        else
+            stepperMotors_.highZ();
     }
     if(allInitSuccessful)
         gpio_digitalWrite(CAPE_LED[1], 0);
@@ -119,7 +127,73 @@ bool Robot::setupBeforeMatchStart()
     // Once the match has started, nothing remains to be done.
     if (hasMatchStarted_)
         return true;
-    return true;
+    // Action depends on current startup status
+    if (startupStatus_ == startupstatus::INIT)
+    {
+        // Try to initialize system.
+        bool isInit = initSystem();
+        if (isInit)
+        {
+            startupStatus_ = startupstatus::WAITING_FOR_CABLE;
+            robot.screen_.setTextCentered("Waiting for cable", 0);
+            robot.screen_.setBacklight(true, true, true);
+        }
+    }
+    else if (startupStatus_ == startupstatus::WAITING_FOR_CABLE)
+    {
+        // Wait for cable to be plugged in ; todo
+        if (true)
+        {
+            startupStatus_ = startupstatus::PLAYING_LEFT;
+            isPlayingRightSide_ = false;
+            robot.screen_.setTextCentered("Choose side", 0);
+            robot.screen_.setTextCentered("     YELLOW    >", 1);
+            robot.screen_.setBacklight(true, true, true);
+        }
+    }
+    else
+    {
+        // Switch side based on button press.
+        if (startupStatus_ == startupstatus::PLAYING_RIGHT && robot.screen_.isButtonPressed(LCD_BUTTON_LEFT))
+        {
+            startupStatus_ = startupstatus::PLAYING_LEFT;
+            isPlayingRightSide_ = false;
+            robot.screen_.setTextCentered("     YELLOW    >", 1);
+            robot.screen_.setBacklight(true, true, true);
+        }
+        else if (startupStatus_ == startupstatus::PLAYING_LEFT && robot.screen_.isButtonPressed(LCD_BUTTON_RIGHT))
+        {
+            startupStatus_ = startupstatus::PLAYING_RIGHT;
+            isPlayingRightSide_ = true;
+            robot.screen_.setTextCentered("<    PURPLE     ", 1);
+            robot.screen_.setBacklight(true, true, true);
+        }
+
+        // Use down button to lock / unlock the motors.
+        if (robot.screen_.isButtonPressed(LCD_BUTTON_DOWN))
+        {
+            // Only modify state if the button was just pressed.
+            if (initMotorState_ < 2)
+            {
+                if (initMotorState_ == 0)
+                    stepperMotors_.hardStop();
+                else
+                    stepperMotors_.highZ();
+                initMotorState_ = (initMotorState_ + 1) % 2 + 2;
+            }
+        }
+        else
+        {
+            // Button release: change state to be less that two.
+            initMotorState_ = initMotorState_ % 2;
+        }
+
+        // If start button is pressed, return true to end startup.
+        if (robot.screen_.isButtonPressed(LCD_BUTTON_SELECT))
+            return true;
+    }
+
+    return false;
 }
 
 
@@ -182,6 +256,14 @@ void Robot::lowLevelLoop()
         encoderIncrement.right = motorAngle[RIGHT] - oldMotorAngle[RIGHT];
         encoderIncrement.left = motorAngle[LEFT] - oldMotorAngle[LEFT];
         oldMotorAngle = motorAngle;
+
+        // If playing right side: invert right/left encoders.
+        if (isPlayingRightSide_)
+        {
+            double temp = encoderIncrement.right;
+            encoderIncrement.right = encoderIncrement.left;
+            encoderIncrement.left = temp;
+        }
 
         RobotPosition currentPosition = currentPosition_.get();
         kinematics_.integratePosition(encoderIncrement, currentPosition);

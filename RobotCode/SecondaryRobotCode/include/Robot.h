@@ -69,6 +69,14 @@
         double const rotationKi = 0.0;
     }
 
+    ///< The various steps of the startup process.
+    enum startupstatus{
+        INIT,
+        WAITING_FOR_CABLE,
+        PLAYING_RIGHT,
+        PLAYING_LEFT
+    };
+
     class Robot: public AbstractRobot
     {
         public:
@@ -161,6 +169,9 @@
             bool isBackDetectionActive_; ///< True if a robot is visible behind of the robot.
             bool hasDetectionStoppedRobot_; ///< True if robot is stopped due to a detection.
             double detectionStopTime_; ///< Time at which the robot stopped due to a detection.
+
+            startupstatus startupStatus_; ///< Current startup status.
+            int initMotorState_; ///< State of the motors during init.
     };
 
     extern Robot robot;    ///< The robot instance, representing the current robot.

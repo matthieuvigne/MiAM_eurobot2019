@@ -119,6 +119,10 @@ bool Robot::followTrajectory(Trajectory *traj, double const& timeInTrajectory, d
         angularPIDError += controller::transverseKp * trajectoryPoint_.linearVelocity / robotdimensions::maxWheelSpeed * trackingTransverseError_;
     targetSpeed.angular += PIDAngular_.computeValue(angularPIDError, dt);
 
+    // If playing on right side, invert motor velocity.
+    if (isPlayingRightSide_)
+        targetSpeed.angular = -targetSpeed.angular;
+
     // Convert from base velocity to motor wheel velocity.
     WheelSpeed wheelSpeed = kinematics_.inverseKinematics(targetSpeed);
 
