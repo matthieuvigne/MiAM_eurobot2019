@@ -33,7 +33,13 @@ int gpio_digitalRead(int const& pin)
     if(returnCode == false)
         return -1;
 
-    return std::stoi(filecontent);
+    int value = -1;
+    try
+    {
+        value = std::stoi(filecontent);
+    }
+    catch(...) {}
+    return value;
 }
 
 int gpio_digitalWrite(int const& pin, int const& value)
@@ -90,7 +96,13 @@ int gpio_analogRead(int const& pin)
     if(returnCode == false)
         return -1;
 
-    return std::stoi(filecontent);
+    int value = -1;
+    try
+    {
+        value = std::stoi(filecontent);
+    }
+    catch(...) {}
+    return value;
 }
 
 

@@ -32,14 +32,6 @@ int main(int argc, char **argv)
     // Init beaglebone serial ports and GPIO.
     BBB_enableCape();
 
-    // Init robot - this only creates the log for now.
-    bool isInit = robot.initSystem();
-    if (!isInit)
-    {
-        std::cout << "Failed to init robot" << std::endl;
-        exit(-1);
-    }
-
     // Start low-level loop.
     robot.lowLevelLoop();
 

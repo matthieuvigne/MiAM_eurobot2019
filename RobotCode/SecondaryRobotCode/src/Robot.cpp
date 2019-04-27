@@ -2,6 +2,8 @@
 #include <thread>
 #include <unistd.h>
 
+const int START_SWITCH = CAPE_DIGITAL[0];
+
 // Update loop frequency
 const double LOOP_PERIOD = 0.010;
 
@@ -138,15 +140,18 @@ bool Robot::setupBeforeMatchStart()
         if (isInit)
         {
             startupStatus_ = startupstatus::WAITING_FOR_CABLE;
-            robot.screen_.setTextCentered("Waiting for cable", 0);
+            robot.screen_.setTextCentered("Waiting for", 0);
+            robot.screen_.setTextCentered("start switch", 1);
             robot.screen_.setBacklight(true, true, true);
         }
     }
     else if (startupStatus_ == startupstatus::WAITING_FOR_CABLE)
     {
-        // Wait for cable to be plugged in ; todo
-        if (true)
+        // Wait for cable to be plugged in.
+        if (gpio_digitalRead(START_SWITCH) == 0)
         {
+            // Store plug time in matchStartTime_ to prevent false start due to switch bounce.
+            matchStartTime_ = currentTime_;
             startupStatus_ = startupstatus::PLAYING_LEFT;
             isPlayingRightSide_ = false;
             robot.screen_.setTextCentered("Choose side", 0);
@@ -192,8 +197,11 @@ bool Robot::setupBeforeMatchStart()
         }
 
         // If start button is pressed, return true to end startup.
-        if (robot.screen_.isButtonPressed(LCD_BUTTON_SELECT))
+        if (currentTime_ - matchStartTime_ > 0.5 && gpio_digitalRead(START_SWITCH) == 1)
+        {
+            robot.screen_.clear();
             return true;
+        }
     }
 
     return false;
@@ -260,7 +268,7 @@ void Robot::lowLevelLoop()
         encoderIncrement.left = motorAngle[LEFT] - oldMotorAngle[LEFT];
         oldMotorAngle = motorAngle;
 
-        // If playing right side: invert right/left encoders.
+        // If playing right side: invert right/left encoders, with minus sign because both motors are opposite of each other.
         if (isPlayingRightSide_)
         {
             double temp = encoderIncrement.right;
@@ -288,6 +296,7 @@ void Robot::lowLevelLoop()
     }
     // End of the match.
     std::cout << "Match end" << std::endl;
+    robot.screen_.setBacklight(false, false, false);
     pthread_cancel(strategyThread.native_handle());
     stopMotors();
 }
@@ -322,6 +331,9 @@ void Robot::updateLog()
     logger_.setData(LOGGER_I_R_BACK_RIGHT, IRBackRight_);
     logger_.setData(LOGGER_FRONT_DETECTION, isFrontDetectionActive_);
     logger_.setData(LOGGER_BACK_DETECTION, isBackDetectionActive_);
+
+    logger_.setData(LOGGER_LINEAR_P_I_D_CORRECTION, PIDLinear_.getCorrection());
+    logger_.setData(LOGGER_ANGULAR_P_I_D_CORRECTION, PIDAngular_.getCorrection());
     logger_.writeLine();
 }
 
@@ -330,8 +342,8 @@ void Robot::moveServos(bool down)
 {
     if(down)
     {
-        gpio_servoPWM(0, 1150);
-        gpio_servoPWM(1, 1910);
+        gpio_servoPWM(0, 1155); // Right
+        gpio_servoPWM(1, 1925); // Left
     }
     else
     {

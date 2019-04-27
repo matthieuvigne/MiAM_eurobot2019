@@ -10,6 +10,7 @@
 using miam::trajectory::rotationside;
 using miam::trajectory::Trajectory;
 using miam::trajectory::ArcCircle;
+using miam::trajectory::PointTurn;
 
 // Robot dimension.
 double const CHASSIS_FRONT = 46.0;
@@ -25,7 +26,7 @@ void matchStrategy()
 
     // Set initial position
     RobotPosition targetPosition;
-    targetPosition.x = CHASSIS_WIDTH + 20.0;
+    targetPosition.x = CHASSIS_WIDTH + 25.0;
     targetPosition.y = 1700 - CHASSIS_FRONT - 100.0;
     targetPosition.theta = M_PI_2;
     robot.resetPosition(targetPosition, true, true, true);
@@ -37,7 +38,7 @@ void matchStrategy()
     positions.push_back(targetPosition);
     targetPosition.y = 2000 - CHASSIS_WIDTH - 50;
     positions.push_back(targetPosition);
-    targetPosition.x = 1000;
+    targetPosition.x = 1020;
     positions.push_back(targetPosition);
     targetPosition.y = 1020;
     positions.push_back(targetPosition);
