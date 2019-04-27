@@ -86,13 +86,14 @@ int main(int argc, char **argv)
     
     
     std::vector<std::shared_ptr<Trajectory>> traj;
-    SampledTrajectory sampled_tr = miam::io::readSampledTrajectoryFromFile("curved_trajectory");
+    //~ SampledTrajectory sampled_tr = miam::io::readSampledTrajectoryFromFile("curved_trajectory");
+    SampledTrajectory sampled_tr = miam::io::readSampledTrajectoryFromFile("zigzag_trajectory");
     std::shared_ptr<Trajectory> pointer_tr(&sampled_tr);
     traj.push_back(pointer_tr);
     robot.setTrajectoryToFollow(traj);
     robot.waitForTrajectoryFinished();
 
-    //~ // Servo along a trajectory.
+    //~ // Squared trajectory.
     //~ RobotPosition endPosition = robot.getCurrentPosition();
     //~ std::cout << "Playing first trajectory" << std::endl;
     //~ endPosition.x += 500;

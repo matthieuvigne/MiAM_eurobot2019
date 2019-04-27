@@ -9,10 +9,14 @@ using namespace robotdimensions;
 
 // Weights of the QP solver
 // Along trajectory
-double mu_traj = 1 * 10000.0;
-double mu_theta = 1 * 100.0;
-double mu_vlin = 0.5;
-double mu_vang = 0.5;
+//~ double mu_traj = 1 * 1000.0;
+//~ double mu_theta = 1 * 100.0;
+//~ double mu_vlin = 0.5;
+//~ double mu_vang = 0.5;
+double mu_traj = 1;
+double mu_theta = 1;
+double mu_vlin = 0.01;
+double mu_vang = 0.01;
 
 
 DrivetrainKinematics drivetrain_kinematics(
@@ -50,7 +54,7 @@ int main()
     
     Function h, hN;
     h << x << y << theta << v << w ;
-    hN << x << y << theta ;
+    hN << x << y << theta << v << w;
 
     DMatrix W ( h.getDim(), h.getDim() );
     W(0, 0) = mu_traj;
@@ -60,9 +64,11 @@ int main()
     W(4, 4) = mu_vang;
     
     DMatrix WN ( hN.getDim(), hN.getDim() );
-    WN(0, 0) = 5.0 * mu_traj;
-    WN(1, 1) = 5.0 * mu_traj;
-    WN(2, 2) = 5.0 * mu_theta;
+    WN(0, 0) = 0.1 * mu_traj;
+    WN(1, 1) = 0.1 * mu_traj;
+    WN(2, 2) = 0.1 * mu_theta;
+    WN(3, 3) = 0.1 * mu_vlin;
+    WN(4, 4) = 0.1 * mu_vang;
 
     //
     // Optimal Control Problem
@@ -84,9 +90,9 @@ int main()
     // Export the code:
     OCPexport mpc( ocp );
 
-    mpc.set( HESSIAN_APPROXIMATION,       GAUSS_NEWTON    );
-    mpc.set( DISCRETIZATION_TYPE,         SINGLE_SHOOTING );
-    mpc.set( INTEGRATOR_TYPE,             INT_RK4         );
+    //~ mpc.set( HESSIAN_APPROXIMATION,       GAUSS_NEWTON    );
+    //~ mpc.set( DISCRETIZATION_TYPE,         SINGLE_SHOOTING );
+    //~ mpc.set( INTEGRATOR_TYPE,             INT_RK4         );
     mpc.set( NUM_INTEGRATOR_STEPS,        N              );
 
     mpc.set( QP_SOLVER,                   QP_QPOASES      );

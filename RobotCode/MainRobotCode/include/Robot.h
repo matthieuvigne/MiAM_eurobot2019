@@ -72,7 +72,7 @@
         double const wheelSpacing = 100.5; ///< Wheel spacing from robot center, in mm - identified during open loop experiments.
         double const encoderWheelRadius = 25.3; ///< Radius of encoder wheels, in mm.
         //~ double const encoderWheelSpacing = 140.0; ///< Encoder wheel spacing from robot center, in mm.
-        double const encoderWheelSpacing = 141.5; ///< Encoder wheel spacing from robot center, in mm.
+        double const encoderWheelSpacing = 140.0; ///< Encoder wheel spacing from robot center, in mm.
 
         double const stepSize = 2 * M_PI / 600.0; ///< Size of a motor step, in rad.
 
@@ -204,6 +204,7 @@
             double currentTime_; ///< Current robot time, counted by low-level thread.
             std::vector<double> motorSpeed_; ///< Current motor speed.
             std::vector<int> motorPosition_; ///< Current motor position.
+            
             uCData microcontrollerData_; ///< Data structure containing informations from the arduino board.
             Logger logger_; ///< Logger object.
 
