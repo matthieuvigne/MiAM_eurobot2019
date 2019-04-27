@@ -148,7 +148,6 @@ void Robot::updateTrajectoryFollowingTarget(double const& dt)
 
     // Hande detection.
     bool shouldRobotStop = handleDetection();
-    std::cout << shouldRobotStop << std::endl;
 
     // If we have no trajectory to follow, do nothing.
     if(currentTrajectories_.empty())
@@ -227,6 +226,7 @@ void Robot::updateTrajectoryFollowingTarget(double const& dt)
     }
 
     // Send target to motors.
-    stepperMotors_.setSpeed(motorSpeed_);
+    if (hasMatchStarted_)
+        stepperMotors_.setSpeed(motorSpeed_);
 }
 

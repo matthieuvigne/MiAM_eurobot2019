@@ -137,19 +137,8 @@ void LCD::setChar(char text, int line, int column)
 
 void LCD::setTextCentered(std::string const& text, int line)
 {
-
-    // Find length of string.
-    int stringLength = 0;
-    for(int x = 0; x < 16; x++)
-    {
-        if(text[x] == '\0')
-        {
-            stringLength = x;
-            break;
-        }
-    }
     // Compute number of space needed - on odd number the string will be left-aligned.
-    int numberOfSpaces = (16 - text.length()) / 2;
+    int numberOfSpaces = (16 - int(text.length())) / 2;
     std::string centeredText = text;
     if(numberOfSpaces > 0)
         centeredText = std::string(numberOfSpaces, ' ') +  text;

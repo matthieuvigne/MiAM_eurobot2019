@@ -39,12 +39,6 @@ int main(int argc, char **argv)
         std::cout << "Failed to init robot" << std::endl;
         exit(-1);
     }
-    // Move servos to their initial position.
-    robot.moveServos(false);
-
-    // Lower servos.
-    usleep(1000000);
-    robot.moveServos(true);
 
     // Start low-level loop.
     robot.lowLevelLoop();

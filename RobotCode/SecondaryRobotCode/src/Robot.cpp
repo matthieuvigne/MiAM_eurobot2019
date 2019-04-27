@@ -60,6 +60,9 @@ bool Robot::initSystem()
 {
     bool allInitSuccessful = true;
 
+    // Move the servos up ; no init required.
+    robot.moveServos(false);
+
     if (!isScreenInit_)
     {
         isScreenInit_ = robot.screen_.init(&I2C_1);
