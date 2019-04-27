@@ -9,7 +9,7 @@ set(CMAKE_CXX_COMPILER "arm-linux-gnueabihf-g++")
 set(CMAKE_C_COMPILER "arm-linux-gnueabihf-gcc")
 
 # Set C++ compiler flags.
-set(CMAKE_CXX_FLAGS "-Wall -Wno-psabi -fdiagnostics-color -lpthread")
+set(CMAKE_CXX_FLAGS "-Wall -Wno-psabi -fdiagnostics-color -pthread")
 set(CMAKE_C_FLAGS "-Wall -Wno-psabi -fdiagnostics-color")
 
 # Set build-type specific flags

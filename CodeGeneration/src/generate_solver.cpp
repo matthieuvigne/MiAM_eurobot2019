@@ -9,10 +9,10 @@ using namespace robotdimensions;
 
 // Weights of the QP solver
 // Along trajectory
-double mu_traj = 1 * 1000.0;
-double mu_theta = 1 * 10.0;
-double mu_vlin = 1.0;
-double mu_vang = 1.0;
+double mu_traj = 1 * 10000.0;
+double mu_theta = 1 * 100.0;
+double mu_vlin = 0.5;
+double mu_vang = 0.5;
 
 
 DrivetrainKinematics drivetrain_kinematics(

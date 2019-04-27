@@ -12,8 +12,8 @@
 
 #define MAINROBOTCODE_USE_MPC true
 
-#define MAINROBOTCODE_MA_LIN_VEL_LEN 4 
-#define MAINROBOTCODE_MA_ANG_VEL_LEN 4 
+#define MAINROBOTCODE_MA_LIN_VEL_LEN 5
+#define MAINROBOTCODE_MA_ANG_VEL_LEN 5
 
 // Update loop frequency
 const double LOOP_PERIOD = 0.010;
@@ -42,8 +42,8 @@ const double LOOP_PERIOD = 0.010;
     f(LOGGER_TRACKING_TRANSVERSE_ERROR) \
     f(LOGGER_TRACKING_ANGLE_ERROR) \
     f(LOGGER_RAIL_POSITION) \
-    f(LOGGER_CURRENT_VELOCITY_LINEAR) \
-    f(LOGGER_CURRENT_VELOCITY_ANGULAR) \
+    f(LOGGER_CURRENT_LINEAR_VELOCITY) \
+    f(LOGGER_CURRENT_ANGULAR_VELOCITY) \
     f(LOGGER_LINEAR_P_I_D_CORRECTION) \
     f(LOGGER_ANGULAR_P_I_D_CORRECTION) \
 
@@ -266,17 +266,22 @@ bool Robot::waitForTrajectoryFinished()
 bool Robot::followTrajectory(Trajectory *traj, double const& timeInTrajectory, double const & dt)
 {
     
+    // Get current trajectory state.
+    trajectoryPoint_ = traj->getCurrentPoint(timeInTrajectory);
+    
     if(MAINROBOTCODE_USE_MPC)
     {        
-        // TODO here time is hardcoded
-        // Add some check condition on the target instead.
-        if (timeInTrajectory >= traj->getDuration()) 
-        {
-             // Just stop the robot.
-            motorSpeed_[0] = 0.0;
-            motorSpeed_[1] = 0.0;
-            return true;
-        }
+        
+        //~ // TODO here time is hardcoded
+        //~ // Add some check condition on the target instead.
+        //~ if (timeInTrajectory >= traj->getDuration()) 
+        //~ {
+             //~ // Just stop the robot.
+            //~ motorSpeed_[0] = 0.0;
+            //~ motorSpeed_[1] = 0.0;
+            //~ return true;
+        //~ }
+        
         
         // Current trajectory point
         miam::trajectory::TrajectoryPoint current_trajectory_point;
@@ -288,6 +293,21 @@ bool Robot::followTrajectory(Trajectory *traj, double const& timeInTrajectory, d
         BaseSpeed current_base_speed = getCurrentBaseSpeed();
         current_trajectory_point.linearVelocity = current_base_speed.linear;
         current_trajectory_point.angularVelocity = current_base_speed.angular;
+        
+        
+        // If we are beyon trajector end, look to see if we are close enough to the target point to stop.
+        if(traj->getDuration() <= timeInTrajectory)
+        {
+            double distance_to_objective = (current_trajectory_point.position - traj->getEndPoint().position).norm();
+            
+            if(distance_to_objective < 10 && motorSpeed_[RIGHT] < 100 && motorSpeed_[LEFT] < 100)
+            {
+                // Just stop the robot.
+                motorSpeed_[0] = 0.0;
+                motorSpeed_[1] = 0.0;
+                return true;
+            }
+        }
         
         // Solve MPC
         miam::trajectory::TrajectoryPoint forward_traj_point = miam::MPCsolver::solve_MPC_problem(
@@ -311,10 +331,7 @@ bool Robot::followTrajectory(Trajectory *traj, double const& timeInTrajectory, d
     } 
     else 
     {
-        // Get current trajectory state.
-        trajectoryPoint_ = traj->getCurrentPoint(timeInTrajectory);
-
-
+        
         // Compute targets for rotation and translation motors.
         BaseSpeed targetSpeed;
 
@@ -578,8 +595,8 @@ void Robot::updateLog()
     logger_.setData(LOGGER_CURRENT_POSITION_X, currentPosition.x);
     logger_.setData(LOGGER_CURRENT_POSITION_Y, currentPosition.y);
     logger_.setData(LOGGER_CURRENT_POSITION_THETA, currentPosition.theta);
-    logger_.setData(LOGGER_CURRENT_VELOCITY_LINEAR, currentBaseSpeed_.linear);
-    logger_.setData(LOGGER_CURRENT_VELOCITY_ANGULAR, currentBaseSpeed_.angular);
+    logger_.setData(LOGGER_CURRENT_LINEAR_VELOCITY, currentBaseSpeed_.linear);
+    logger_.setData(LOGGER_CURRENT_ANGULAR_VELOCITY, currentBaseSpeed_.angular);
 
     logger_.setData(LOGGER_TARGET_POSITION_X, trajectoryPoint_.position.x);
     logger_.setData(LOGGER_TARGET_POSITION_Y, trajectoryPoint_.position.y);

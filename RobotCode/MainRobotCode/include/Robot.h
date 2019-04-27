@@ -32,6 +32,7 @@
 
     using miam::RobotPosition;
     using miam::trajectory::Trajectory;
+    using miam::trajectory::SampledTrajectory;
 
 
     /// \brief Simple class to provide thread-safe access to the robot position.

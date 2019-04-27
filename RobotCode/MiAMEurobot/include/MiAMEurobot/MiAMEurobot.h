@@ -28,4 +28,6 @@
     #include <MiAMEurobot/drivers/TCS3472ColorSensorDriver.h>
     #include <MiAMEurobot/drivers/UART-Wrapper.h>
 
+    #include <MiAMEurobot/io/IOTrajectory.h>
+
 #endif
