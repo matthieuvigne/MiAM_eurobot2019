@@ -20,7 +20,8 @@ Robot::Robot():
     hasDetectionStoppedRobot_(false),
     detectionStopTime_(0.0),
     startupStatus_(startupstatus::INIT),
-    initMotorState_(0)
+    initMotorState_(0),
+    nConsecutiveIRState_(0)
 {
     kinematics_ = DrivetrainKinematics(robotdimensions::wheelRadius,
                                        robotdimensions::wheelSpacing,

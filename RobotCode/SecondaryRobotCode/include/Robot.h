@@ -167,6 +167,8 @@
 
             startupstatus startupStatus_; ///< Current startup status.
             int initMotorState_; ///< State of the motors during init.
+
+            int nConsecutiveIRState_; ///< Number of consecutive IR detection / non-detection, used for filtering.
     };
 
     extern Robot robot;    ///< The robot instance, representing the current robot.

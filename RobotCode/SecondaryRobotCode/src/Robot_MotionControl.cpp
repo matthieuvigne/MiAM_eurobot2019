@@ -8,9 +8,11 @@ int const FRONT_THRESHOLD = 500; // Any value below the threshold corresponds to
 int const BACK_THRESHOLD = 500; // Any value below the threshold corresponds to a detection.
 double const IR_START_TIMEOUT = 5.0; // Disable IR detection for the first n seconds of the match, to be sure to leave the starting zone safely.
 
-double const FRONT_DETECTION_DISTANCE = 500;    // Distance between front of the robot and detected obstacle.
-double const BACK_DETECTION_DISTANCE = 500;
+double const FRONT_DETECTION_DISTANCE = 700;    // Distance between front of the robot and detected obstacle.
+double const BACK_DETECTION_DISTANCE = 700;
 
+int const N_VIEWS_FOR_STOP = 2; // Number of consecutive views to stop the robot.
+int const N_MISS_FOR_START = 5; // Number of consecutive non-detection to restart robot.
 
 bool Robot::handleDetection()
 {
@@ -139,7 +141,25 @@ void Robot::updateTrajectoryFollowingTarget(double const& dt)
     }
 
     // Hande detection.
-    bool shouldRobotStop = handleDetection();
+    bool iRStatus = handleDetection();
+    // Reset counter if not in the right state
+    if ((iRStatus && nConsecutiveIRState_ < 0) || (!iRStatus && nConsecutiveIRState_ > 0))
+        nConsecutiveIRState_ = 0;
+    nConsecutiveIRState_ += (iRStatus ? 1 : -1);
+
+    bool shouldRobotStop = false;
+    // If enough successive detection, stop the robot.
+     if (nConsecutiveIRState_ >= N_VIEWS_FOR_STOP && !hasDetectionStoppedRobot_)
+    {
+        hasDetectionStoppedRobot_ = true;
+        detectionStopTime_ = currentTime_;
+        shouldRobotStop = true;
+    }
+
+    // If detection has stopped robot, look if we have enough miss to restart
+    if (hasDetectionStoppedRobot_)
+        if (nConsecutiveIRState_ > - N_MISS_FOR_START)
+            shouldRobotStop = true;
 
     // If we have no trajectory to follow, do nothing.
     if(currentTrajectories_.empty())
@@ -152,19 +172,12 @@ void Robot::updateTrajectoryFollowingTarget(double const& dt)
         // Load first trajectory, look if we are done following it.
         Trajectory *traj = currentTrajectories_.at(0).get();
 
-        // Handle detection.
-         if (shouldRobotStop && !hasDetectionStoppedRobot_)
-        {
-            hasDetectionStoppedRobot_ = true;
-            detectionStopTime_ = currentTime_;
-        }
-
         // Stop for at least a certain time, to remove jitter.
         if (shouldRobotStop || currentTime_ - detectionStopTime_ < 0.5)
         {
             motorSpeed_[0] = 0.0;
             motorSpeed_[1] = 0.0;
-            stopMotors();
+            stepperMotors_.hardStop();
             // TODO: add timeout on detection ?
         }
         else
@@ -218,7 +231,7 @@ void Robot::updateTrajectoryFollowingTarget(double const& dt)
     }
 
     // Send target to motors.
-    if (hasMatchStarted_)
+    if (hasMatchStarted_ && !shouldRobotStop)
         stepperMotors_.setSpeed(motorSpeed_);
 }
 
