@@ -42,7 +42,7 @@
         double const wheelSpacing = 100.5; ///< Wheel spacing from robot center, in mm - identified during open loop experiments.
         double const encoderWheelRadius = 25.3; ///< Radius of encoder wheels, in mm.
         //~ double const encoderWheelSpacing = 140.0; ///< Encoder wheel spacing from robot center, in mm.
-        double const encoderWheelSpacing = 141.5; ///< Encoder wheel spacing from robot center, in mm.
+        double const encoderWheelSpacing = 140.0; ///< Encoder wheel spacing from robot center, in mm.
 
         double const stepSize = 2 * M_PI / 600.0; ///< Size of a motor step, in rad.
 
@@ -58,15 +58,15 @@
     {
         //~ double const transverseKp = 0.1;
 
-        //~ double const linearKp = 3.0;
-        double const linearKp = 0.0;
+        double const linearKp = 3.0;
+        //~ double const linearKp = 0.0;
         double const linearKd = 0.0;
         double const linearKi = 0.1;
 
         double const transverseKp = 0.0;
 
-        //~ double const rotationKp = 10.0;
-        double const rotationKp = 0.0;
+        double const rotationKp = 10.0;
+        //~ double const rotationKp = 0.0;
         double const rotationKd = 0.01;
         double const rotationKi = 0.0;
     }
