@@ -6,7 +6,7 @@ from setuptools import setup
 
 setup(
     name='miam_py',
-    version='0.1.1',
+    version='0.1.2',
     description='MiAM robotics log processing',
     long_description=open('README.md').read(),
     packages=['miam_py'],
