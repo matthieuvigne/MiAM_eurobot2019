@@ -28,5 +28,6 @@
     #include <MiAMEurobot/drivers/SPI-Wrapper.h>
     #include <MiAMEurobot/drivers/TCS3472ColorSensorDriver.h>
     #include <MiAMEurobot/drivers/UART-Wrapper.h>
+    #include <MiAMEurobot/drivers/VL53L0XDriver.h>
 
 #endif

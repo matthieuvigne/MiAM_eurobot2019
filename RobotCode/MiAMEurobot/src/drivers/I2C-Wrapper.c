@@ -1,7 +1,6 @@
 #include "MiAMEurobot/drivers/I2C-Wrapper.h"
 
 #include <unistd.h>
-#include <stdio.h>
 #include <fcntl.h>
 #include <linux/i2c-dev.h>
 #include <sys/ioctl.h>
@@ -36,20 +35,33 @@ void changeSlave(int file, unsigned char address)
 
 bool i2c_writeRegister(I2CAdapter *adapter, unsigned char const& address, unsigned char const& reg, unsigned char const& data)
 {
+    unsigned char d = data;
+    return i2c_writeRegisters(adapter, address, reg, 1, &d);
+}
+
+
+bool i2c_writeRegisters(I2CAdapter *adapter, unsigned char const& address, unsigned char const& registerAddress, int const& length, unsigned char const *values)
+{
     if(adapter->file < 0)
     {
         #ifdef DEBUG
-            printf("Error writing to I2C port: invalid file descriptor.\n");
+            std::cout << "Error writing to I2C port: invalid file descriptor." << std::endl;
         #endif
         return false;
     }
-    unsigned char txbuf[2] = {reg, data};
+    int messageLength = 1 + length;
+    unsigned char txbuf[messageLength];
+    txbuf[0] = registerAddress;
+    for(int i = 0; i < length; i++)
+    {
+        txbuf[i + 1] = values[i];
+    }
 
     adapter->portMutex.lock();
     changeSlave(adapter->file, address);
-    int result = write(adapter->file, txbuf, 2);
+    int result = write(adapter->file, txbuf, messageLength);
     adapter->portMutex.unlock();
-    if(result != 2)
+    if(result != messageLength)
     {
         #ifdef DEBUG
             std::cout << "Error writing to slave " << address << ": " << std::strerror(errno) << std::endl;
@@ -58,7 +70,6 @@ bool i2c_writeRegister(I2CAdapter *adapter, unsigned char const& address, unsign
     }
     return true;
 }
-
 
 unsigned char i2c_readRegister(I2CAdapter *adapter, unsigned char const& address, unsigned char const& registerAddress)
 {
@@ -73,7 +84,7 @@ bool i2c_readRegisters(I2CAdapter *adapter, unsigned char const& address, unsign
     if(adapter->file < 0)
     {
         #ifdef DEBUG
-            printf("Error reading from I2C port: invalid file descriptor.\n");
+            std::cout << "Error reading from I2C port: invalid file descriptor." << std::endl;
         #endif
         return false;
     }

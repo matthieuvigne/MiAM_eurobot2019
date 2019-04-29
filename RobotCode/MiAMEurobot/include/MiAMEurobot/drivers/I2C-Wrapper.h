@@ -35,6 +35,16 @@
     /// \returns true on success, false on failure.
     bool i2c_writeRegister(I2CAdapter *adapter, unsigned char const& address, unsigned char const& reg, unsigned char const& data);
 
+    /// \brief Write several I2C registers at once.
+    /// \note Not all device support writing several registers (autoincrement) - check device documentation beforehand.
+    ///
+    /// \param[in] adapter The I2CAdapter structure to use: this structure defines the port being used.
+    /// \param[in] address Address of the device to talk to.
+    /// \param[in] registerAddress Address of the first register to write.
+    /// \param[in] length Number of registers to write.
+    /// \param[in] values Char array of values to write.
+    /// \returns true on success, false on failure.
+    bool i2c_writeRegisters(I2CAdapter *adapter, unsigned char const& address, unsigned char const& registerAddress, int const& length, unsigned char const *values);
 
     /// \brief Read an I2C register
     ///
@@ -43,7 +53,6 @@
     /// \param[in] registerAddress Address of the register to read.
     /// \returns   The value of the specified register.
     unsigned char i2c_readRegister(I2CAdapter *adapter, unsigned char const& address, unsigned char const& registerAddress);
-
 
     /// \brief Read several I2C registers at once.
     /// \note Not all device support reading several registers - check device documentation beforehand.
@@ -55,7 +64,6 @@
     /// \param[in] length Number of registers to read.
     /// \param[out] output Char array of all the register read. Memory must have already been alocated.
     bool i2c_readRegisters(I2CAdapter *adapter, unsigned char const& address, unsigned char const& registerAddress, int const& length, unsigned char *output);
-
 
     /// \brief Close an I2C port.
     ///
