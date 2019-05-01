@@ -13,10 +13,12 @@ using namespace robotdimensions;
 //~ double mu_theta = 1 * 100.0;
 //~ double mu_vlin = 0.5;
 //~ double mu_vang = 0.5;
-double mu_traj = 1;
-double mu_theta = 1;
+double mu_traj = 100;
+double mu_theta = 0.5;
 double mu_vlin = 0.01;
 double mu_vang = 0.01;
+
+double ponderation_final_state = 10;
 
 
 DrivetrainKinematics drivetrain_kinematics(
@@ -43,7 +45,6 @@ int main()
 
     DifferentialState        x, y, theta, v, w    ;
     Control                  vu, wu     ;   
-    //~ Control                  v, w     ;   
     DifferentialEquation     f( 0.0, T );
 
     f << dot(x) == v * cos(theta) ;
@@ -64,11 +65,11 @@ int main()
     W(4, 4) = mu_vang;
     
     DMatrix WN ( hN.getDim(), hN.getDim() );
-    WN(0, 0) = 0.1 * mu_traj;
-    WN(1, 1) = 0.1 * mu_traj;
-    WN(2, 2) = 0.1 * mu_theta;
-    WN(3, 3) = 0.1 * mu_vlin;
-    WN(4, 4) = 0.1 * mu_vang;
+    WN(0, 0) = ponderation_final_state * mu_traj;
+    WN(1, 1) = ponderation_final_state * mu_traj;
+    WN(2, 2) = ponderation_final_state * mu_theta;
+    WN(3, 3) = ponderation_final_state * mu_vlin;
+    WN(4, 4) = ponderation_final_state * mu_vang;
 
     //
     // Optimal Control Problem
@@ -90,9 +91,9 @@ int main()
     // Export the code:
     OCPexport mpc( ocp );
 
-    //~ mpc.set( HESSIAN_APPROXIMATION,       GAUSS_NEWTON    );
-    //~ mpc.set( DISCRETIZATION_TYPE,         SINGLE_SHOOTING );
-    //~ mpc.set( INTEGRATOR_TYPE,             INT_RK4         );
+    mpc.set( HESSIAN_APPROXIMATION,       GAUSS_NEWTON    );
+    mpc.set( DISCRETIZATION_TYPE,         SINGLE_SHOOTING );
+    mpc.set( INTEGRATOR_TYPE,             INT_RK4         );
     mpc.set( NUM_INTEGRATOR_STEPS,        N              );
 
     mpc.set( QP_SOLVER,                   QP_QPOASES      );

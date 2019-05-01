@@ -147,8 +147,10 @@ TrajectoryPoint miam::MPCsolver::solve_MPC_problem(
         acadoVariables.y[ j * NY ] = current_time_point.position.x / 1000.0;
         acadoVariables.y[ j * NY + 1] = current_time_point.position.y / 1000.0;
         acadoVariables.y[ j * NY + 2] = current_time_point.position.theta;
+#if !MIAM_MPC_VELOCITY_CONTROL
         acadoVariables.y[ j * NY + 3] = current_time_point.linearVelocity / 1000.0;
         acadoVariables.y[ j * NY + 4] = current_time_point.angularVelocity ;
+#endif
     }
     
 
@@ -159,8 +161,10 @@ TrajectoryPoint miam::MPCsolver::solve_MPC_problem(
     acadoVariables.yN[0] = final_time_point.position.x / 1000.0;
     acadoVariables.yN[1] = final_time_point.position.y / 1000.0;
     acadoVariables.yN[2] = final_time_point.position.theta;
+#if !MIAM_MPC_VELOCITY_CONTROL
     acadoVariables.yN[3] = final_time_point.linearVelocity / 1000.0;
     acadoVariables.yN[4] = final_time_point.angularVelocity;
+#endif
 
     if( VERBOSE ) acado_printHeader();
 

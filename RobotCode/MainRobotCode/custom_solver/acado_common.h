@@ -162,9 +162,6 @@ real_t rk_kkk[ 160 ];
 real_t state[ 42 ];
 
 /** Column vector of size: 50 */
-real_t d[ 50 ];
-
-/** Column vector of size: 50 */
 real_t Dy[ 50 ];
 
 /** Column vector of size: 5 */
@@ -200,9 +197,6 @@ real_t evHx[ 200 ];
 /** Matrix of size: 40 x 2 (row major format) */
 real_t evHu[ 80 ];
 
-/** Column vector of size: 4 */
-real_t evHxd[ 4 ];
-
 /** Column vector of size: 5 */
 real_t Dx0[ 5 ];
 
@@ -214,9 +208,6 @@ real_t E[ 550 ];
 
 /** Matrix of size: 275 x 2 (row major format) */
 real_t QE[ 550 ];
-
-/** Column vector of size: 50 */
-real_t Qd[ 50 ];
 
 /** Column vector of size: 55 */
 real_t QDy[ 55 ];
