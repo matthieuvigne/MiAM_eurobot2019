@@ -14,6 +14,7 @@
     #include <iostream>
     #include <cmath>
     #include <deque>
+    #include "MiAMEurobot/Metronome.h"
 
     // Constant parameters.
     #define DEBUGGING_BUFFER_LENGTH 2000
@@ -21,14 +22,17 @@
     const double LIDAR_RPM = 600.0;    ///< Lidar velocity, in rpm.
     const double MAX_DISTANCE = 2000.0; ///< Maximum distance for processing, in mm: points above that distance are discarded.
 
-    const double BLOB_THICKNESS = 30.0; //80 ///< Distance between two adjacent points to consider that they belong to the same blob, in mm.
-    const double BLOB_MIN_SIZE = 50.0; //60 ///< Minimum size of the blob to consider it as a robot.
-    const double BLOB_MAX_SIZE = 150.0; //140 ///< Maximum size of the blob to consider it as a robot.
+    const double BLOB_THICKNESS = 50.0;///< Distance between two adjacent points to consider that they belong to the same blob, in mm.
+    const double BLOB_MIN_SIZE = 40.0; ///< Minimum size of the blob to consider it as a robot.
+    const double BLOB_MAX_SIZE = 200.0; ///< Maximum size of the blob to consider it as a robot.
 
-    const int BLOB_BREAK = 2; //2 ///< Number of points needed to consider that a block has come to an endMinimum number of points to be a valid obstacle.
+    const int BLOB_BREAK = 2;///< Number of points needed to consider that a block has come to an endMinimum number of points to be a valid obstacle.
 
-    const int MIN_POINTS = 5; // 4 ///< Minimum number of points inside a blob to be considered a robot.
+    const int MIN_POINTS = 4;///< Minimum number of points inside a blob to be considered a robot.
                              ///< At 1.5m, 600rpm, 8ksamples/s, a circle of 70mm corresponds to 6 points.
+
+    const double ROBOT_TIMEOUT = 1.5 * 60 / LIDAR_RPM; ///< Timeout, in s, to remove a robot for the list of ostacle.
+                                                       ///  Corresponds to 1.5 theoretical lidar motion.
 
     /// \brief Structure representing a data point returned by the lidar.
     struct LidarPoint
@@ -51,6 +55,23 @@
         {
         }
 
+        /// \brief Determine if the current point is older than the comparison point.
+        /// \details Knowing that the lidar is turning clockwise, this function returns true if the current point
+        ///          was taken before the comparison point. A point is considered older if its continuous angle
+        ///          is in [comparisonPointAngle, comparisonPointAngle + tolerance]
+        bool isOlder(double const& comparisonPointAngle, double const& tolerance = M_PI_2)
+        {
+            // Both angles are between 0 and 2 pi: modify current point angle if necessary to have a continuous mapping.
+            double currentAngle = this->theta;
+            if (currentAngle < comparisonPointAngle)
+                currentAngle += 2 * M_PI;
+
+            // If point is bettween comparisonPoint.theta and comparisonPoint.theta + pi, it is older than the given point.
+            if (currentAngle >= comparisonPointAngle && currentAngle < comparisonPointAngle + tolerance)
+                return true;
+            return false;
+        }
+
         double r;
         double theta;
         double x;
@@ -58,46 +79,26 @@
         int blobNumber; // For debugging only.
     };
 
-    //~ struct Blob {
 
-        //~ Blob(
-            //~ const double r_min,
-            //~ const double r_max,
-            //~ const double theta_min,
-            //~ const double theta_max)
-        //~ :    r_min       (r_min),
-            //~ r_max       (r_max),
-            //~ theta_min   (theta_min),
-            //~ theta_max   (theta_max)
-        //~ {
-            //~ assert(r_max > r_min);
-            //~ assert(theta_max > theta_min);
-        //~ }
+    /// \brief Structure representing a robot seen by the lidar.
+    struct DetectedRobot
+    {
+        DetectedRobot():
+            point(),
+            addedTime(0.0)
+        {
+        }
 
-        //~ LidarPoint getCenter()
-        //~ {
-            //~ return LidarPoint(
-                //~ r_max - r_min,
-                //~ theta_max - theta_min);
-        //~ }
+        DetectedRobot(LidarPoint const& p, double const& t):
+            point(p),
+            addedTime(t)
+        {
+        }
 
-        //~ LidarPoint* getBoundingBoxCorners()
-        //~ {
-            //~ LidarPoint corners[4];
+        LidarPoint point; ///< Robot position.
+        double addedTime; ///< Absolute time at which the robot was detected.
+    };
 
-            //~ corners[0] = LidarPoint(r_min, theta_min);
-            //~ corners[1] = LidarPoint(r_min, theta_max);
-            //~ corners[2] = LidarPoint(r_max, theta_max);
-            //~ corners[3] = LidarPoint(r_max, theta_min);
-
-            //~ return corners;
-        //~ }
-
-        //~ r_min;
-        //~ r_max;
-        //~ theta_min;
-        //~ theta_max;
-    //~ }:
 
     class RPLidarHandler
     {
@@ -131,18 +132,23 @@
             LidarPoint debuggingBuffer_[DEBUGGING_BUFFER_LENGTH];
             int debuggingBufferPosition_; ///< Position in the debugging buffer.
 
-            std::deque<LidarPoint> detectedRobots_;    ///< Vector holding the detected robots, as fifo of robot angle.
+            std::deque<DetectedRobot> detectedRobots_;    ///< Vector holding the detected robots, as fifo of robot angle.
 
         private:
+            /// \brief Add a point to the current blob.
+            void addPointToBlob(LidarPoint *point);
+
             rp::standalone::rplidar::RPlidarDriver *lidar; ///< The lidar instance.
             int lidarMode_; ///< Scan mode for the lidar.
 
-            LidarPoint lastPoint_; ///< Last point seen by the lidar.
-            int blobNPoints_; ///< Number of points in current blob.
-            double blobDistance_; ///< Current blob distance.
-            double blobStartAngle_; ///< Start angle of the current blob.
-            int nPointsOutsideBlob_; ///< Number of consecutive points outside of the current blob.
+            double lastPointAngle_; ///< Angle of the last processed point.
+            double lastPointAddedToBlobDistance_; ///< Distance of the last point added to the blob.
+
+            std::vector<LidarPoint> pointsNotAddedToBlob_; ///< Vector of consecutive points that were not added to the blob.
+            std::vector<LidarPoint> pointsInBlob_; ///< Vector of points constituting a blob.
 
             int currentBlobNumber_; ///< Current blob number, for display coloring.
+
+            Metronome timeHandler_; ///< Metronome - for getting relative time.
     };
 #endif

@@ -21,9 +21,11 @@ RPLidarHandler::RPLidarHandler() :
     detectedRobots_(),
     lidar(NULL),
     lidarMode_(0),
-    blobNPoints_(1),
-    blobDistance_(0),
-    nPointsOutsideBlob_(50)
+    lastPointAngle_(0),
+    lastPointAddedToBlobDistance_(0),
+    pointsNotAddedToBlob_(),
+    pointsInBlob_(),
+    timeHandler_(1.0)
 {
 }
 
@@ -59,6 +61,18 @@ bool RPLidarHandler::init(std::string const& portNameIn)
     return true;
 }
 
+
+void RPLidarHandler::addPointToBlob(LidarPoint *point)
+{
+     // Reset points outside of the blob.
+    pointsNotAddedToBlob_.clear();
+    // Add point to blob.
+    lastPointAddedToBlobDistance_ = point->r;
+    point->blobNumber = currentBlobNumber_;
+    pointsInBlob_.push_back(*point);
+}
+
+
 void RPLidarHandler::update()
 {
     // Get pending data from the lidar.
@@ -72,73 +86,71 @@ void RPLidarHandler::update()
         LidarPoint newPoint(data[i].dist_mm_q2 /4.0f, 2 * M_PI -(data[i].angle_z_q14 * ANGLE_CONVERSION));
 
         // If new point is not in order (recall scan is done in decreasing angle), just discard the new data point.
-        if (modulo(lastPoint_.theta - newPoint.theta) > 2 * M_PI - M_PI_4)
+        if (newPoint.isOlder(lastPointAngle_))
             continue;
+        lastPointAngle_ = newPoint.theta;
 
-        // Remove robots in the list that are more than a cycle old.
-        // Element in the queue will be sorted by decreasing angle, so we just need to pop the elements.
+        // Determine if the current point is to be added to the blob or not.
+        if(newPoint.r < MAX_DISTANCE && std::abs(lastPointAddedToBlobDistance_ - newPoint.r) < BLOB_THICKNESS)
+        {
+            addPointToBlob(&newPoint);
+        }
+        else
+        {
+            // Point not added to the blob: add it to vector.
+            pointsNotAddedToBlob_.push_back(newPoint);
+            if (pointsNotAddedToBlob_.size()  >= BLOB_BREAK)
+            {
+                // The blob is over: process its data.
+                int nPoints = pointsInBlob_.size();
+                if (nPoints >= MIN_POINTS)
+                {
+                    LidarPoint a = pointsInBlob_[0];
+                    LidarPoint b = pointsInBlob_[nPoints - 1];
+                    double blobDiameter = std::sqrt(a.r * a.r + b.r * b.r - 2 * a.r * b.r * std::cos(a.theta - b.theta));
+                    if (blobDiameter > BLOB_MIN_SIZE && blobDiameter < BLOB_MAX_SIZE)
+                    {
+                        // We have a new robot: add it to the list.
+                        double blobDistance = 0.0;
+                        for(uint32_t i = 0; i < nPoints; i++)
+                            blobDistance += pointsInBlob_[i].r;
+                        blobDistance /= (1.0 * nPoints);
+                        double arcAngle = std::min(modulo(b.theta - a.theta), modulo(a.theta - b.theta));
+                        double blobAngle = modulo(a.theta - arcAngle / 2.0);
+
+                        LidarPoint robot(blobDistance, blobAngle);
+                        detectedRobots_.push_back(DetectedRobot(robot, timeHandler_.getElapsedTime()));
+                    }
+                }
+                // Clear blob.
+                pointsInBlob_.clear();
+
+                // Create a new blob with the current point.
+                currentBlobNumber_ = (currentBlobNumber_ + 1) % 5;
+                if(currentBlobNumber_ == 0)
+                    currentBlobNumber_ = 1;
+
+                addPointToBlob(&newPoint);
+            }
+        }
+
+        // Remove any robot that was added more than TIMEOUT ago.
+        // Element in the queue will be sorted by ascending addition time, so we just need to pop the elements.
         bool wasElementRemoved = true;
+        double time = timeHandler_.getElapsedTime();
         while (wasElementRemoved)
         {
             wasElementRemoved = false;
             if (!detectedRobots_.empty())
             {
-                if (modulo(detectedRobots_.front().theta - newPoint.theta) > 2 * M_PI - M_PI_4)
+                if (detectedRobots_.front().addedTime < time - ROBOT_TIMEOUT)
                 {
                     detectedRobots_.pop_front();
                     wasElementRemoved = true;
                 }
             }
         }
-        // If point is too far, don't take it into account.
-        if (newPoint.r > MAX_DISTANCE)
-            nPointsOutsideBlob_++;
-        else
-        {
-            // Determine if the current point is to be added to the blob or not.
-            if(std::abs(lastPoint_.r - newPoint.r) < BLOB_THICKNESS)
-            {
-                nPointsOutsideBlob_ = 0;
-                // Add point to blob.
-                blobNPoints_ ++;
-                blobDistance_ = ((blobNPoints_ - 1) * blobDistance_ + newPoint.r) / blobNPoints_;
 
-                newPoint.blobNumber = currentBlobNumber_;
-            }
-            else
-                nPointsOutsideBlob_++;
-        }
-
-        if (nPointsOutsideBlob_ >= BLOB_BREAK)
-        {
-            // The blob is over: look to see if it corresponds to a beacon.
-            if (blobDistance_ < MAX_DISTANCE && blobNPoints_ >= MIN_POINTS)
-            {
-                // Compute blob arc dimension.
-                double arcAngle = std::min(modulo(newPoint.theta - blobStartAngle_), modulo(blobStartAngle_ - newPoint.theta));
-                double arcLength = arcAngle * blobDistance_;
-
-                if (arcLength > BLOB_MIN_SIZE && arcLength < BLOB_MAX_SIZE)
-                {
-                    // We have a new robot: add it to the list.
-                    LidarPoint robot(blobDistance_, modulo(blobStartAngle_ - arcAngle / 2.0));
-                    detectedRobots_.push_back(robot);
-                }
-            }
-
-            // Create a new blob with the current point.
-            blobNPoints_ = 1;
-            blobDistance_ = newPoint.r;
-            blobStartAngle_ = newPoint.theta;
-            nPointsOutsideBlob_ = 0;
-
-            currentBlobNumber_ = (currentBlobNumber_ + 1) % 5;
-            if(currentBlobNumber_ == 0)
-                currentBlobNumber_ = 1;
-            newPoint.blobNumber = currentBlobNumber_;
-        }
-
-        lastPoint_ = newPoint;
 
         // Add new point to debugging buffer.
         debuggingBuffer_[debuggingBufferPosition_] = newPoint;
