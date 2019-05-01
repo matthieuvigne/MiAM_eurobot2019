@@ -57,7 +57,6 @@
                     rotationside side_; ///< Rotation direction.
                     double endAngle_; ///< End angle.
                     double endVelocity_; ///< End velocity.
-                    bool backward_;     ///< True if going backward.
                     double maxVelocity_; ///< Maximum velocity.
                     double maxAcceleration_; ///< Maximum acceleration.
             };

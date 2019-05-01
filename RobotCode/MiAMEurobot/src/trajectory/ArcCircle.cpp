@@ -19,10 +19,12 @@ namespace miam{
              side_(side),
              endAngle_(endAngle),
              endVelocity_(endVelocity),
-             backward_(backward),
+             movingBackward_(1.0),
              maxVelocity_(maxVelocity),
              maxAcceleration_(maxAcceleration)
         {
+            if (backward)
+                movingBackward_ = -1.0;
             make(startPoint, startVelocity);
         }
 
@@ -36,10 +38,8 @@ namespace miam{
             output.position.x += radius_ * std::cos(circleCenter_.theta + motionSign_ * state.position);
             output.position.y += radius_ * std::sin(circleCenter_.theta + motionSign_ * state.position);
             output.position.theta = circleCenter_.theta + motionSign_ * M_PI_2 + motionSign_ * state.position;
-            if(motionSign_ == -1.0)
-                output.position.theta += 2 * M_PI;
             if(movingBackward_ == -1.0)
-                output.position.theta -= M_PI;
+                output.position.theta -= M_PI  *motionSign_;
             // Compute linear and angular velocity
             output.linearVelocity = movingBackward_ * state.velocity * radius_;
             output.angularVelocity = motionSign_ * state.velocity;
@@ -49,11 +49,7 @@ namespace miam{
 
         void ArcCircle::make(RobotPosition const& startPoint, double const& startVelocity)
         {
-             movingBackward_ = 1.0;
              motionSign_ = 1.0;
-
-             if(backward_)
-                movingBackward_ = -1.0;
 
             // Compute position of circle center.
             // Get angle of robot wheel axis, swich sign based on direction.
