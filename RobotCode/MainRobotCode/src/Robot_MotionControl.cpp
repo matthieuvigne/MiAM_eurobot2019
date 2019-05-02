@@ -9,17 +9,11 @@
 bool Robot::followTrajectory(Trajectory *traj, double const& timeInTrajectory, double const & dt)
 {
     
+    // Get current trajectory state.
+    trajectoryPoint_ = traj->getCurrentPoint(timeInTrajectory);
+    
     if(MAINROBOTCODE_USE_MPC)
     {        
-        // TODO here time is hardcoded
-        // Add some check condition on the target instead.
-        if (timeInTrajectory >= traj->getDuration()) 
-        {
-             // Just stop the robot.
-            motorSpeed_[0] = 0.0;
-            motorSpeed_[1] = 0.0;
-            return true;
-        }
         
         // Current trajectory point
         miam::trajectory::TrajectoryPoint current_trajectory_point;
@@ -31,6 +25,21 @@ bool Robot::followTrajectory(Trajectory *traj, double const& timeInTrajectory, d
         BaseSpeed current_base_speed = getCurrentBaseSpeed();
         current_trajectory_point.linearVelocity = current_base_speed.linear;
         current_trajectory_point.angularVelocity = current_base_speed.angular;
+        
+        
+        // If we are beyon trajector end, look to see if we are close enough to the target point to stop.
+        if(traj->getDuration() <= timeInTrajectory)
+        {
+            double distance_to_objective = (current_trajectory_point.position - traj->getEndPoint().position).norm();
+            
+            if(distance_to_objective < 5 && motorSpeed_[RIGHT] < 100 && motorSpeed_[LEFT] < 100)
+            {
+                // Just stop the robot.
+                motorSpeed_[0] = 0.0;
+                motorSpeed_[1] = 0.0;
+                return true;
+            }
+        }
         
         // Solve MPC
         miam::trajectory::TrajectoryPoint forward_traj_point = miam::MPCsolver::solve_MPC_problem(
@@ -54,9 +63,7 @@ bool Robot::followTrajectory(Trajectory *traj, double const& timeInTrajectory, d
     } 
     else 
     {
-        // Get current trajectory state.
-        trajectoryPoint_ = traj->getCurrentPoint(timeInTrajectory);
-
+        
         // Compute targets for rotation and translation motors.
         BaseSpeed targetSpeed;
 

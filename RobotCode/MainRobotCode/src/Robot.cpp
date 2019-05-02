@@ -204,34 +204,40 @@ void Robot::lowLevelLoop()
         }
 
         // Get current encoder speeds (in rad/s)
-        WheelSpeed instantWheelSpeedEncoder;
-        instantWheelSpeedEncoder.right = encoderIncrement.right / dt;
-        instantWheelSpeedEncoder.left = encoderIncrement.left / dt;
+        //~ WheelSpeed instantWheelSpeedEncoder;
+        WheelSpeed instantMotorSpeed;
+        //~ instantWheelSpeedEncoder.right = encoderIncrement.right / dt;
+        //~ instantWheelSpeedEncoder.left = encoderIncrement.left / dt;
+        instantMotorSpeed.right = motorSpeed_[RIGHT] * robotdimensions::stepSize;
+        instantMotorSpeed.left = motorSpeed_[LEFT] * robotdimensions::stepSize;
 
         // Get base speed
-        BaseSpeed instantBaseSpeed = kinematics_.forwardKinematics(instantWheelSpeedEncoder, true);
+        //~ BaseSpeed instantBaseSpeed = kinematics_.forwardKinematics(instantWheelSpeedEncoder, true);
+        BaseSpeed instantBaseSpeed = kinematics_.forwardKinematics(instantMotorSpeed, false);
         
-        // Moving averages
-        double averagedLinearVelocity = 0;
-        for (int k=0; k<MAINROBOTCODE_MA_LIN_VEL_LEN-1; k++) {
-            movingAverageLinearVelocity_[k] = movingAverageLinearVelocity_[k+1];
-            averagedLinearVelocity += movingAverageLinearVelocity_[k];
-        }
-        movingAverageLinearVelocity_[MAINROBOTCODE_MA_LIN_VEL_LEN-1] = instantBaseSpeed.linear;
-        averagedLinearVelocity += movingAverageLinearVelocity_[MAINROBOTCODE_MA_LIN_VEL_LEN-1];
-        averagedLinearVelocity /= MAINROBOTCODE_MA_LIN_VEL_LEN;
+        //~ // Moving averages
+        //~ double averagedLinearVelocity = 0;
+        //~ for (int k=0; k<MAINROBOTCODE_MA_LIN_VEL_LEN-1; k++) {
+            //~ movingAverageLinearVelocity_[k] = movingAverageLinearVelocity_[k+1];
+            //~ averagedLinearVelocity += movingAverageLinearVelocity_[k];
+        //~ }
+        //~ movingAverageLinearVelocity_[MAINROBOTCODE_MA_LIN_VEL_LEN-1] = instantBaseSpeed.linear;
+        //~ averagedLinearVelocity += movingAverageLinearVelocity_[MAINROBOTCODE_MA_LIN_VEL_LEN-1];
+        //~ averagedLinearVelocity /= MAINROBOTCODE_MA_LIN_VEL_LEN;
         
-        double averagedAngularVelocity = 0;
-        for (int k=0; k<MAINROBOTCODE_MA_ANG_VEL_LEN-1; k++) {
-            movingAverageAngularVelocity_[k] = movingAverageAngularVelocity_[k+1];
-            averagedAngularVelocity += movingAverageAngularVelocity_[k];
-        }
-        movingAverageAngularVelocity_[MAINROBOTCODE_MA_ANG_VEL_LEN-1] = instantBaseSpeed.angular;
-        averagedAngularVelocity += movingAverageAngularVelocity_[MAINROBOTCODE_MA_ANG_VEL_LEN-1];
-        averagedAngularVelocity /= MAINROBOTCODE_MA_ANG_VEL_LEN;
+        //~ double averagedAngularVelocity = 0;
+        //~ for (int k=0; k<MAINROBOTCODE_MA_ANG_VEL_LEN-1; k++) {
+            //~ movingAverageAngularVelocity_[k] = movingAverageAngularVelocity_[k+1];
+            //~ averagedAngularVelocity += movingAverageAngularVelocity_[k];
+        //~ }
+        //~ movingAverageAngularVelocity_[MAINROBOTCODE_MA_ANG_VEL_LEN-1] = instantBaseSpeed.angular;
+        //~ averagedAngularVelocity += movingAverageAngularVelocity_[MAINROBOTCODE_MA_ANG_VEL_LEN-1];
+        //~ averagedAngularVelocity /= MAINROBOTCODE_MA_ANG_VEL_LEN;
         
-        currentBaseSpeed_ = BaseSpeed(averagedLinearVelocity, averagedAngularVelocity);
-
+        //~ currentBaseSpeed_ = BaseSpeed(averagedLinearVelocity, averagedAngularVelocity);
+        
+        currentBaseSpeed_ = instantBaseSpeed;
+        
         // Update log.
         updateLog();
     }

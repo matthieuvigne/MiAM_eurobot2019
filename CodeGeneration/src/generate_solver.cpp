@@ -9,10 +9,16 @@ using namespace robotdimensions;
 
 // Weights of the QP solver
 // Along trajectory
-double mu_traj = 1 * 1000.0;
-double mu_theta = 1 * 10.0;
-double mu_vlin = 1.0;
-double mu_vang = 1.0;
+//~ double mu_traj = 1 * 1000.0;
+//~ double mu_theta = 1 * 100.0;
+//~ double mu_vlin = 0.5;
+//~ double mu_vang = 0.5;
+double mu_traj = 100;
+double mu_theta = 0.5;
+double mu_vlin = 0.01;
+double mu_vang = 0.01;
+
+double ponderation_final_state = 10;
 
 
 DrivetrainKinematics drivetrain_kinematics(
@@ -39,7 +45,6 @@ int main()
 
     DifferentialState        x, y, theta, v, w    ;
     Control                  vu, wu     ;   
-    //~ Control                  v, w     ;   
     DifferentialEquation     f( 0.0, T );
 
     f << dot(x) == v * cos(theta) ;
@@ -50,7 +55,7 @@ int main()
     
     Function h, hN;
     h << x << y << theta << v << w ;
-    hN << x << y << theta ;
+    hN << x << y << theta << v << w;
 
     DMatrix W ( h.getDim(), h.getDim() );
     W(0, 0) = mu_traj;
@@ -60,9 +65,11 @@ int main()
     W(4, 4) = mu_vang;
     
     DMatrix WN ( hN.getDim(), hN.getDim() );
-    WN(0, 0) = 5.0 * mu_traj;
-    WN(1, 1) = 5.0 * mu_traj;
-    WN(2, 2) = 5.0 * mu_theta;
+    WN(0, 0) = ponderation_final_state * mu_traj;
+    WN(1, 1) = ponderation_final_state * mu_traj;
+    WN(2, 2) = ponderation_final_state * mu_theta;
+    WN(3, 3) = ponderation_final_state * mu_vlin;
+    WN(4, 4) = ponderation_final_state * mu_vang;
 
     //
     // Optimal Control Problem
