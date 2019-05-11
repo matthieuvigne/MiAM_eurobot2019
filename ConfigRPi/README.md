@@ -40,7 +40,7 @@ We will now configure the wifi adapter to broadcast a network to connect to the 
 See: https://www.raspberrypi.org/documentation/configuration/wireless/access-point.md
 
  - Reset wpa_supplicant config file, if needed (to prevent autoconnect to another wifi network).
- - Use hostapd to create the network: create a file /etc/hostadp/hostapd.conf with the following content:
+ - Use hostapd to create the network: create a file /etc/hostapd/hostapd.conf with the following content:
 
 interface=wlan0
 driver=nl80211
@@ -79,3 +79,6 @@ An image with this config was created (with default password, network RaspberryP
 sudo dd bs=4M if=/dev/mmcblk0 | gzip > 20180813-Raspbian4-14.img.gz
 To restore, use:
 cat 20180813-Raspbian4-14.img.gz | gunzip | dd of=/dev/mmcblk0
+
+20190504-Raspbian4-19.img.gz : newer image, kernel updated to 4.19, GLIBC to 2.28.
+
