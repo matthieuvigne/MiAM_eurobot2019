@@ -39,6 +39,7 @@
         f(LOGGER_BACK_DETECTION) \
         f(LOGGER_LINEAR_P_I_D_CORRECTION) \
         f(LOGGER_ANGULAR_P_I_D_CORRECTION) \
+        f(LOGGER_GYRO_Y) \
 
     #define GENERATE_ENUM(ENUM) ENUM,
 

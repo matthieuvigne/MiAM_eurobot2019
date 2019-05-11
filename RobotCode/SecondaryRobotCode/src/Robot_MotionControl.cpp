@@ -4,12 +4,10 @@
 // Trajectory list handling, trajectory following, obstacle avoidance.
 
 // Obstacle avoidance parameters
-int const FRONT_THRESHOLD = 500; // Any value below the threshold corresponds to a detection.
-int const BACK_THRESHOLD = 500; // Any value below the threshold corresponds to a detection.
 double const IR_START_TIMEOUT = 5.0; // Disable IR detection for the first n seconds of the match, to be sure to leave the starting zone safely.
 
-double const FRONT_DETECTION_DISTANCE = 700;    // Distance between front of the robot and detected obstacle.
-double const BACK_DETECTION_DISTANCE = 700;
+double const FRONT_DETECTION_DISTANCE = 750;    // Distance between center of the robot and detected obstacle.
+double const BACK_DETECTION_DISTANCE = 750;
 
 int const N_VIEWS_FOR_STOP = 2; // Number of consecutive views to stop the robot.
 int const N_MISS_FOR_START = 5; // Number of consecutive non-detection to restart robot.
@@ -23,8 +21,8 @@ bool Robot::handleDetection()
     IRBackRight_ = gpio_analogRead(CAPE_ANALOG[3]);
 
     // Determine if a robot is visible in front or behind the robot.
-    isFrontDetectionActive_ = (IRFrontLeft_ > FRONT_THRESHOLD || IRFrontRight_ > FRONT_THRESHOLD);
-    isBackDetectionActive_ = (IRBackLeft_ > BACK_THRESHOLD || IRBackRight_ > BACK_THRESHOLD);
+    isFrontDetectionActive_ = (IRFrontLeft_ > robot.frontDetectionThreshold_ || IRFrontRight_ > robot.frontDetectionThreshold_);
+    isBackDetectionActive_ = (IRBackLeft_ > robot.backDetectionThreshold_ || IRBackRight_ > robot.backDetectionThreshold_);
 
     // Set LED status
     gpio_digitalWrite(CAPE_LED[1], isFrontDetectionActive_ || isBackDetectionActive_);
@@ -58,7 +56,8 @@ bool Robot::handleDetection()
         return false;
     if (currentTime_ - matchStartTime_ < IR_START_TIMEOUT)
         return false;
-    return shouldRobotStop;
+    //~ return shouldRobotStop;
+    return false;
 }
 
 
@@ -229,6 +228,7 @@ void Robot::updateTrajectoryFollowingTarget(double const& dt)
             }
         }
     }
+    stepperMotors_.getError();
 
     // Send target to motors.
     if (hasMatchStarted_ && !shouldRobotStop)

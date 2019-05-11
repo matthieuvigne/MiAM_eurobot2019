@@ -4,6 +4,8 @@
 
 const int START_SWITCH = CAPE_DIGITAL[0];
 
+const double INITIAL_GYRO_BIAS = 0.0305;
+
 // Update loop frequency
 const double LOOP_PERIOD = 0.010;
 
@@ -21,7 +23,10 @@ Robot::Robot():
     detectionStopTime_(0.0),
     startupStatus_(startupstatus::INIT),
     initMotorState_(0),
-    nConsecutiveIRState_(0)
+    nConsecutiveIRState_(0),
+    gyroValue_(0.0),
+    frontDetectionThreshold_(500),
+    backDetectionThreshold_(500)
 {
     kinematics_ = DrivetrainKinematics(robotdimensions::wheelRadius,
                                        robotdimensions::wheelSpacing,
@@ -155,9 +160,10 @@ bool Robot::setupBeforeMatchStart()
             matchStartTime_ = currentTime_;
             startupStatus_ = startupstatus::PLAYING_LEFT;
             isPlayingRightSide_ = false;
-            robot.screen_.setTextCentered("Choose side", 0);
-            robot.screen_.setTextCentered("     YELLOW    >", 1);
-            robot.screen_.setBacklight(true, true, true);
+            robot.screen_.setTextCentered("     YELLOW    >", 0);
+            robot.screen_.setBacklight(true, true, false);
+            std::string value = " " + std::to_string(robot.frontDetectionThreshold_) + " " + std::to_string(robot.backDetectionThreshold_);
+            robot.screen_.setTextCentered(value, 1);
         }
     }
     else
@@ -167,19 +173,31 @@ bool Robot::setupBeforeMatchStart()
         {
             startupStatus_ = startupstatus::PLAYING_LEFT;
             isPlayingRightSide_ = false;
-            robot.screen_.setTextCentered("     YELLOW    >", 1);
-            robot.screen_.setBacklight(true, true, true);
+            robot.screen_.setTextCentered("     YELLOW    >", 0);
+            robot.screen_.setBacklight(true, true, false);
         }
         else if (startupStatus_ == startupstatus::PLAYING_LEFT && robot.screen_.isButtonPressed(LCD_BUTTON_RIGHT))
         {
             startupStatus_ = startupstatus::PLAYING_RIGHT;
             isPlayingRightSide_ = true;
-            robot.screen_.setTextCentered("<    PURPLE     ", 1);
-            robot.screen_.setBacklight(true, true, true);
+            robot.screen_.setTextCentered("<    PURPLE     ", 0);
+            robot.screen_.setBacklight(true, false, true);
+        }
+
+        // Enter IR calibration if up/down button are pressed.
+        if (robot.screen_.isButtonPressed(LCD_BUTTON_UP))
+            robot.frontDetectionThreshold_ = std::max(IRFrontLeft_, IRFrontRight_);
+        if (robot.screen_.isButtonPressed(LCD_BUTTON_DOWN))
+            robot.backDetectionThreshold_ = std::max(IRBackLeft_, IRBackRight_);
+
+        if (robot.screen_.isButtonPressed(LCD_BUTTON_UP) || robot.screen_.isButtonPressed(LCD_BUTTON_DOWN))
+        {
+            std::string value = " " + std::to_string(robot.frontDetectionThreshold_) + " " + std::to_string(robot.backDetectionThreshold_);
+            robot.screen_.setTextCentered(value, 1);
         }
 
         // Use down button to lock / unlock the motors.
-        if (robot.screen_.isButtonPressed(LCD_BUTTON_DOWN))
+        if (robot.screen_.isButtonPressed(LCD_BUTTON_SELECT))
         {
             // Only modify state if the button was just pressed.
             if (initMotorState_ < 2)
@@ -214,7 +232,6 @@ void Robot::lowLevelLoop()
     std::cout << "Low-level loop started." << std::endl;
 
     // Create metronome
-    Metronome metronome(LOOP_PERIOD * 1e9);
     currentTime_ = 0;
 
     double lastTime = 0;
@@ -224,9 +241,12 @@ void Robot::lowLevelLoop()
     oldMotorAngle.push_back(0.0);
 
     std::thread strategyThread;
+    Kalman kalmanFilter;
+    kalman_init(&kalmanFilter, 0);
 
     int nIter = 0;
     bool heartbeatLed = true;
+    Metronome metronome(LOOP_PERIOD * 1e9);
     // Loop until start of the match, then for 100 seconds after the start of the match.
     while(!hasMatchStarted_ || (currentTime_ < 100.0 + matchStartTime_))
     {
@@ -269,17 +289,30 @@ void Robot::lowLevelLoop()
         encoderIncrement.left = motorAngle[LEFT] - oldMotorAngle[LEFT];
         oldMotorAngle = motorAngle;
 
+        // Get gyro reading, removing initial bias.
+        gyroValue_ = -imu_gyroGetYAxis(imu_);
+        gyroValue_ -= INITIAL_GYRO_BIAS;
+
         // If playing right side: invert right/left encoders, with minus sign because both motors are opposite of each other.
         if (isPlayingRightSide_)
         {
             double temp = encoderIncrement.right;
             encoderIncrement.right = encoderIncrement.left;
             encoderIncrement.left = temp;
+            gyroValue_ = -gyroValue_;
         }
 
         RobotPosition currentPosition = currentPosition_.get();
-        kinematics_.integratePosition(encoderIncrement, currentPosition);
+
+        // Integrate position, using pseudo Kalman filter.
+        kalmanFilter.angle = currentPosition.theta;
+        BaseSpeed s = kinematics_.forwardKinematics(encoderIncrement, true);
+        currentPosition.theta = kalman_updateEstimate(&kalmanFilter, currentPosition.theta + s.angular, gyroValue_, dt);
+        //~ currentPosition.theta = currentPosition.theta + gyroValue_ * dt;
+        currentPosition.x += s.linear * std::cos(currentPosition.theta);
+        currentPosition.y += s.linear * std::sin(currentPosition.theta);
         currentPosition_.set(currentPosition);
+        gyroBias_ = kalmanFilter.bias;
 
         // Perform trajectory tracking.
         updateTrajectoryFollowingTarget(dt);
@@ -335,6 +368,8 @@ void Robot::updateLog()
 
     logger_.setData(LOGGER_LINEAR_P_I_D_CORRECTION, PIDLinear_.getCorrection());
     logger_.setData(LOGGER_ANGULAR_P_I_D_CORRECTION, PIDAngular_.getCorrection());
+    logger_.setData(LOGGER_GYRO_Y, gyroValue_);
+    logger_.setData(LOGGER_GYRO_Y, gyroBias_);
     logger_.writeLine();
 }
 
@@ -343,8 +378,8 @@ void Robot::moveServos(bool down)
 {
     if(down)
     {
-        gpio_servoPWM(0, 1155); // Right
-        gpio_servoPWM(1, 1925); // Left
+        gpio_servoPWM(0, 1165); // Right
+        gpio_servoPWM(1, 1915); // Left
     }
     else
     {

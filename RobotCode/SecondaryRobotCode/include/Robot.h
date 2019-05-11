@@ -163,12 +163,19 @@
             bool isFrontDetectionActive_; ///< True if a robot is visible in front of the robot.
             bool isBackDetectionActive_; ///< True if a robot is visible behind of the robot.
             bool hasDetectionStoppedRobot_; ///< True if robot is stopped due to a detection.
+
+            int frontDetectionThreshold_; ///< Threshold value for a front detection.
+            int backDetectionThreshold_; ///< Threshold value for a back detection.
+
             double detectionStopTime_; ///< Time at which the robot stopped due to a detection.
 
             startupstatus startupStatus_; ///< Current startup status.
             int initMotorState_; ///< State of the motors during init.
 
             int nConsecutiveIRState_; ///< Number of consecutive IR detection / non-detection, used for filtering.
+
+            double gyroValue_;  ///< Gyroscope reading.
+            double gyroBias_;  ///< Gyroscope bias, identified by the Kalman filter.
     };
 
     extern Robot robot;    ///< The robot instance, representing the current robot.

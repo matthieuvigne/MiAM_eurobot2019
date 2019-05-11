@@ -24,6 +24,43 @@ void matchStrategy()
     robot.moveServos(true);
     usleep(800000);
 
+    // Servo along a trajectory.
+    //~ RobotPosition endPosition = robot.getCurrentPosition();
+    //~ std::cout << "Playing first trajectory" << std::endl;
+    //~ endPosition.x += 400;
+    //~ std::vector<std::shared_ptr<Trajectory>> traj;
+    //~ traj = miam::trajectory::computeTrajectoryStaightLineToPoint(robot.getCurrentPosition(), endPosition);
+    //~ robot.setTrajectoryToFollow(traj);
+    //~ robot.waitForTrajectoryFinished();
+
+    //~ std::cout << "Playing second trajectory" << std::endl;
+    //~ RobotPosition startPosition = endPosition;
+    //~ endPosition.y += 400;
+    //~ traj = miam::trajectory::computeTrajectoryStaightLineToPoint(startPosition, endPosition);
+    //~ robot.setTrajectoryToFollow(traj);
+    //~ robot.waitForTrajectoryFinished();
+
+    //~ std::cout << "Playing third trajectory" << std::endl;
+    //~ endPosition.theta = M_PI_2;
+    //~ startPosition = endPosition;
+    //~ endPosition.x -= 400;
+    //~ traj = miam::trajectory::computeTrajectoryStaightLineToPoint(startPosition, endPosition);
+    //~ robot.setTrajectoryToFollow(traj);
+    //~ robot.waitForTrajectoryFinished();
+    //~ startPosition = endPosition;
+
+    //~ std::cout << "Playing fourth trajectory" << std::endl;
+    //~ endPosition.theta = M_PI;
+    //~ startPosition = endPosition;
+    //~ endPosition.y -= 400;
+    //~ traj = miam::trajectory::computeTrajectoryStaightLineToPoint(startPosition, endPosition);
+    //~ robot.setTrajectoryToFollow(traj);
+    //~ robot.waitForTrajectoryFinished();
+
+    //~ usleep(200000);
+    //~ printf("done\n");
+    //~ while(true) ;;
+
     // Set initial position
     RobotPosition targetPosition;
     targetPosition.x = CHASSIS_WIDTH + 25.0;
