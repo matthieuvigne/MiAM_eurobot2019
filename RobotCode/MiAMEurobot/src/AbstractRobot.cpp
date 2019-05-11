@@ -52,9 +52,15 @@ void AbstractRobot::setTrajectoryToFollow(std::vector<std::shared_ptr<miam::traj
 
 bool AbstractRobot::waitForTrajectoryFinished()
 {
-    while(currentTrajectories_.size() > 0 || newTrajectories_.size() > 0)
+    while(!isTrajectoryFinished())
         usleep(15000);
     return true;
+}
+
+
+bool AbstractRobot::isTrajectoryFinished()
+{
+    return (currentTrajectories_.size() == 0 && newTrajectories_.size() == 0);
 }
 
 

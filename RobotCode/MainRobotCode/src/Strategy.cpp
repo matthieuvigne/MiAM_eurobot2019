@@ -37,25 +37,15 @@ void getAtoms()
     robot.moveRail(0.7);
 
     targetPosition = robot.getCurrentPosition();
-    //~ traj = miam::trajectory::computeTrajectoryStraightLine(targetPosition, -50);
-    traj = miam::trajectory::computeTrajectoryStraightLine(targetPosition, -350);
+    traj = miam::trajectory::computeTrajectoryStraightLine(targetPosition, -50);
     robot.setTrajectoryToFollow(traj);
     robot.waitForTrajectoryFinished();
     robot.servos_.turnOffPump();
-
-    robot.moveRail(0.2);
-
-    usleep(2000000);
-    for(int i = 0; i < 3; i++)
-        robot.servos_.openTube(i);
-    robot.servos_.tapOpen();
 }
 
 void matchStrategy()
 {
     std::cout << "Strategy thread started." << std::endl;
-    getAtoms();
-    while(true) ;;
     //~ usleep(100000);
     //~ robot.moveRail(1);
     //~ robot.servos_.moveSuction(true);
@@ -124,7 +114,6 @@ void matchStrategy()
     //~ while(true) ;;
 
     // Real game strategy.
-
     RobotPosition targetPosition;
     targetPosition.x = CHASSIS_WIDTH + 25;
     targetPosition.y = 1100 + CHASSIS_FRONT + 25;
@@ -150,12 +139,29 @@ void matchStrategy()
     robot.setTrajectoryToFollow(traj);
     robot.waitForTrajectoryFinished();
 
+    getAtoms();
+    robot.moveRail(0.1);
+    robot.servos_.moveSuction(false);
+
     // Move back on base, drop all three atoms.
-    targetPosition.y = 1800;
+    targetPosition.y = 1700;
     traj = miam::trajectory::computeTrajectoryStaightLineToPoint(robot.getCurrentPosition(), targetPosition, 0.0, true);
     robot.setTrajectoryToFollow(traj);
-    robot.waitForTrajectoryFinished();
-
+    // Atom drop
+    while (!robot.isTrajectoryFinished())
+    {
+        targetPosition = robot.getCurrentPosition();
+        if (targetPosition.y > 950)
+        {
+            robot.servos_.tapOpen();
+            robot.servos_.openTube(0);
+        }
+        if (targetPosition.y > 1300)
+            robot.servos_.openTube(1);
+        if (targetPosition.y > 1550)
+            robot.servos_.openTube(2);
+        usleep(20000);
+    }
     robot.score_ += 18;
 
     // Go get left set of three atoms, following a curved trajectory.
@@ -173,15 +179,16 @@ void matchStrategy()
     positions.push_back(targetPosition);
     targetPosition.y = 600;
     positions.push_back(targetPosition);
-    traj = miam::trajectory::computeTrajectoryRoundedCorner(positions, 80.0, 0.4);
+    traj = miam::trajectory::computeTrajectoryRoundedCorner(positions, 100.0, 0.1);
     robot.setTrajectoryToFollow(traj);
     robot.waitForTrajectoryFinished();
 
     // Go back, and push the atoms to the end of the red zone.
-    targetPosition.y += 100;
-    traj = miam::trajectory::computeTrajectoryStaightLineToPoint(robot.getCurrentPosition(), targetPosition, 0.0, true);
+    targetPosition = robot.getCurrentPosition();
+    traj = miam::trajectory::computeTrajectoryStraightLine(targetPosition, -150);
     robot.setTrajectoryToFollow(traj);
     robot.waitForTrajectoryFinished();
+    targetPosition = robot.getCurrentPosition();
     targetPosition.y = 1400;
     traj = miam::trajectory::computeTrajectoryStaightLineToPoint(robot.getCurrentPosition(), targetPosition, 0.0);
     robot.setTrajectoryToFollow(traj);

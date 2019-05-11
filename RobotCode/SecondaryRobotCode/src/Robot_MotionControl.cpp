@@ -56,8 +56,7 @@ bool Robot::handleDetection()
         return false;
     if (currentTime_ - matchStartTime_ < IR_START_TIMEOUT)
         return false;
-    //~ return shouldRobotStop;
-    return false;
+    return shouldRobotStop;
 }
 
 
@@ -86,7 +85,7 @@ bool Robot::followTrajectory(Trajectory *traj, double const& timeInTrajectory, d
     // Change sign if going backward.
     if(trajectoryPoint_.linearVelocity < 0)
         trackingTransverseError_ = - trackingTransverseError_;
-    trackingAngleError_ = currentPosition.theta - trajectoryPoint_.position.theta;
+    trackingAngleError_ = miam::trajectory::moduloTwoPi(currentPosition.theta - trajectoryPoint_.position.theta);
 
     // If we are beyon trajector end, look to see if we are close enough to the target point to stop.
     if(traj->getDuration() <= timeInTrajectory)

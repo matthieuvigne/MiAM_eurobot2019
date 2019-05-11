@@ -52,6 +52,9 @@
             /// \return true if trajectory following was successful, false otherwise.
             bool waitForTrajectoryFinished();
 
+            /// \brief Get current trajectory following status.
+            bool isTrajectoryFinished();
+
             /// \brief Stop the wheel motors.
             void stopMotors();
 
