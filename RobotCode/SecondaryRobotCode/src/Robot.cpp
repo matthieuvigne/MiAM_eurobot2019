@@ -190,11 +190,9 @@ bool Robot::setupBeforeMatchStart()
         if (robot.screen_.isButtonPressed(LCD_BUTTON_DOWN))
             robot.backDetectionThreshold_ = std::max(IRBackLeft_, IRBackRight_);
 
-        if (robot.screen_.isButtonPressed(LCD_BUTTON_UP) || robot.screen_.isButtonPressed(LCD_BUTTON_DOWN))
-        {
-            std::string value = " " + std::to_string(robot.frontDetectionThreshold_) + " " + std::to_string(robot.backDetectionThreshold_);
-            robot.screen_.setTextCentered(value, 1);
-        }
+        std::string value = std::to_string(std::max(IRFrontLeft_, IRFrontRight_)) + "/" + std::to_string(robot.frontDetectionThreshold_) +
+                            " " + std::to_string(std::max(IRBackLeft_, IRBackRight_)) + "/" + std::to_string(robot.backDetectionThreshold_);
+        robot.screen_.setTextCentered(value, 1);
 
         // Use down button to lock / unlock the motors.
         if (robot.screen_.isButtonPressed(LCD_BUTTON_SELECT))
@@ -218,7 +216,8 @@ bool Robot::setupBeforeMatchStart()
         // If start button is pressed, return true to end startup.
         if (currentTime_ - matchStartTime_ > 0.5 && gpio_digitalRead(START_SWITCH) == 1)
         {
-            robot.screen_.clear();
+            robot.screen_.setTextCentered("", 0);
+            robot.screen_.setTextCentered("", 1);
             return true;
         }
     }

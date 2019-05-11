@@ -1,4 +1,5 @@
 #include "MiAMEurobot/drivers/LCDDriver.h"
+#include <thread>
 #include <stdio.h>
 #include <unistd.h>
 
@@ -87,18 +88,17 @@ bool LCD::init(I2CAdapter *adapter, int const& address)
     sendCommand(LCD_ENTRYMODESET | LCD_ENTRYLEFT | LCD_ENTRYSHIFTDECREMENT);
 
     // Clear LCD display.
-    clear();
+    sendCommand(LCD_CLEARDISPLAY);
+
+    // Start low-level thread.
+    std::thread t(&LCD::lcdLoop, this);
+    t.detach();
     return true;
 }
 
-void LCD::clear()
-{
-    sendCommand(LCD_CLEARDISPLAY);
-}
 
 void LCD::setText(std::string const& text, int line)
 {
-    mutex_.lock();
     // If line is not zero, set offset to write to line 1.
     if(line != 0)
         line  = 0x40;
@@ -112,52 +112,44 @@ void LCD::setText(std::string const& text, int line)
     // Pad string with spaces if needed.
     for(int x = stringLength; x < 16; x++)
         sendChar(' ');
-    mutex_.unlock();
-}
-
-void LCD::setChar(char text, int line, int column)
-{
-    mutex_.lock();
-    usleep(200);
-    int offset = 0;
-    // If line is not zero, set offset to write to line 1.
-    if(line != 0)
-        offset  = 0x40;
-    if(column < 0)
-        column = 0;
-    if(column > 15)
-        column = 15;
-    offset += column;
-    // Go to beginning of line.
-    sendCommand(LCD_SETDDRAMADDR | offset);
-    sendChar(text);
-    mutex_.unlock();
 }
 
 
 void LCD::setTextCentered(std::string const& text, int line)
 {
+    if (line != 0)
+        line = 1;
     // Compute number of space needed - on odd number the string will be left-aligned.
     int numberOfSpaces = (16 - int(text.length())) / 2;
     std::string centeredText = text;
     if(numberOfSpaces > 0)
         centeredText = std::string(numberOfSpaces, ' ') +  text;
-    setText(centeredText, line);
+
+    mutex_.lock();
+    lines_[line] = centeredText;
+    updateScreen_ = true;
+    mutex_.unlock();
 }
 
 
 void LCD::setBacklight(bool red, bool green, bool blue)
 {
-    mpc_digitalWrite(mpc_, 6, ~(red ? 1 : 0) & 0x1);
-    mpc_digitalWrite(mpc_, 7, ~(green ? 1 : 0) & 0x1);
-    mpc_digitalWrite(mpc_, 8, ~(blue ? 1 : 0) & 0x1);
+    mutex_.lock();
+    backlight_ = 4 * (red ? 1 : 0)  + 2 * (green ? 1 : 0) + (blue ? 1 : 0);
+    updateScreen_ = true;
+    mutex_.unlock();
 }
 
 bool LCD::isButtonPressed(LCDButton button)
 {
-    if(mpc_digitalRead(mpc_, button) == 0)
-        return true;
-    return false;
+    int buttons = 0;
+    mutex_.lock();
+    buttons = buttons_;
+    mutex_.unlock();
+
+    if((buttons & (1 << button)) > 0)
+        return false;
+    return true;
 }
 
 
@@ -214,4 +206,48 @@ void LCD::sendCommand(unsigned char value)
 void LCD::sendChar(unsigned char value)
 {
     sendData(value, 1);
+}
+
+
+void LCD::lcdLoop()
+{
+    // Loop listening to the screen.
+    std::string lines[2];
+    int backlight = 0;
+    int buttons = 0;
+    bool updateScreen = false;
+
+    while(true)
+    {
+        mutex_.lock();
+        updateScreen = updateScreen_;
+        if (updateScreen)
+        {
+            lines[0] = lines_[0];
+            lines[1] = lines_[1];
+            backlight = backlight_;
+            updateScreen_ = false;
+        }
+        mutex_.unlock();
+
+        if (updateScreen)
+        {
+            // Update backlight.
+            mpc_digitalWrite(mpc_, 6, ~((backlight & 4) ? 1 : 0) & 0x1);
+            mpc_digitalWrite(mpc_, 7, ~((backlight & 2) ? 1 : 0) & 0x1);
+            mpc_digitalWrite(mpc_, 8, ~((backlight & 1) ? 1 : 0) & 0x1);
+            // Update line content.
+            setText(lines[0], 0);
+            setText(lines[1], 1);
+        }
+
+        // Update button status.
+        buttons = mpc_readAll(mpc_);
+
+        mutex_.lock();
+        buttons_ = buttons;
+        mutex_.unlock();
+
+        usleep(20000);
+    }
 }

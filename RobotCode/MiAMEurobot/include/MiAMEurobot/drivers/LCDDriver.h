@@ -34,26 +34,8 @@
             /// \returns   true on success, false otherwise.
             bool init(I2CAdapter *adapter, int const& slaveAddress = 0x20);
 
-            /// \brief Clear LCD screen.
-            void clear();
-
-            /// \brief Set the text of a given LCD line, left-aligned.
-            /// \note  Writing a full line to the LCD currently takes about 70ms.
-            ///
-            /// \param[in] text Text to display. Only the first 16 characters will fit the screen.
-            ///                 The string should be null-terminated, otherwise random garbage will be displayed.
-            ///                    The text is left-aligned and padded by spaces to clear the display line.
-            /// \param[in] line Line number (0 or 1).
-            void setText(std::string const& text, int line);
-
-            /// \brief Set a single character of the LCD screen.
-            ///
-            /// \param[in] text char to display
-            /// \param[in] line Line number (0 or 1).
-            /// \param[in] column Cursor position in line (0 to 15).
-            void setChar(char text, int line, int column);
-
             /// \brief Set the text of a given LCD line, centering it.
+            ///        This function operates asyncronously and retuns immediately.
             /// \note  Writing a full line to the LCD currently takes about 70ms.
             ///
             /// \param[in] text Text to display. Only the first 16 characters will fit the screen.
@@ -83,6 +65,23 @@
 
             MPC mpc_;
             std::mutex mutex_;
+
+            std::string lines_[2];  ///< Buffer: lines to send to the screen.
+            int backlight_;         ///< Buffer: backlight to set.
+            int buttons_;           ///< Buffer: last button status.
+            bool updateScreen_;     ///< Variable set when a screen update is required.
+
+            /// \brief Background thread handling communication with LCD screen.
+            void lcdLoop();
+
+            /// \brief Set the text of a given LCD line, left-aligned.
+            /// \note  Writing a full line to the LCD currently takes about 70ms.
+            ///
+            /// \param[in] text Text to display. Only the first 16 characters will fit the screen.
+            ///                 The string should be null-terminated, otherwise random garbage will be displayed.
+            ///                    The text is left-aligned and padded by spaces to clear the display line.
+            /// \param[in] line Line number (0 or 1).
+            void setText(std::string const& text, int line);
     };
 
 #endif
