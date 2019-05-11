@@ -57,11 +57,9 @@ int main (int argc, char *argv[])
     }
 
     // Create robots.
-    ViewerRobot mainRobot("./config/mainRobot.png");
-    mainRobotStrategy(mainRobot);
+    ViewerRobot mainRobot("./config/mainRobot.png", mainRobotStrategy);
 
-    ViewerRobot secondaryRobot("./config/secondaryRobot.png", 0, 0, 1);
-    secondaryRobotStrategy(secondaryRobot);
+    ViewerRobot secondaryRobot("./config/secondaryRobot.png", secondaryRobotStrategy, 0, 0, 1);
 
     // Create handler.
     Viewer *viewer = nullptr;

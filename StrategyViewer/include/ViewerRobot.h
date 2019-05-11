@@ -19,12 +19,14 @@
         RobotPosition position;
         double linearVelocity;
         double angularVelocity;
+        int score; ///< Current robot score.
 
         ViewerTrajectoryPoint():
             time(0.0),
             position(),
             linearVelocity(0.0),
-            angularVelocity(0.0)
+            angularVelocity(0.0),
+            score(0)
         {}
     };
 
@@ -32,7 +34,9 @@
     {
         public:
             /// \brief Constructor.
-            ViewerRobot(std::string const& imageFileName, double const& r = 1.0, double const& g = 0.0, double const& b = 0.0);
+            ViewerRobot(std::string const& imageFileName,
+                        std::function<void(ViewerRobot &)> const& strategyFunction,
+                        double const& r = 1.0, double const& g = 0.0, double const& b = 0.0);
 
             /// \brief Get current robot position.
             RobotPosition getPosition();
@@ -41,8 +45,9 @@
             ViewerTrajectoryPoint getViewerPoint(int const& index);
 
             /// \brief Mock trajectory following.
-            void followTrajectory(miam::trajectory::Trajectory * traj);
-            void followTrajectory(std::vector<std::shared_ptr<miam::trajectory::Trajectory>>  trajectories);
+            /// \details Returns true on succes, false if obstacle was encounterd.
+            bool followTrajectory(miam::trajectory::Trajectory * traj);
+            bool followTrajectory(std::vector<std::shared_ptr<miam::trajectory::Trajectory>>  trajectories);
 
             /// \brief Set robot position (velocity is set to 0, this is mostly done for position reset and init).
             void setPosition(RobotPosition const& position);
@@ -56,8 +61,17 @@
             /// \brief Pad trajectory with the last point (zero velocity) to the desired length.
             void padTrajectory(int const& desiredLength);
 
-        private:
+            ///< Function computing the strategy, for a given obstacle position.
+            std::function<void(ViewerRobot &)> const recomputeStrategyFunction_;
+
+            double obstacleX_;
+            double obstacleY_;
+            double obstacleSize_;
+
+            int score_; ///< Current robot score.
+
             std::vector<ViewerTrajectoryPoint> trajectory_;
+        private:
             Glib::RefPtr<Gdk::Pixbuf> image_;
 
             double r_;  ///< Trajectory color.

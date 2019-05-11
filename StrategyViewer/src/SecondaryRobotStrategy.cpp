@@ -22,6 +22,7 @@ double const CHASSIS_WIDTH = 169.0;
 
 void secondaryRobotStrategy(ViewerRobot &robot)
 {
+    robot.trajectory_.clear();
     // Update config.
     miam::trajectory::setTrajectoryGenerationConfig(robotdimensions::maxWheelSpeed,
                                                     robotdimensions::maxWheelAcceleration,
@@ -91,4 +92,5 @@ void secondaryRobotStrategy(ViewerRobot &robot)
     targetPosition = robot.getPosition();
     traj = miam::trajectory::computeTrajectoryStraightLine(targetPosition, -100);
     robot.followTrajectory(traj);
+    robot.score_ = 32;
 }

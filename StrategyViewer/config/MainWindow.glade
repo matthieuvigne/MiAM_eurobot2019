@@ -40,23 +40,6 @@
           </packing>
         </child>
         <child>
-          <object class="GtkScale" id="timeSlider">
-            <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="valign">center</property>
-            <property name="hexpand">True</property>
-            <property name="adjustment">adjustment1</property>
-            <property name="fill_level">0</property>
-            <property name="round_digits">1</property>
-            <property name="digits">2</property>
-          </object>
-          <packing>
-            <property name="left_attach">2</property>
-            <property name="top_attach">0</property>
-            <property name="height">2</property>
-          </packing>
-        </child>
-        <child>
           <object class="GtkDrawingArea" id="drawingArea">
             <property name="width_request">500</property>
             <property name="height_request">500</property>
@@ -68,7 +51,51 @@
           <packing>
             <property name="left_attach">0</property>
             <property name="top_attach">2</property>
-            <property name="width">5</property>
+            <property name="width">6</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="velocityLabel">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="label" translatable="yes">Robot speed:</property>
+            <attributes>
+              <attribute name="scale" value="1.2"/>
+            </attributes>
+          </object>
+          <packing>
+            <property name="left_attach">0</property>
+            <property name="top_attach">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkScale" id="playbackSpeed">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="valign">center</property>
+            <property name="hexpand">True</property>
+            <property name="adjustment">adjustment2</property>
+            <property name="fill_level">10</property>
+            <property name="round_digits">2</property>
+            <property name="digits">2</property>
+          </object>
+          <packing>
+            <property name="left_attach">5</property>
+            <property name="top_attach">0</property>
+            <property name="height">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="replayTime1">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="valign">center</property>
+            <property name="label" translatable="yes">Play speed:</property>
+          </object>
+          <packing>
+            <property name="left_attach">4</property>
+            <property name="top_attach">0</property>
+            <property name="height">2</property>
           </packing>
         </child>
         <child>
@@ -89,45 +116,33 @@
           </packing>
         </child>
         <child>
-          <object class="GtkLabel" id="velocityLabel">
+          <object class="GtkScale" id="timeSlider">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="label" translatable="yes">Robot speed:</property>
-            <attributes>
-              <attribute name="scale" value="1.2"/>
-            </attributes>
-          </object>
-          <packing>
-            <property name="left_attach">0</property>
-            <property name="top_attach">1</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel" id="replayTime1">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can_focus">True</property>
             <property name="valign">center</property>
-            <property name="label" translatable="yes">Play speed:</property>
+            <property name="hexpand">True</property>
+            <property name="adjustment">adjustment1</property>
+            <property name="fill_level">0</property>
+            <property name="round_digits">1</property>
+            <property name="digits">2</property>
           </object>
           <packing>
-            <property name="left_attach">3</property>
+            <property name="left_attach">2</property>
             <property name="top_attach">0</property>
             <property name="height">2</property>
           </packing>
         </child>
         <child>
-          <object class="GtkScale" id="playbackSpeed">
+          <object class="GtkButton" id="recomputeButton">
+            <property name="label" translatable="yes">Recompute
+trajectory</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
-            <property name="valign">center</property>
-            <property name="hexpand">True</property>
-            <property name="adjustment">adjustment2</property>
-            <property name="fill_level">10</property>
-            <property name="round_digits">2</property>
-            <property name="digits">2</property>
+            <property name="receives_default">True</property>
+            <property name="valign">end</property>
           </object>
           <packing>
-            <property name="left_attach">4</property>
+            <property name="left_attach">3</property>
             <property name="top_attach">0</property>
             <property name="height">2</property>
           </packing>

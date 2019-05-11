@@ -1,0 +1,3 @@
+/home/matthieu/dev/src/eurobot2019/StrategyViewer/CMakeFiles/rebuild_cache.dir
+/home/matthieu/dev/src/eurobot2019/StrategyViewer/CMakeFiles/strategyViewer.dir
+/home/matthieu/dev/src/eurobot2019/StrategyViewer/CMakeFiles/edit_cache.dir

@@ -23,6 +23,15 @@ class Viewer : public Gtk::Window
         int currentTrajectoryIndex_; ///< Current index in the replay.
         int trajectoryLength_; ///< Length of the given trajectories.
 
+        double obstacleX_; ///< Position of the obstacle.
+        double obstacleY_; ///< Position of the obstacle.
+        double obstacleSize_; ///< Size of the obstacle.
+        // Move the obstacle.
+        bool moveObstacle(GdkEventMotion* motion_event);
+        bool clickObstacle(GdkEventButton* motion_event);
+
+        // Recompute trajectories, based on obstacle positon.
+        void recompute();
 
         Gtk::Label *replayTime;
         Gtk::Label *velocityLabel;
@@ -49,6 +58,11 @@ class Viewer : public Gtk::Window
         // Connection and timer for playing trajectory.
         sigc::connection replayConnection_;
         std::chrono::high_resolution_clock::time_point lastTime_;
+
+        // Table to cairo mapping.
+        double mmToCairo_;
+        double originX_;
+        double originY_;
 };
 
 #endif

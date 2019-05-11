@@ -2,10 +2,17 @@
 #include <string>
 
 
-ViewerRobot::ViewerRobot(std::string const& imageFileName, double const& r, double const& g, double const& b):
+ViewerRobot::ViewerRobot(std::string const& imageFileName,
+                         std::function<void(ViewerRobot &)> const& strategyFunction,
+                         double const& r, double const& g, double const& b):
+    recomputeStrategyFunction_(strategyFunction),
+    obstacleX_(0.0),
+    obstacleY_(0.0),
+    obstacleSize_(0.0),
     r_(r),
     g_(g),
-    b_(b)
+    b_(b),
+    score_(0)
 {
     image_ = Gdk::Pixbuf::create_from_file(imageFileName, -1, -1);
 }
@@ -17,7 +24,7 @@ RobotPosition ViewerRobot::getPosition()
 }
 
 
-void ViewerRobot::followTrajectory(miam::trajectory::Trajectory *traj)
+bool ViewerRobot::followTrajectory(miam::trajectory::Trajectory *traj)
 {
     double currentTrajectoryTime = 0.0;
     ViewerTrajectoryPoint viewerPoint = trajectory_.back();
@@ -26,22 +33,31 @@ void ViewerRobot::followTrajectory(miam::trajectory::Trajectory *traj)
     while(currentTrajectoryTime < traj->getDuration())
     {
         currentPoint = traj->getCurrentPoint(currentTrajectoryTime);
+        // Check obstacle.
+        double distance = std::sqrt((currentPoint.position.x - obstacleX_) * (currentPoint.position.x - obstacleX_) + (currentPoint.position.y - obstacleY_) * (currentPoint.position.y - obstacleY_));
+        if (distance < obstacleSize_ + 150.0)
+            return false;
 
         viewerPoint.time += TIMESTEP;
         viewerPoint.position = currentPoint.position;
         viewerPoint.linearVelocity = currentPoint.linearVelocity;
         viewerPoint.angularVelocity = currentPoint.angularVelocity;
+        viewerPoint.score = score_;
 
         trajectory_.push_back(viewerPoint);
         currentTrajectoryTime += TIMESTEP;
     }
+    return true;
 }
 
 
-void ViewerRobot::followTrajectory(std::vector<std::shared_ptr<miam::trajectory::Trajectory>>  trajectories)
+
+bool ViewerRobot::followTrajectory(std::vector<std::shared_ptr<miam::trajectory::Trajectory>>  trajectories)
 {
     for(std::shared_ptr<miam::trajectory::Trajectory> t: trajectories)
-        followTrajectory(t.get());
+        if(!followTrajectory(t.get()))
+            return false;
+    return true;
 }
 
 
