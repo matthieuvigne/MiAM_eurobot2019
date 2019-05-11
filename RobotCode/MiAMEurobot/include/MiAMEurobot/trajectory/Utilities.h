@@ -11,6 +11,26 @@
     namespace miam{
         namespace trajectory{
 
+            /// \brief Simple class for working with vectors of trajectories>
+            class TrajectoryVector: public std::vector<std::shared_ptr<Trajectory>>
+            {
+                public:
+                    /// \brief Concatenate two trajectory vectors.
+                    /// \param[in] b Vector to concatenate.
+                    /// \return The concatenated vector.
+                    TrajectoryVector operator+(const TrajectoryVector b) const;
+
+                    /// \brief Get the last point of the last trajectory.
+                    /// \return The last point of the last trajectory.
+                    TrajectoryPoint getEndPoint() const;
+            };
+            //~ typedef std::vector<std::shared_ptr<miam::trajectory::Trajectory>> TrajectoryVector; ///< Vector of trajectories for trajectory following.
+
+            /// \brief Concatenate two trajectory vectors.
+            /// \param[in, out] a First vector, to which the second vector is appended.
+            /// \param[in] b Second vector.
+            //~ void concatenate(TrajectoryVector & a, TrajectoryVector const& b);
+
             /// \brief Compute coordinates of the center of a circle of a given radius tangent to the given position.
             ///
             /// \param[in] startingPosition Starting position.
@@ -53,7 +73,7 @@
             /// \param[in] endVelocity Final velocity.
             /// \param[in] backward If translation should be done backward.
             /// \return Vector of pointer toward two trajectories: rotation then translation.
-            std::vector<std::shared_ptr<Trajectory>> computeTrajectoryStaightLineToPoint(RobotPosition const& startPosition,
+            TrajectoryVector computeTrajectoryStaightLineToPoint(RobotPosition const& startPosition,
                                                                                          RobotPosition const& endPosition,
                                                                                          double const& endVelocity = 0.0,
                                                                                          bool const& backward = false);
@@ -69,9 +89,9 @@
             /// \param[in] radius Circle radius - the same is used at each point.
             /// \param[in] transitionVelocityFactor Percentage of the maximum velocity along the circle at which to do the transition.
             /// \return Vector of pointer toward the full trajectory.
-            std::vector<std::shared_ptr<Trajectory>> computeTrajectoryRoundedCorner(std::vector<RobotPosition> const& positions,
-                                                                                    double radius,
-                                                                                    double transitionVelocityFactor = 0.5);
+            TrajectoryVector computeTrajectoryRoundedCorner(std::vector<RobotPosition> const& positions,
+                                                            double radius,
+                                                            double transitionVelocityFactor = 0.5);
 
             /// \brief Compute a simple trajectory: going forward for a given distance.
             ///
@@ -80,7 +100,7 @@
             /// \param[in, out] position The starting position ; this is updated to the end position of the trajectory.
             /// \param[in] distance Travel distance ; can be negative, in which case the robot will go backward.
             /// \return The trajectory.
-            std::vector<std::shared_ptr<Trajectory>> computeTrajectoryStraightLine(RobotPosition & position, double const& distance);
+            TrajectoryVector computeTrajectoryStraightLine(RobotPosition & position, double const& distance);
         }
     }
 #endif
