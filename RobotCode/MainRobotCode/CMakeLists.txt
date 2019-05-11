@@ -25,9 +25,10 @@ find_package(PkgConfig REQUIRED)
 unset(MIAMLIB_FOUND CACHE)
 pkg_search_module(MIAMLIB REQUIRED MiAMEurobot>=2.0)
 message(STATUS "Found MiAMEurobot v." ${MIAMLIB_VERSION})
+pkg_search_module(RPLIDAR REQUIRED rplidar)
 
-include_directories(${MIAMLIB_INCLUDE_DIRS})
-link_directories(${MIAMLIB_LIBRARY_DIRS})
+include_directories(${MIAMLIB_INCLUDE_DIRS} ${RPLIDAR_INCLUDE_DIRS})
+link_directories(${MIAMLIB_LIBRARY_DIRS} ${RPLIDAR_LIBRARY_DIRS})
 
 # Include source files from src directory.
 file(GLOB_RECURSE ${PROJECT_NAME}_SOURCES "src/*.cpp")
@@ -36,7 +37,7 @@ include_directories(include)
 
 # Set executable target and link libraries.
 add_executable(${PROJECT_NAME} ${${PROJECT_NAME}_SOURCES})
-target_link_libraries(${PROJECT_NAME} ${MIAMLIB_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${MIAMLIB_LIBRARIES} ${RPLIDAR_LIBRARIES})
 
 install(TARGETS ${PROJECT_NAME} DESTINATION ".")
 

@@ -19,6 +19,7 @@ void killCode(int x)
     robot.servos_.shutdownServos();
     robot.servos_.turnOffPump();
     robot.stopMotors();
+    robot.lidar_.stop();
     exit(0);
 }
 
@@ -28,19 +29,8 @@ int main(int argc, char **argv)
     // Wire signals.
     signal(SIGINT, killCode);
     signal(SIGTERM, killCode);
-
     // Init raspberry serial ports and GPIO.
     RPi_enablePorts();
-    RPi_setupGPIO(21, PI_GPIO_INPUT_PULLUP); // Starting cable.
-
-
-    // Init robot - this only creates the log for now.
-    bool isInit = robot.initSystem();
-    if (!isInit)
-    {
-        std::cout << "Failed to init robot" << std::endl;
-        exit(-1);
-    }
 
     // Start low-level loop.
     robot.lowLevelLoop();

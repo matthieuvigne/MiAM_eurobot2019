@@ -15,6 +15,7 @@
     #include <MiAMEurobot/trajectory/PointTurn.h>
     #include <MiAMEurobot/trajectory/Utilities.h>
     #include <MiAMEurobot/trajectory/DrivetrainKinematics.h>
+	#include "MiAMEurobot/RPLidarHandler.h"
     #include <math.h>
     #include <stdlib.h>
     #include <stdio.h>
@@ -28,12 +29,20 @@
     #include "LoggerFields.h"
 
     // Right and left macros, for array addressing.
-    #define RIGHT 0
-    #define LEFT 1
+    int const RIGHT = 0;
+    int const LEFT = 1;
 
     using miam::RobotPosition;
     using miam::ProtectedPosition;
     using miam::trajectory::Trajectory;
+
+    ///< The various steps of the startup process.
+    enum startupstatus{
+        INIT,
+        WAITING_FOR_CABLE,
+        PLAYING_RIGHT,
+        PLAYING_LEFT
+    };
 
     // Dimensions of the robot
     namespace robotdimensions
@@ -100,6 +109,9 @@
             // List of all system on the robot, public for easy external access (they might be moved latter on).
             ServoHandler servos_; ///< Interface for the servo driver.
             USBLCD screen_; ///< LCD screen and buttons.
+            RPLidarHandler lidar_; ///< Lidar
+
+            int score_; ///< Current robot score.
         private:
             /// \brief Update the logfile with current values.
             void updateLog();
@@ -146,8 +158,12 @@
             // Init variables.
             bool isScreenInit_; ///< Boolean representing the initialization of the screen motors.
             bool isStepperInit_; ///< Boolean representing the initialization of the stepper motors.
-            bool isServosInit_; ///< Boolean representing the initialization of the stepper motors.
+            bool isServosInit_; ///< Boolean representing the initialization of the servo driving board.
             bool isArduinoInit_; ///< Boolean representing the initialization of the slave arduino board.
+            bool isLidarInit_; ///< Boolean representing the initialization of the lidar.
+
+            startupstatus startupStatus_; ///< Current startup status.
+            int initMotorState_; ///< State of the motors during init.
     };
 
     extern Robot robot;    ///< The robot instance, representing the current robot.

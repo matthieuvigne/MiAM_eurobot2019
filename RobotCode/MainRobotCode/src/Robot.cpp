@@ -7,11 +7,16 @@
 // Update loop frequency
 const double LOOP_PERIOD = 0.010;
 
+const int START_SWITCH = 21;
+
 Robot::Robot():
     AbstractRobot(),
     isScreenInit_(false),
     isServosInit_(false),
-    isArduinoInit_(false)
+    isArduinoInit_(false),
+    isLidarInit_(false),
+    startupStatus_(startupstatus::INIT),
+    initMotorState_(0)
 {
     kinematics_ = DrivetrainKinematics(robotdimensions::wheelRadius,
                                       robotdimensions::wheelSpacing,
@@ -52,6 +57,7 @@ Robot::Robot():
 
 bool Robot::initSystem()
 {
+    RPi_setupGPIO(START_SWITCH, PI_GPIO_INPUT_PULLUP); // Starting cable.
     bool allInitSuccessful = true;
 
     if (!isScreenInit_)
@@ -117,17 +123,105 @@ bool Robot::initSystem()
         }
     }
 
+    if (!isLidarInit_)
+    {
+        isLidarInit_ = lidar_.init("/dev/RPLIDAR");
+        if (!isLidarInit_)
+        {
+            #ifdef DEBUG
+                std::cout << "[Robot] Failed to init communication with lidar driver." << std::endl;
+            #endif
+            // Temporary: make lidar optional, robot can work without it.
+            //~ allInitSuccessful = false;
+        }
+    }
+
 
     return allInitSuccessful;
 }
 
 
 bool Robot::setupBeforeMatchStart()
-{
-    // Once the match has started, nothing remains to be done.
+{// Once the match has started, nothing remains to be done.
     if (hasMatchStarted_)
         return true;
-    return true;
+    // Action depends on current startup status
+    if (startupStatus_ == startupstatus::INIT)
+    {
+        // Try to initialize system.
+        bool isInit = initSystem();
+        if (isInit)
+        {
+            //~ startupStatus_ = startupstatus::WAITING_FOR_CABLE;
+            startupStatus_ = startupstatus::PLAYING_RIGHT;
+            robot.screen_.setText("Waiting for", 0);
+            robot.screen_.setText("start switch", 1);
+            robot.screen_.setLCDBacklight(255, 255, 255);
+        }
+    }
+    else if (startupStatus_ == startupstatus::WAITING_FOR_CABLE)
+    {
+        // Wait for cable to be plugged in.
+        if (RPi_readGPIO(START_SWITCH) == 0)
+        {
+            // Store plug time in matchStartTime_ to prevent false start due to switch bounce.
+            matchStartTime_ = currentTime_;
+            startupStatus_ = startupstatus::PLAYING_LEFT;
+            isPlayingRightSide_ = false;
+            robot.screen_.setText("Choose side", 0);
+            robot.screen_.setText("     YELLOW    >", 1);
+            robot.screen_.setLCDBacklight(255, 200, 0);
+        }
+    }
+    else
+    {
+        // Switch side based on button press.
+        if (startupStatus_ == startupstatus::PLAYING_RIGHT && (robot.screen_.getButtonState() & lcd::LEFT_BUTTON))
+        {
+            startupStatus_ = startupstatus::PLAYING_LEFT;
+            isPlayingRightSide_ = false;
+            robot.screen_.setText("     YELLOW    >", 1);
+            robot.screen_.setLCDBacklight(255, 255, 0);
+        }
+        else if (startupStatus_ == startupstatus::PLAYING_LEFT && (robot.screen_.getButtonState() & lcd::RIGHT_BUTTON))
+        {
+            startupStatus_ = startupstatus::PLAYING_RIGHT;
+            isPlayingRightSide_ = true;
+            robot.screen_.setText("<    PURPLE     ", 1);
+            robot.screen_.setLCDBacklight(255, 0, 255);
+        }
+
+        // Use down button to lock / unlock the motors.
+        if ((robot.screen_.getButtonState() & lcd::MIDDLE_BUTTON))
+        {
+            // Only modify state if the button was just pressed.
+            if (initMotorState_ < 2)
+            {
+                if (initMotorState_ == 0)
+                    stepperMotors_.hardStop();
+                else
+                    stepperMotors_.highZ();
+                initMotorState_ = (initMotorState_ + 1) % 2 + 2;
+            }
+        }
+        else
+        {
+            // Button release: change state to be less that two.
+            initMotorState_ = initMotorState_ % 2;
+        }
+
+        // If start button is pressed, return true to end startup.
+        //~ if (currentTime_ - matchStartTime_ > 0.5 && RPi_readGPIO(START_SWITCH))
+        if (true)
+        {
+            isPlayingRightSide_ = true;
+            robot.screen_.setText("", 0);
+            robot.screen_.setText("", 1);
+            robot.screen_.setLCDBacklight(255, 255, 255);
+            return true;
+        }
+    }
+    return false;
 }
 
 
@@ -173,6 +267,14 @@ void Robot::lowLevelLoop()
         encoderIncrement.right = microcontrollerData_.encoderValues[RIGHT] - oldData.encoderValues[RIGHT];
         encoderIncrement.left = microcontrollerData_.encoderValues[LEFT] - oldData.encoderValues[LEFT];
 
+        // If playing right side: invert right/left encoders, with minus sign because both motors are opposite of each other.
+        if (isPlayingRightSide_)
+        {
+            double temp = encoderIncrement.right;
+            encoderIncrement.right = encoderIncrement.left;
+            encoderIncrement.left = temp;
+        }
+
         // Update motor position.
         motorPosition_ = stepperMotors_.getPosition();
 
@@ -196,6 +298,10 @@ void Robot::lowLevelLoop()
         // Get base speed
         currentBaseSpeed_ = kinematics_.forwardKinematics(instantWheelSpeedEncoder, true);
 
+        // Update lidar and print.
+        //~ lidar_.update();
+        //~ for(auto r : lidar_.detectedRobots_)
+            //~ std::cout << r.point.x << " " << r.point.y << std::endl;
         // Update log.
         updateLog();
     }
@@ -203,6 +309,7 @@ void Robot::lowLevelLoop()
     std::cout << "Match end" << std::endl;
     pthread_cancel(strategyThread.native_handle());
     stopMotors();
+    lidar_.stop();
 }
 
 
