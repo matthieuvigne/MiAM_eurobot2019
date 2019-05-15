@@ -106,12 +106,17 @@
             /// \param position Relative rail position, form 0 (down) to 1 (up).
             void moveRail(double position);
 
+            /// \brief Update the robot score.
+            /// \details This function increments the score then updates the display accordingly.
+            ///
+            /// \param[in] scoreIncrement Amount to increment the score, both positive or negative.
+            void updateScore(int scoreIncrement);
+
             // List of all system on the robot, public for easy external access (they might be moved latter on).
             ServoHandler servos_; ///< Interface for the servo driver.
             USBLCD screen_; ///< LCD screen and buttons.
             RPLidarHandler lidar_; ///< Lidar
 
-            int score_; ///< Current robot score.
         private:
             /// \brief Update the logfile with current values.
             void updateLog();
@@ -138,8 +143,6 @@
             ///          has started.
             bool setupBeforeMatchStart();
 
-
-
             uCData microcontrollerData_; ///< Data structure containing informations from the arduino board.
             Logger logger_; ///< Logger object.
 
@@ -161,6 +164,7 @@
             bool isServosInit_; ///< Boolean representing the initialization of the servo driving board.
             bool isArduinoInit_; ///< Boolean representing the initialization of the slave arduino board.
             bool isLidarInit_; ///< Boolean representing the initialization of the lidar.
+            int score_; ///< Current robot score.
 
             startupstatus startupStatus_; ///< Current startup status.
             int initMotorState_; ///< State of the motors during init.

@@ -16,7 +16,8 @@ Robot::Robot():
     isArduinoInit_(false),
     isLidarInit_(false),
     startupStatus_(startupstatus::INIT),
-    initMotorState_(0)
+    initMotorState_(0),
+    score_(0)
 {
     kinematics_ = DrivetrainKinematics(robotdimensions::wheelRadius,
                                       robotdimensions::wheelSpacing,
@@ -73,6 +74,7 @@ bool Robot::initSystem()
         else
         {
             screen_.setText("Initializing", 0);
+            robot.screen_.setLCDBacklight(255, 255, 255);
         }
 
     }
@@ -86,6 +88,9 @@ bool Robot::initSystem()
                 std::cout << "[Robot] Failed to init communication with Arduino." << std::endl;
             #endif
             allInitSuccessful = false;
+            robot.screen_.setText("Failed to init", 0);
+            robot.screen_.setText("Arduino", 1);
+            robot.screen_.setLCDBacklight(255, 0, 0);
         }
     }
 
@@ -108,6 +113,9 @@ bool Robot::initSystem()
                 std::cout << "[Robot] Failed to init communication with stepper motors." << std::endl;
             #endif
             allInitSuccessful = false;
+            robot.screen_.setText("Failed to init", 0);
+            robot.screen_.setText("stepper motors", 1);
+            robot.screen_.setLCDBacklight(255, 0, 0);
         }
     }
 
@@ -120,6 +128,9 @@ bool Robot::initSystem()
                 std::cout << "[Robot] Failed to init communication with servo driver." << std::endl;
             #endif
             allInitSuccessful = false;
+            robot.screen_.setText("Failed to init", 0);
+            robot.screen_.setText("servos", 1);
+            robot.screen_.setLCDBacklight(255, 0, 0);
         }
     }
 
@@ -132,7 +143,11 @@ bool Robot::initSystem()
                 std::cout << "[Robot] Failed to init communication with lidar driver." << std::endl;
             #endif
             // Temporary: make lidar optional, robot can work without it.
-            //~ allInitSuccessful = false;
+            allInitSuccessful = false;
+            robot.screen_.setText("Failed to init", 0);
+            robot.screen_.setText("lidar", 1);
+            robot.screen_.setLCDBacklight(255, 0, 0);
+
         }
     }
 
@@ -153,7 +168,8 @@ bool Robot::setupBeforeMatchStart()
         bool isInit = initSystem();
         if (isInit)
         {
-            startupStatus_ = startupstatus::WAITING_FOR_CABLE;
+            //~ startupStatus_ = startupstatus::WAITING_FOR_CABLE;
+            startupStatus_ = startupstatus::PLAYING_LEFT;
             robot.screen_.setText("Waiting for", 0);
             robot.screen_.setText("start switch", 1);
             robot.screen_.setLCDBacklight(255, 255, 255);
@@ -297,9 +313,7 @@ void Robot::lowLevelLoop()
         currentBaseSpeed_ = kinematics_.forwardKinematics(instantWheelSpeedEncoder, true);
 
         // Update lidar and print.
-        //~ lidar_.update();
-        //~ for(auto r : lidar_.detectedRobots_)
-            //~ std::cout << r.point.x << " " << r.point.y << std::endl;
+        lidar_.update();
         // Update log.
         updateLog();
     }
@@ -367,4 +381,11 @@ void Robot::updateLog()
     logger_.setData(LOGGER_LINEAR_P_I_D_CORRECTION, PIDLinear_.getCorrection());
     logger_.setData(LOGGER_ANGULAR_P_I_D_CORRECTION, PIDAngular_.getCorrection());
     logger_.writeLine();
+}
+
+void Robot::updateScore(int scoreIncrement)
+{
+    score_ += scoreIncrement;
+    std::string text = "Score: " + std::to_string(score_);
+    screen_.setText(text, 0);
 }

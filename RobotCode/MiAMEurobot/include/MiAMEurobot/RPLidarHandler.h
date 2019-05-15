@@ -53,6 +53,11 @@
             y(rIn * std::sin(thetaIn)),
             blobNumber(0)
         {
+            if (theta < 0)
+                theta += 2 * M_PI;
+            if (theta > 2 * M_PI)
+                theta -= 2 * M_PI;
+
         }
 
         /// \brief Determine if the current point is older than the comparison point.
@@ -106,7 +111,7 @@
             /// \brief Constructor.
             ///
             /// \details The constructor does not perform any communication operation: use init for that.
-            RPLidarHandler();
+            RPLidarHandler(double mountingOffset = 0.0);
 
             /// \brief Destructor.
             ~RPLidarHandler();
@@ -148,6 +153,8 @@
             std::vector<LidarPoint> pointsInBlob_; ///< Vector of points constituting a blob.
 
             int currentBlobNumber_; ///< Current blob number, for display coloring.
+
+            double mountingOffset_; ///< Lidar mounting offset.
 
             Metronome timeHandler_; ///< Metronome - for getting relative time.
     };

@@ -46,6 +46,7 @@ void getAtoms()
 void matchStrategy()
 {
     std::cout << "Strategy thread started." << std::endl;
+    //~ while(true) ;;
     //~ usleep(100000);
     //~ robot.moveRail(1);
     //~ robot.servos_.moveSuction(true);
@@ -130,7 +131,7 @@ void matchStrategy()
     TrajectoryVector traj;
     std::vector<RobotPosition> positions;
 
-    robot.score_ = 40; // Experiment points.
+    robot.updateScore(40); // Experiment points.
 
     // Go get first atoms.
     //~ targetPosition.y = 150;
@@ -162,7 +163,7 @@ void matchStrategy()
             robot.servos_.openTube(2);
         usleep(20000);
     }
-    robot.score_ += 18;
+    robot.updateScore(18);
 
     // Go get left set of three atoms, following a curved trajectory.
     targetPosition = robot.getCurrentPosition();
@@ -209,7 +210,7 @@ void matchStrategy()
     robot.waitForTrajectoryFinished();
 
     // Drop the red atoms.
-    robot.score_ += 4 * 6 + 1; // Drop 5 atoms in the red zone.
+    robot.updateScore(4 * 6 + 1); // Drop 5 atoms in the red zone.
 
     targetPosition = robot.getCurrentPosition();
     traj = miam::trajectory::computeTrajectoryStraightLine(targetPosition, -100);

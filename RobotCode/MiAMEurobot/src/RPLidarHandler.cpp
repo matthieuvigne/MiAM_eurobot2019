@@ -16,7 +16,7 @@ inline double modulo(double angle)
     return angle;
 }
 
-RPLidarHandler::RPLidarHandler() :
+RPLidarHandler::RPLidarHandler(double mountingOffset) :
     debuggingBufferPosition_(0),
     detectedRobots_(),
     lidar(NULL),
@@ -25,7 +25,8 @@ RPLidarHandler::RPLidarHandler() :
     lastPointAddedToBlobDistance_(0),
     pointsNotAddedToBlob_(),
     pointsInBlob_(),
-    timeHandler_(1.0)
+    timeHandler_(1.0),
+    mountingOffset_(mountingOffset)
 {
 }
 
@@ -83,7 +84,7 @@ void RPLidarHandler::update()
     for(int i = 0; i < nPoint; i++)
     {
         // Compute new point.
-        LidarPoint newPoint(data[i].dist_mm_q2 /4.0f, 2 * M_PI -(data[i].angle_z_q14 * ANGLE_CONVERSION));
+        LidarPoint newPoint(data[i].dist_mm_q2 /4.0f, 2 * M_PI - (data[i].angle_z_q14 * ANGLE_CONVERSION) + mountingOffset_);
 
         // If new point is not in order (recall scan is done in decreasing angle), just discard the new data point.
         if (newPoint.isOlder(lastPointAngle_))
