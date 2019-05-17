@@ -18,7 +18,7 @@ ViewerRobot::ViewerRobot(std::string const& imageFileName,
 }
 
 
-RobotPosition ViewerRobot::getPosition()
+RobotPosition ViewerRobot::getCurrentPosition()
 {
     return trajectory_.back().position;
 }
@@ -61,14 +61,19 @@ bool ViewerRobot::followTrajectory(std::vector<std::shared_ptr<miam::trajectory:
 }
 
 
-void ViewerRobot::setPosition(RobotPosition const& position)
+void ViewerRobot::resetPosition(RobotPosition const& resetPosition, bool const& resetX, bool const& resetY, bool const& resetTheta)
 {
     ViewerTrajectoryPoint p;
     if (trajectory_.empty())
         p.time = 0.0;
     else
         p.time = trajectory_.back().time + TIMESTEP;
-    p.position = position;
+    if (resetX)
+        p.position.x = resetPosition.x;
+    if (resetY)
+        p.position.y = resetPosition.y;
+    if (resetTheta)
+        p.position.theta = resetPosition.theta;
     p.linearVelocity = 0.0;
     p.angularVelocity = 0.0;
     trajectory_.push_back(p);
@@ -135,4 +140,9 @@ void ViewerRobot::padTrajectory(int const& desiredLength)
 ViewerTrajectoryPoint ViewerRobot::getViewerPoint(int const& index)
 {
     return trajectory_.at(index);
+}
+
+void ViewerRobot::updateScore(int const& scoreIncrement)
+{
+    score_ += scoreIncrement;
 }

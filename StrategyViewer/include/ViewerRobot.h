@@ -39,7 +39,7 @@
                         double const& r = 1.0, double const& g = 0.0, double const& b = 0.0);
 
             /// \brief Get current robot position.
-            RobotPosition getPosition();
+            RobotPosition getCurrentPosition();
 
             /// \brief Get viewer position.
             ViewerTrajectoryPoint getViewerPoint(int const& index);
@@ -49,8 +49,8 @@
             bool followTrajectory(miam::trajectory::Trajectory * traj);
             bool followTrajectory(std::vector<std::shared_ptr<miam::trajectory::Trajectory>>  trajectories);
 
-            /// \brief Set robot position (velocity is set to 0, this is mostly done for position reset and init).
-            void setPosition(RobotPosition const& position);
+            /// \brief Reset robot position (velocity is set to 0, this is mostly done for position reset and init).
+            void resetPosition(RobotPosition const& resetPosition, bool const& resetX = true, bool const& resetY = true, bool const& resetTheta = true);
 
             /// \brief Draw the robot and trajectory on the surface.
             void draw(const Cairo::RefPtr<Cairo::Context>& cr, double const& mmToCairo, int const& currentIndex);
@@ -68,7 +68,8 @@
             double obstacleY_;
             double obstacleSize_;
 
-            int score_; ///< Current robot score.
+            ///< Increment robot score.
+            void updateScore(int const& scoreIncrement);
 
             std::vector<ViewerTrajectoryPoint> trajectory_;
         private:
@@ -77,6 +78,7 @@
             double r_;  ///< Trajectory color.
             double g_;  ///< Trajectory color.
             double b_;  ///< Trajectory color.
+            int score_; ///< Current robot score.
     };
 
 #endif

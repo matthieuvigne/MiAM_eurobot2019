@@ -33,14 +33,14 @@ void secondaryRobotStrategy(ViewerRobot &robot)
     targetPosition.x = CHASSIS_WIDTH + 20.0;
     targetPosition.y = 1700 - CHASSIS_FRONT - 100.0;
     targetPosition.theta = G_PI_2;
-    robot.setPosition(targetPosition);
+    robot.resetPosition(targetPosition);
 
     RobotPosition resetPosition;
     std::vector<std::shared_ptr<miam::trajectory::Trajectory>> traj;
     std::vector<RobotPosition> positions;
 
     // Go get chaos zone, following a curved trajectory.
-    targetPosition = robot.getPosition();
+    targetPosition = robot.getCurrentPosition();
     positions.push_back(targetPosition);
     targetPosition.y = 2000 - CHASSIS_WIDTH - 50;
     positions.push_back(targetPosition);
@@ -52,18 +52,18 @@ void secondaryRobotStrategy(ViewerRobot &robot)
     robot.followTrajectory(traj);
 
     // Circle inside the chaos zone to grab all the atoms.
-    std::shared_ptr<ArcCircle> circle(new ArcCircle(robot.getPosition(), 200.0, rotationside::RIGHT, - 1.2));
+    std::shared_ptr<ArcCircle> circle(new ArcCircle(robot.getCurrentPosition(), 200.0, rotationside::RIGHT, - 1.2));
     traj.clear();
     traj.push_back(circle);
     robot.followTrajectory(traj);
 
     // Go to the corner of the playing field, then up the ramp.
     positions.clear();
-    targetPosition = robot.getPosition();
+    targetPosition = robot.getCurrentPosition();
     positions.push_back(targetPosition);
     // Compute coordinate to generate no rotation and reach a point with x coordinate at 200.
     targetPosition.x = 200;
-    double dx = targetPosition.x - robot.getPosition().x;
+    double dx = targetPosition.x - robot.getCurrentPosition().x;
     targetPosition.y += dx * std::tan(targetPosition.theta);
     positions.push_back(targetPosition);
     targetPosition.y = 400;
@@ -77,20 +77,20 @@ void secondaryRobotStrategy(ViewerRobot &robot)
 
     // Go hit back wall to reset position.
     targetPosition.x = CHASSIS_BACK - 10.0;
-    traj = miam::trajectory::computeTrajectoryStaightLineToPoint(robot.getPosition(), targetPosition, 0.0, true);
+    traj = miam::trajectory::computeTrajectoryStaightLineToPoint(robot.getCurrentPosition(), targetPosition, 0.0, true);
     robot.followTrajectory(traj);
 
     // Reset position.
     targetPosition.theta = 0.0;
-    targetPosition.y = robot.getPosition().y;
-    robot.setPosition(targetPosition);
+    targetPosition.y = robot.getCurrentPosition().y;
+    robot.resetPosition(targetPosition, true, false, true);
 
     // Go push the atoms at the top of the ramp.
     targetPosition.x = 1228 - CHASSIS_FRONT - 30;
-    traj = miam::trajectory::computeTrajectoryStaightLineToPoint(robot.getPosition(), targetPosition);
+    traj = miam::trajectory::computeTrajectoryStaightLineToPoint(robot.getCurrentPosition(), targetPosition);
     robot.followTrajectory(traj);
-    targetPosition = robot.getPosition();
+    targetPosition = robot.getCurrentPosition();
     traj = miam::trajectory::computeTrajectoryStraightLine(targetPosition, -100);
     robot.followTrajectory(traj);
-    robot.score_ = 32;
+    robot.updateScore(32);
 }
