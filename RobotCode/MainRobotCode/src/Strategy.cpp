@@ -131,8 +131,6 @@ void matchStrategy()
     TrajectoryVector traj;
     std::vector<RobotPosition> positions;
 
-    robot.updateScore(40); // Experiment points.
-
     // Go get first atoms.
     //~ targetPosition.y = 150;
     targetPosition.y = CHASSIS_FRONT + 50;

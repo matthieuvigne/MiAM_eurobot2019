@@ -6,7 +6,7 @@
 //  - hdw address: 98:D3:71:F9:87:3E
 //  - baud rate: 115200
 //
-// To connect: bluetootc ctl // scan on // pair 98:D3:71:F9:87:3E // enter pin.
+// To connect: bluetoothctl // scan on // pair 98:D3:71:F9:87:3E // enter pin.
 // For more info on linux/bluetooth: https://blog.dbrgn.ch/2017/8/22/hc06-bluetooth-terminal-on-linux/
 
 #include <SoftwareSerial.h>

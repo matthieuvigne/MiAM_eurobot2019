@@ -17,7 +17,9 @@ Robot::Robot():
     isLidarInit_(false),
     startupStatus_(startupstatus::INIT),
     initMotorState_(0),
-    score_(0)
+    score_(5),  // Initial score: 5, for the experiment.
+    hasExperimentStarted_(false),
+    experiment_()
 {
     kinematics_ = DrivetrainKinematics(robotdimensions::wheelRadius,
                                       robotdimensions::wheelSpacing,
@@ -184,8 +186,7 @@ bool Robot::setupBeforeMatchStart()
             matchStartTime_ = currentTime_;
             startupStatus_ = startupstatus::PLAYING_LEFT;
             isPlayingRightSide_ = false;
-            robot.screen_.setText("Choose side", 0);
-            robot.screen_.setText("     YELLOW    >", 1);
+            robot.screen_.setText("     YELLOW    >", 0);
             robot.screen_.setLCDBacklight(255, 200, 0);
         }
     }
@@ -196,14 +197,14 @@ bool Robot::setupBeforeMatchStart()
         {
             startupStatus_ = startupstatus::PLAYING_LEFT;
             isPlayingRightSide_ = false;
-            robot.screen_.setText("     YELLOW    >", 1);
+            robot.screen_.setText("     YELLOW    >", 0);
             robot.screen_.setLCDBacklight(255, 255, 0);
         }
         else if (startupStatus_ == startupstatus::PLAYING_LEFT && (robot.screen_.getButtonState() & lcd::RIGHT_BUTTON))
         {
             startupStatus_ = startupstatus::PLAYING_RIGHT;
             isPlayingRightSide_ = true;
-            robot.screen_.setText("<    PURPLE     ", 1);
+            robot.screen_.setText("<    PURPLE     ", 0);
             robot.screen_.setLCDBacklight(255, 0, 255);
         }
 
@@ -225,6 +226,12 @@ bool Robot::setupBeforeMatchStart()
             // Button release: change state to be less that two.
             initMotorState_ = initMotorState_ % 2;
         }
+
+        // Line 1 : experiment status
+        if (experiment_.isConnected())
+            robot.screen_.setText("Xp: OK", 1);
+        else
+            robot.screen_.setText("Xp: NOT OK", 1);
 
         // If start button is pressed, return true to end startup.
         if (currentTime_ - matchStartTime_ > 0.5 && (RPi_readGPIO(START_SWITCH) == 1))
@@ -269,6 +276,8 @@ void Robot::lowLevelLoop()
                 // Start strategy thread.
                 strategyThread = std::thread(&matchStrategy);
                 strategyThread.detach();
+                // Start experiment.
+                experiment_.start();
             }
         }
 
@@ -312,8 +321,17 @@ void Robot::lowLevelLoop()
         // Get base speed
         currentBaseSpeed_ = kinematics_.forwardKinematics(instantWheelSpeedEncoder, true);
 
-        // Update lidar and print.
+        // Update lidar.
         lidar_.update();
+
+        // Check experiment status.
+        if (!hasExperimentStarted_)
+        {
+            hasExperimentStarted_ = experiment_.hasStarted();
+            if (hasExperimentStarted_)
+                updateScore(35);
+        }
+
         // Update log.
         updateLog();
     }
@@ -385,7 +403,9 @@ void Robot::updateLog()
 
 void Robot::updateScore(int scoreIncrement)
 {
+    mutex_.lock();
     score_ += scoreIncrement;
+    mutex_.unlock();
     std::string text = "Score: " + std::to_string(score_);
     screen_.setText(text, 0);
 }
