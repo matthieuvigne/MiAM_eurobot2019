@@ -170,8 +170,7 @@ bool Robot::setupBeforeMatchStart()
         bool isInit = initSystem();
         if (isInit)
         {
-            //~ startupStatus_ = startupstatus::WAITING_FOR_CABLE;
-            startupStatus_ = startupstatus::PLAYING_LEFT;
+            startupStatus_ = startupstatus::WAITING_FOR_CABLE;
             robot.screen_.setText("Waiting for", 0);
             robot.screen_.setText("start switch", 1);
             robot.screen_.setLCDBacklight(255, 255, 255);
