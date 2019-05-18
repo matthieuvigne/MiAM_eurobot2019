@@ -85,6 +85,27 @@
         double const railKi = 0.0;
     }
 
+    // Detection parameters
+    namespace detection {
+
+      // Zone radius
+      double constexpr r1 = 500;
+      double constexpr r2 = 1000;
+
+      // Zone angular width
+      double constexpr theta1 = M_PI_2;
+      double constexpr theta2 = M_PI_4;
+    }
+
+    // Dimensions of the table
+    namespace table_dimensions {
+      double constexpr table_max_x = 3000;
+      double constexpr table_max_y = 2000;
+      double constexpr ramp_min_y = 1600;
+      double constexpr ramp_min_x = 375;
+      double constexpr ramp_max_y = 2550;
+    } // namespace table dimensions
+
     class Robot : public AbstractRobot
     {
         public:
@@ -152,6 +173,11 @@
             /// \return True if trajectory following should continue, false if trajectory following is completed.
             bool followTrajectory(Trajectory *traj, double const& timeInTrajectory, double const& dt);
 
+            /// \brief Updates the LiDAR and sets the avoidance strategy
+            /// \param [out] coefficient for trajectory time increase
+            double avoidOtherRobots();
+            bool isLidarPointWithinTable(LidarPoint const& point);
+
             /// \brief Perform robot setup, return wheather the match has started or not.
             ///
             /// \details This function is called periodically before the match starts. It is responsible for
@@ -185,6 +211,8 @@
 
             // Kinematics
             DrivetrainKinematics kinematics_;
+            bool forward_ = true;
+            double coeff_ = 1.0;
 
             // Init variables.
             bool isScreenInit_; ///< Boolean representing the initialization of the screen motors.

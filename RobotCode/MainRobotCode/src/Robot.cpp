@@ -1,5 +1,6 @@
 #include <unistd.h>
 #include <thread>
+#include <iomanip>
 
 #include "Robot.h"
 
@@ -29,7 +30,8 @@ Robot::Robot():
     initMotorState_(0),
     score_(5),  // Initial score: 5, for the experiment.
     hasExperimentStarted_(false),
-    experiment_()
+    experiment_(),
+    lidar_(M_PI_4)
 {
     kinematics_ = DrivetrainKinematics(robotdimensions::wheelRadius,
                                       robotdimensions::wheelSpacing,
@@ -338,6 +340,11 @@ void Robot::lowLevelLoop()
             kinematics_.integratePosition(encoderIncrement, currentPosition);
             currentPosition_.set(currentPosition);
 
+            // Update the lidar
+            lidar_.update();
+            coeff_ = avoidOtherRobots();
+            std::cout << "[Robot.cpp l.315]: " << coeff_ << std::endl;
+
             // Perform trajectory tracking.
             updateTrajectoryFollowingTarget(dt);
         }
@@ -401,7 +408,6 @@ void Robot::moveRail(double position)
     robot.servos_.moveRail(MIAM_RAIL_SERVO_ZERO_VELOCITY);
 }
 
-
 void Robot::updateLog()
 {
     logger_.setData(LOGGER_TIME, currentTime_);
@@ -434,6 +440,7 @@ void Robot::updateLog()
     logger_.setData(LOGGER_LINEAR_P_I_D_CORRECTION, PIDLinear_.getCorrection());
     logger_.setData(LOGGER_ANGULAR_P_I_D_CORRECTION, PIDAngular_.getCorrection());
     logger_.setData(LOGGER_RAIL_P_I_D_CORRECTION, PIDRail_.getCorrection());
+    logger_.setData(LOGGER_DETECTION_COEFF, this->coeff_);
     logger_.writeLine();
 }
 

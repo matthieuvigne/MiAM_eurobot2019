@@ -8,7 +8,8 @@ set(PROJECT_DESCRIPTION "Code for the main robot for Eurobot")
 set(CMAKE_CXX_COMPILER "arm-linux-gnueabihf-g++")
 
 # Set C++ compiler flags.
-set(CMAKE_CXX_FLAGS "-Wall -Wno-psabi -fdiagnostics-color -lpthread")
+#~ set(CMAKE_CXX_FLAGS "-Wall -Wno-psabi -fdiagnostics-color -lpthread")
+set(CMAKE_CXX_FLAGS "-Wall -Wno-psabi -fdiagnostics-color -pthread")
 
 # Set build-type specific flags
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")

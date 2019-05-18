@@ -12,8 +12,9 @@ bool Robot::followTrajectory(Trajectory *traj, double const& timeInTrajectory, d
     BaseSpeed targetSpeed;
 
     // Feedforward.
-    targetSpeed.linear = trajectoryPoint_.linearVelocity;
-    targetSpeed.angular = trajectoryPoint_.angularVelocity;
+    targetSpeed.linear = coeff_ * trajectoryPoint_.linearVelocity;
+    targetSpeed.angular = coeff_ * trajectoryPoint_.angularVelocity;
+    forward_ = (targetSpeed.linear >= 0);
 
     // Compute error.
     RobotPosition currentPosition = currentPosition_.get();
@@ -71,14 +72,17 @@ bool Robot::followTrajectory(Trajectory *traj, double const& timeInTrajectory, d
 
 void Robot::updateTrajectoryFollowingTarget(double const& dt)
 {
+    static double timeInTrajectory = 0.; //
+
     // Load new trajectories, if needed.
     if(!newTrajectories_.empty())
     {
         // We have new trajectories, erase the current trajectories and follow the new one.
         currentTrajectories_ = newTrajectories_;
-        trajectoryStartTime_ = currentTime_;
+        //~ trajectoryStartTime_ = currentTime_;
+        timeInTrajectory = currentTime_; //
         newTrajectories_.clear();
-        std::cout << "Recieved new trajectory" << std::endl;
+        std::cout << "Received new trajectory" << std::endl;
     }
 
     // If we have no trajectory to follow, do nothing.
@@ -86,13 +90,15 @@ void Robot::updateTrajectoryFollowingTarget(double const& dt)
     {
         motorSpeed_[0] = 0.0;
         motorSpeed_[1] = 0.0;
+        timeInTrajectory = 0.;
     }
     else
     {
         // Load first trajectory, look if we are done following it.
         Trajectory *traj = currentTrajectories_.at(0).get();
         // Look if first trajectory is done.
-        double timeInTrajectory = currentTime_ - trajectoryStartTime_;
+        //~ double timeInTrajectory = currentTime_ - trajectoryStartTime_;
+        timeInTrajectory += coeff_ * dt;
         if(timeInTrajectory > traj->getDuration())
         {
             // If we still have a trajectory after that, immediately switch to the next trajectory.
@@ -114,6 +120,7 @@ void Robot::updateTrajectoryFollowingTarget(double const& dt)
             currentTrajectories_.erase(currentTrajectories_.begin());
             motorSpeed_[0] = 0.0;
             motorSpeed_[1] = 0.0;
+            timeInTrajectory = 0.;
         }
         else
         {
@@ -125,6 +132,7 @@ void Robot::updateTrajectoryFollowingTarget(double const& dt)
                 currentTrajectories_.erase(currentTrajectories_.begin());
                 motorSpeed_[0] = 0.0;
                 motorSpeed_[1] = 0.0;
+                timeInTrajectory = 0.;
             }
         }
     }
