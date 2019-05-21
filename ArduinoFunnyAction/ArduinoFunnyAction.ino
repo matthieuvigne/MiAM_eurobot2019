@@ -10,12 +10,23 @@
 // For more info on linux/bluetooth: https://blog.dbrgn.ch/2017/8/22/hc06-bluetooth-terminal-on-linux/
 
 #include <SoftwareSerial.h>
-SoftwareSerial BTserial(2, 3); 
+SoftwareSerial BTserial(A2, A3); 
+
+#include <AFMotor.h>
+AF_DCMotor motor(1); // create motor #2, 64KHz pwm
 
 void setup() 
 {
     // Start communication with bluetooth adapter.
-    BTserial.begin(115200);  
+    BTserial.begin(115200); 
+    pinMode(A0, OUTPUT);
+    pinMode(A1, OUTPUT);
+    pinMode(A4, OUTPUT);
+    pinMode(A5, OUTPUT);
+    digitalWrite(A0, LOW);
+    digitalWrite(A1, LOW);
+    digitalWrite(A4, LOW);
+    digitalWrite(A5, LOW);
 }
  
 void loop()
@@ -35,6 +46,12 @@ void loop()
       {
         // Start experiment, send acknoledge.
         BTserial.write("S");
+        motor.setSpeed(255);
+        motor.run(FORWARD);
+        digitalWrite(A0, HIGH);
+        digitalWrite(A1, HIGH);
+        digitalWrite(A4, HIGH);
+        digitalWrite(A5, HIGH);
       }
     }
 }

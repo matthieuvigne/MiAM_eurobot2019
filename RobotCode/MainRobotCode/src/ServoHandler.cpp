@@ -88,18 +88,20 @@ void ServoHandler::turnOffPump()
 }
 
 
-void ServoHandler::moveSuction(bool high)
+void ServoHandler::moveSuction(bool high, bool moveMiddle)
 {
     if(high)
     {
         maestro_.setPosition(SERVO_SUCTION[0], 1800);
-        maestro_.setPosition(SERVO_SUCTION[1], 1650);
+        if (moveMiddle)
+            maestro_.setPosition(SERVO_SUCTION[1], 1650);
         maestro_.setPosition(SERVO_SUCTION[2], 1800);
     }
     else
     {
         maestro_.setPosition(SERVO_SUCTION[0], 1300);
-        maestro_.setPosition(SERVO_SUCTION[1], 1150);
+        if (moveMiddle)
+            maestro_.setPosition(SERVO_SUCTION[1], 1150);
         maestro_.setPosition(SERVO_SUCTION[2], 1300);
     }
 }
