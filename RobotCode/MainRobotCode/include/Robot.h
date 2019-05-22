@@ -79,6 +79,10 @@
         //~ double const rotationKp = 0.0;
         double const rotationKd = 0.01;
         double const rotationKi = 0.0;
+        
+        double const railKp = 20.0;
+        double const railKd = 0.0;
+        double const railKi = 0.0;
     }
 
     class Robot : public AbstractRobot
@@ -102,10 +106,15 @@
             ///          It also logs everything in a log file.
             void lowLevelLoop();
 
-            /// \brief Move the rail.
+            /// \brief Set a new target to the rail.
             ///
             /// \param position Relative rail position, form 0 (down) to 1 (up).
             void moveRail(double position);
+            
+            /// \brief Get current rail position.
+            ///
+            /// \return Current relative rail position, form 0 (down) to 1 (up).
+            double getRailPosition();
 
             /// \brief Update the robot score.
             /// \details This function increments the score then updates the display accordingly.
@@ -143,6 +152,12 @@
             ///          updating the display and status according to user input. It returns true whenever the match
             ///          has started.
             bool setupBeforeMatchStart();
+            
+            /// \brief Move the rail to the target position.
+            /// \details This function computes the velocity to be applied to the rail servo in order to reach
+            /// the desired target rail position using the potentiometer data.
+            /// \param[in] dt Time since last servoing call, for PID controller.
+            void updateMoveRail(double const& dt);
 
             uCData microcontrollerData_; ///< Data structure containing informations from the arduino board.
             Logger logger_; ///< Logger object.
@@ -155,6 +170,12 @@
             // Tracking PIDs
             miam::PID PIDLinear_; ///< Longitudinal PID.
             miam::PID PIDAngular_; ///< Angular PID.
+            
+            // Rail PID
+            miam::PID PIDRail_; ///< PID for the rail.
+            
+            // Rail 
+            int targetRailPosition_; ///< The desired rail position (in potentiometer unit). Should be -1 if not yet set during the match.
 
             // Kinematics
             DrivetrainKinematics kinematics_;

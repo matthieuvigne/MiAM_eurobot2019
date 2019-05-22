@@ -9,6 +9,16 @@ const double LOOP_PERIOD = 0.010;
 
 const int START_SWITCH = 21;
 
+// Potentiometer
+const int MIAM_POTENTIOMETER_LOW_VALUE = 760;
+const int MIAM_POTENTIOMETER_HIGH_VALUE = 590;
+const int MIAM_RAIL_TOLERANCE = 10;
+
+const int MIAM_RAIL_SERVO_ZERO_VELOCITY = 1450;
+const int MIAM_RAIL_SERVO_MAX_UP_VELOCITY = 2000;
+const int MIAM_RAIL_SERVO_MAX_DOWN_VELOCITY = 1000;
+
+
 Robot::Robot():
     AbstractRobot(),
     isScreenInit_(false),
@@ -55,6 +65,10 @@ Robot::Robot():
     // Set PIDs.
     PIDLinear_ = miam::PID(controller::linearKp, controller::linearKd, controller::linearKi, 0.2);
     PIDAngular_ = miam::PID(controller::rotationKp, controller::rotationKd, controller::rotationKi, 0.15);
+    PIDRail_ = miam::PID(controller::railKp, controller::railKd, controller::railKi, 0.1);
+    
+    // Set initial rail target
+    targetRailPosition_ = -1;
 }
 
 
@@ -322,7 +336,10 @@ void Robot::lowLevelLoop()
 
         // Get base speed
         currentBaseSpeed_ = kinematics_.forwardKinematics(instantWheelSpeedEncoder, true);
-
+        
+        // Move rail servo to target position
+        updateMoveRail(dt);
+        
         // Update lidar.
         lidar_.update();
 
@@ -348,24 +365,53 @@ void Robot::lowLevelLoop()
 void Robot::moveRail(double position)
 {
     // Compute target potentiometer value.
-    int const LOW_VALUE = 760;
-    int const HIGH_VALUE = 590;
+    int targetValue = MIAM_POTENTIOMETER_LOW_VALUE - (MIAM_POTENTIOMETER_LOW_VALUE - MIAM_POTENTIOMETER_HIGH_VALUE) * position;
+    
+    // Set target rail position in potentiometer unit
+    targetRailPosition_ = targetValue;
+}
 
-    int targetValue = 760 - (LOW_VALUE - HIGH_VALUE) * position;
 
-    if (microcontrollerData_.potentiometerPosition > targetValue)
+double Robot::getRailPosition()
+{
+    // Compute and return rail position in 0-1 scale
+    return 1.0 - 
+        ((double)MIAM_POTENTIOMETER_LOW_VALUE - microcontrollerData_.potentiometerPosition) / 
+        (MIAM_POTENTIOMETER_LOW_VALUE - MIAM_POTENTIOMETER_HIGH_VALUE);
+}
+
+
+void Robot::updateMoveRail(double const& dt) 
+{
+    
+    // Compute error
+    int error = microcontrollerData_.potentiometerPosition - targetRailPosition_;
+    
+    int targetVelocity = 0;
+    
+    // If error is small, set position reached and reset PID
+    // If target was not initialize, set position reached
+    if ((std::abs(error) < MIAM_RAIL_TOLERANCE) || (targetRailPosition_ == -1))
     {
-        robot.servos_.moveRail(1000);
-        while (microcontrollerData_.potentiometerPosition > targetValue)
-            usleep(20000);
+        PIDRail_.resetIntegral();
     }
-    else
+    else 
     {
-        robot.servos_.moveRail(2000);
-        while (microcontrollerData_.potentiometerPosition < targetValue)
-            usleep(20000);
+        // Compute correction
+        targetVelocity = PIDRail_.computeValue(error, dt);
     }
-    robot.servos_.moveRail(1450);
+    
+    // Convert to servo unit and saturate
+    targetVelocity = std::max(
+        std::min(
+            MIAM_RAIL_SERVO_ZERO_VELOCITY + targetVelocity, 
+            MIAM_RAIL_SERVO_MAX_UP_VELOCITY
+            ), 
+        MIAM_RAIL_SERVO_MAX_DOWN_VELOCITY
+    );
+    
+    // Send target to servo
+    robot.servos_.moveRail(targetVelocity);
 }
 
 
@@ -400,6 +446,7 @@ void Robot::updateLog()
 
     logger_.setData(LOGGER_LINEAR_P_I_D_CORRECTION, PIDLinear_.getCorrection());
     logger_.setData(LOGGER_ANGULAR_P_I_D_CORRECTION, PIDAngular_.getCorrection());
+    logger_.setData(LOGGER_RAIL_P_I_D_CORRECTION, PIDRail_.getCorrection());
     logger_.writeLine();
 }
 
