@@ -64,7 +64,7 @@ void matchStrategy()
     // Set initial position
     RobotPosition targetPosition;
     targetPosition.x = CHASSIS_WIDTH + 25.0;
-    targetPosition.y = 1700 - CHASSIS_FRONT - 100.0;
+    targetPosition.y = 1700 - CHASSIS_FRONT - 130.0;
     targetPosition.theta = M_PI_2;
     robot.resetPosition(targetPosition, true, true, true);
 
@@ -73,18 +73,18 @@ void matchStrategy()
 
     // Go get chaos zone, following a curved trajectory.
     positions.push_back(targetPosition);
-    targetPosition.y = 2000 - CHASSIS_WIDTH - 50;
+    targetPosition.y = 2000 - CHASSIS_WIDTH - 90;
     positions.push_back(targetPosition);
     targetPosition.x = 1020;
     positions.push_back(targetPosition);
-    targetPosition.y = 1020;
+    targetPosition.y = 1040;
     positions.push_back(targetPosition);
-    traj = miam::trajectory::computeTrajectoryRoundedCorner(positions, 200.0, 0.4);
+    traj = miam::trajectory::computeTrajectoryRoundedCorner(positions, 200.0, 0.05);
     robot.setTrajectoryToFollow(traj);
     robot.waitForTrajectoryFinished();
 
     // Circle inside the chaos zone to grab all the atoms.
-    std::shared_ptr<ArcCircle> circle(new ArcCircle(robot.getCurrentPosition(), 200.0, rotationside::RIGHT, - 1.2));
+    std::shared_ptr<ArcCircle> circle(new ArcCircle(robot.getCurrentPosition(), 200.0, rotationside::RIGHT, - 1.3));
     traj.clear();
     traj.push_back(circle);
     robot.setTrajectoryToFollow(traj);
@@ -101,12 +101,14 @@ void matchStrategy()
     positions.push_back(targetPosition);
     targetPosition.y = 400;
     positions.push_back(targetPosition);
-    targetPosition.y = 200;
+    targetPosition.y = 230;
     positions.push_back(targetPosition);
     targetPosition.x = 300;
     positions.push_back(targetPosition);
-    traj = miam::trajectory::computeTrajectoryRoundedCorner(positions, 150.0, 0.4);
+    traj = miam::trajectory::computeTrajectoryRoundedCorner(positions, 150.0, 0.05);
     robot.setTrajectoryToFollow(traj);
+    usleep(5000000);
+    robot.moveServosForRamp();
     robot.waitForTrajectoryFinished();
 
 

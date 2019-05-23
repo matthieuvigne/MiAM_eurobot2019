@@ -99,6 +99,7 @@
             ///
             /// \param[in] down If true, lower the servos, else raise them.
             void moveServos(bool down = true);
+            void moveServosForRamp();
 
             // List of all system on the robot, public for easy external access (they might be moved latter on).
             IMU imu_; ///< Robot driving motors.

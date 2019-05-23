@@ -30,6 +30,7 @@
                 void turnOffPump();
 
                 void moveSuction(bool high, bool moveMiddle = true);
+                void moveMiddleSuctionForDrop();
 
                 void moveRail(int velocity);
             private:

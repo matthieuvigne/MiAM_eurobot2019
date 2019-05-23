@@ -19,16 +19,15 @@ void setup()
 {
     // Start communication with bluetooth adapter.
     BTserial.begin(115200); 
+    pinMode(A5, INPUT);
     pinMode(A0, OUTPUT);
     pinMode(A1, OUTPUT);
-    pinMode(A4, OUTPUT);
-    pinMode(A5, OUTPUT);
+    digitalWrite(A5, HIGH);
     digitalWrite(A0, LOW);
     digitalWrite(A1, LOW);
-    digitalWrite(A4, LOW);
-    digitalWrite(A5, LOW);
 }
- 
+
+bool wasActivated = false;
 void loop()
 {
  
@@ -50,8 +49,28 @@ void loop()
         motor.run(FORWARD);
         digitalWrite(A0, HIGH);
         digitalWrite(A1, HIGH);
-        digitalWrite(A4, HIGH);
-        digitalWrite(A5, HIGH);
+        delay(20000);
+        motor.setSpeed(127);
+        delay(4000);
+        motor.run(RELEASE);
+        wasActivated = true;
+      }
+    }
+
+    if (!wasActivated)
+    {
+      if (digitalRead(A5) == LOW)
+      {
+          motor.setSpeed(255);
+          motor.run(BACKWARD);
+          digitalWrite(A0, HIGH);
+          digitalWrite(A1, HIGH);
+      }
+      else
+      {
+          motor.run(RELEASE);
+          digitalWrite(A0, LOW);
+          digitalWrite(A1, LOW);
       }
     }
 }

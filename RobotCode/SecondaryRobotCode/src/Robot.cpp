@@ -386,3 +386,9 @@ void Robot::moveServos(bool down)
         gpio_servoPWM(1, 900);
     }
 }
+
+void Robot::moveServosForRamp()
+{
+    gpio_servoPWM(0, 2000);
+    gpio_servoPWM(1, 1100);
+}

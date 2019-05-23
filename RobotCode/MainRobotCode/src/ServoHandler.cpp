@@ -106,6 +106,14 @@ void ServoHandler::moveSuction(bool high, bool moveMiddle)
     }
 }
 
+void ServoHandler::moveMiddleSuctionForDrop()
+{
+    maestro_.setPosition(SERVO_SUCTION[0], 1900);
+    maestro_.setPosition(SERVO_SUCTION[1], 1750);
+    maestro_.setPosition(SERVO_SUCTION[2], 1900);
+}
+
+
 void ServoHandler::moveRail(int velocity)
 {
     maestro_.setPosition(SERVO_VERTICAL_TRANSLATION, velocity);
