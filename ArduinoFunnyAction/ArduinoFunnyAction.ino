@@ -49,9 +49,9 @@ void loop()
         motor.run(FORWARD);
         digitalWrite(A0, HIGH);
         digitalWrite(A1, HIGH);
-        delay(20000);
+        delay(22000);
         motor.setSpeed(127);
-        delay(4000);
+        delay(2500);
         motor.run(RELEASE);
         wasActivated = true;
       }

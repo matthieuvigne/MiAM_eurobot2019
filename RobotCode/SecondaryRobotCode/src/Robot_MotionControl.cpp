@@ -56,7 +56,8 @@ bool Robot::handleDetection()
         return false;
     if (currentTime_ - matchStartTime_ < IR_START_TIMEOUT)
         return false;
-    return shouldRobotStop;
+    //~ return shouldRobotStop;
+    return false;
 }
 
 

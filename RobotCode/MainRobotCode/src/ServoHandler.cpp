@@ -106,11 +106,14 @@ void ServoHandler::moveSuction(bool high, bool moveMiddle)
     }
 }
 
-void ServoHandler::moveMiddleSuctionForDrop()
+void ServoHandler::moveMiddleSuctionForDrop(bool drop)
 {
-    maestro_.setPosition(SERVO_SUCTION[0], 1900);
-    maestro_.setPosition(SERVO_SUCTION[1], 1750);
-    maestro_.setPosition(SERVO_SUCTION[2], 1900);
+    maestro_.setPosition(SERVO_SUCTION[0], 2200);
+    if (drop)
+        maestro_.setPosition(SERVO_SUCTION[1], 1725);
+    else
+        maestro_.setPosition(SERVO_SUCTION[1], 1800);
+    maestro_.setPosition(SERVO_SUCTION[2], 2200);
 }
 
 
@@ -118,3 +121,28 @@ void ServoHandler::moveRail(int velocity)
 {
     maestro_.setPosition(SERVO_VERTICAL_TRANSLATION, velocity);
 }
+
+
+void ServoHandler::foldArms()
+{
+    maestro_.setPosition(5, 2000);
+    maestro_.setPosition(4, 1500);
+}
+
+
+void ServoHandler::unfoldArms(bool isPlayingRightSide)
+{
+    if (isPlayingRightSide)
+        maestro_.setPosition(5, 1250);
+    else
+        maestro_.setPosition(4, 1500);
+}
+
+void ServoHandler::raiseArms(bool isPlayingRightSide)
+{
+    if (isPlayingRightSide)
+        maestro_.setPosition(5, 1000);
+    else
+        maestro_.setPosition(4, 1500);
+}
+

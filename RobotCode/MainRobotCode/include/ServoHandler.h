@@ -30,9 +30,13 @@
                 void turnOffPump();
 
                 void moveSuction(bool high, bool moveMiddle = true);
-                void moveMiddleSuctionForDrop();
+                void moveMiddleSuctionForDrop(bool drop = false);
 
                 void moveRail(int velocity);
+
+                void foldArms();
+                void unfoldArms(bool isPlayingRightSide);
+                void raiseArms(bool isPlayingRightSide);
             private:
                 MaestroDriver maestro_;
         };

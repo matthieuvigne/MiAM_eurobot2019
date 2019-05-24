@@ -10,8 +10,8 @@ const double LOOP_PERIOD = 0.010;
 const int START_SWITCH = 21;
 
 // Potentiometer
-const int MIAM_POTENTIOMETER_LOW_VALUE = 760;
-const int MIAM_POTENTIOMETER_HIGH_VALUE = 590;
+const int MIAM_POTENTIOMETER_LOW_VALUE = 810;
+const int MIAM_POTENTIOMETER_HIGH_VALUE = 550;
 const int MIAM_RAIL_TOLERANCE = 10;
 
 const int MIAM_RAIL_SERVO_ZERO_VELOCITY = 1450;
@@ -66,7 +66,7 @@ Robot::Robot():
     PIDLinear_ = miam::PID(controller::linearKp, controller::linearKd, controller::linearKi, 0.2);
     PIDAngular_ = miam::PID(controller::rotationKp, controller::rotationKd, controller::rotationKi, 0.15);
     PIDRail_ = miam::PID(controller::railKp, controller::railKd, controller::railKi, 0.1);
-    
+
     // Set initial rail target
     targetRailPosition_ = -1;
 }
@@ -191,6 +191,7 @@ bool Robot::setupBeforeMatchStart()
             servos_.moveSuction(true);
             for (int i = 0; i < 3; i++)
                 servos_.openTube(i);
+            servos_.foldArms();
         }
     }
     else if (startupStatus_ == startupstatus::WAITING_FOR_CABLE)
@@ -272,7 +273,8 @@ void Robot::lowLevelLoop()
     double lastTime = 0;
 
     std::thread strategyThread;
-
+    int nIter = 0;
+    bool heartbeatLed = false;
     // Loop until start of the match, then for 100 seconds after the start of the match.
     while(!hasMatchStarted_ || (currentTime_ < 100.0 + matchStartTime_))
     {
@@ -281,6 +283,17 @@ void Robot::lowLevelLoop()
         metronome.wait();
         currentTime_ = metronome.getElapsedTime();
         double dt = currentTime_ - lastTime;
+
+        // Heartbeat.
+        nIter ++;
+        if (nIter % 50 == 0)
+        {
+            heartbeatLed = !heartbeatLed;
+            if (heartbeatLed)
+                robot.screen_.turnOnLED(lcd::RIGHT_LED);
+            else
+                robot.screen_.turnOffLED(lcd::RIGHT_LED);
+        }
 
         // If match hasn't started, look at switch value to see if it has.
         if (!hasMatchStarted_)
@@ -336,10 +349,7 @@ void Robot::lowLevelLoop()
 
         // Get base speed
         currentBaseSpeed_ = kinematics_.forwardKinematics(instantWheelSpeedEncoder, true);
-        
-        // Move rail servo to target position
-        updateMoveRail(dt);
-        
+
         // Update lidar.
         lidar_.update();
 
@@ -366,52 +376,29 @@ void Robot::moveRail(double position)
 {
     // Compute target potentiometer value.
     int targetValue = MIAM_POTENTIOMETER_LOW_VALUE - (MIAM_POTENTIOMETER_LOW_VALUE - MIAM_POTENTIOMETER_HIGH_VALUE) * position;
-    
-    // Set target rail position in potentiometer unit
-    targetRailPosition_ = targetValue;
-}
 
-
-double Robot::getRailPosition()
-{
-    // Compute and return rail position in 0-1 scale
-    return 1.0 - 
-        ((double)MIAM_POTENTIOMETER_LOW_VALUE - microcontrollerData_.potentiometerPosition) / 
-        (MIAM_POTENTIOMETER_LOW_VALUE - MIAM_POTENTIOMETER_HIGH_VALUE);
-}
-
-
-void Robot::updateMoveRail(double const& dt) 
-{
-    
     // Compute error
-    int error = microcontrollerData_.potentiometerPosition - targetRailPosition_;
-    
-    int targetVelocity = 0;
-    
-    // If error is small, set position reached and reset PID
-    // If target was not initialize, set position reached
-    if ((std::abs(error) < MIAM_RAIL_TOLERANCE) || (targetRailPosition_ == -1))
+    int error = microcontrollerData_.potentiometerPosition - targetValue;
+    int nIter = 0;
+    while (std::abs(error) > 8 && nIter < 120)
     {
-        PIDRail_.resetIntegral();
+        int targetVelocity = PIDRail_.computeValue(error, 0.020);
+        targetVelocity = std::max(
+            std::min(
+                MIAM_RAIL_SERVO_ZERO_VELOCITY + targetVelocity,
+                MIAM_RAIL_SERVO_MAX_UP_VELOCITY
+                ),
+            MIAM_RAIL_SERVO_MAX_DOWN_VELOCITY
+        );
+        // Send target to servo
+        robot.servos_.moveRail(targetVelocity);
+
+        usleep(20000);
+        error = microcontrollerData_.potentiometerPosition - targetValue;
+        nIter++;
     }
-    else 
-    {
-        // Compute correction
-        targetVelocity = PIDRail_.computeValue(error, dt);
-    }
-    
-    // Convert to servo unit and saturate
-    targetVelocity = std::max(
-        std::min(
-            MIAM_RAIL_SERVO_ZERO_VELOCITY + targetVelocity, 
-            MIAM_RAIL_SERVO_MAX_UP_VELOCITY
-            ), 
-        MIAM_RAIL_SERVO_MAX_DOWN_VELOCITY
-    );
-    
-    // Send target to servo
-    robot.servos_.moveRail(targetVelocity);
+    std::cout << nIter << std::endl;
+    robot.servos_.moveRail(MIAM_RAIL_SERVO_ZERO_VELOCITY);
 }
 
 
