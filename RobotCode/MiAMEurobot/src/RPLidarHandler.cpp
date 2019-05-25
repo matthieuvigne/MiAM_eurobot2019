@@ -69,7 +69,6 @@ void RPLidarHandler::addPointToBlob(LidarPoint *point)
     pointsNotAddedToBlob_.clear();
     // Add point to blob.
     lastPointAddedToBlobDistance_ = point->r;
-    point->blobNumber = currentBlobNumber_;
     pointsInBlob_.push_back(*point);
 }
 

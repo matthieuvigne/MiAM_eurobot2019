@@ -7,6 +7,7 @@ bool Robot::followTrajectory(Trajectory *traj, double const& curvilinearAbscissa
 {
     // Get current trajectory state.
     trajectoryPoint_ = traj->getCurrentPoint(curvilinearAbscissa_);
+    forward_ = (trajectoryPoint_.linearVelocity >= 0);
 
     // Update trajectory velocity based on lidar coeff.
     trajectoryPoint_.linearVelocity *= coeff_;
@@ -18,7 +19,6 @@ bool Robot::followTrajectory(Trajectory *traj, double const& curvilinearAbscissa
     // Feedforward.
     targetSpeed.linear = trajectoryPoint_.linearVelocity;
     targetSpeed.angular = trajectoryPoint_.angularVelocity;
-    forward_ = (targetSpeed.linear >= 0);
 
     // Compute error.
     RobotPosition currentPosition = currentPosition_.get();

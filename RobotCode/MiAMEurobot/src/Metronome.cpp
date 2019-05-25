@@ -29,3 +29,11 @@ double Metronome::getElapsedTime()
     clock_gettime(CLOCK_MONOTONIC, &currentTime);
     return currentTime.tv_sec - startTime_.tv_sec + (currentTime.tv_nsec - startTime_.tv_nsec) / 1e9;
 }
+
+
+void Metronome::resetLag()
+{
+    struct timespec currentTime;
+    clock_gettime(CLOCK_MONOTONIC, &currentTime);
+    targetTime_ = currentTime;
+}

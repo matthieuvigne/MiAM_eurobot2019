@@ -65,9 +65,6 @@ Robot::Robot():
     currentBaseSpeed_.linear = 0;
     currentBaseSpeed_.angular = 0;
 
-    motorVelocity_.push_back(0);
-    motorVelocity_.push_back(0);
-
     // Set PIDs.
     PIDLinear_ = miam::PID(controller::linearKp, controller::linearKd, controller::linearKi, 0.2);
     PIDAngular_ = miam::PID(controller::rotationKp, controller::rotationKd, controller::rotationKi, 0.15);
@@ -308,6 +305,7 @@ void Robot::lowLevelLoop()
             if (hasMatchStarted_)
             {
                 matchStartTime_ = currentTime_;
+                metronome.resetLag();
                 // Start strategy thread.
                 strategyThread = std::thread(&matchStrategy);
                 strategyThread.detach();
@@ -347,7 +345,7 @@ void Robot::lowLevelLoop()
             // Update the lidar
             lidar_.update();
             coeff_ = avoidOtherRobots();
-            std::cout << "[Robot.cpp l.315]: " << coeff_ << std::endl;
+            //~ std::cout << "[Robot.cpp l.315]: " << coeff_ << std::endl;
 
             // Perform trajectory tracking.
             updateTrajectoryFollowingTarget(dt);
@@ -408,7 +406,6 @@ void Robot::moveRail(double position)
         error = microcontrollerData_.potentiometerPosition - targetValue;
         nIter++;
     }
-    std::cout << nIter << std::endl;
     robot.servos_.moveRail(MIAM_RAIL_SERVO_ZERO_VELOCITY);
 }
 

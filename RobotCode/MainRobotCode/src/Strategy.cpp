@@ -56,7 +56,6 @@ void matchStrategy()
     targetPosition.theta = -M_PI_2;
 
     robot.resetPosition(targetPosition, true, true, true);
-    //~ robot.moveRail(0.25);
 
     // Update config.
     // Increase wheel spacing to slow down rotations.

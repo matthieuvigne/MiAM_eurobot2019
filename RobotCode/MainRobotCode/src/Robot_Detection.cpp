@@ -10,15 +10,15 @@ bool Robot::isLidarPointWithinTable(LidarPoint const& point)
   double const theta_T_R = robot_position.theta;
 
   // 2. Project the Lidar point within the table
-  double const T_x_fi = T_x_R + point.x * std::cos(theta_T_R) - point.y * std::sin(theta_T_R);
-  double const T_y_fi = T_y_R + point.x * std::sin(theta_T_R) + point.y * std::cos(theta_T_R);
+  double const T_x_fi = T_x_R + point.r * std::cos(theta_T_R + point.theta);
+  double const T_y_fi = T_y_R + point.r * std::sin(theta_T_R + point.theta);
 
 
   // 3. Check if the lidar point falls within the table
   if(T_x_fi < table_dimensions::table_max_x and T_x_fi > table_dimensions::table_min_x
     and T_y_fi < table_dimensions::table_max_y and T_y_fi > table_dimensions::table_min_y )
   {
-    std::cout <<  T_x_fi << " " << T_y_fi << std::endl;
+    //~ std::cout <<  T_x_fi << " " << T_y_fi << std::endl;
 
       // Remove ramp.
       if(T_y_fi < table_dimensions::ramp_max_y
@@ -35,8 +35,8 @@ double Robot::avoidOtherRobots()
 {
   // Handle robot stops
   static int num_stop_iters = 0.;
-  constexpr int min_stop_iters = 20;
-  constexpr int max_stop_iters = 2e3; // ms
+  constexpr int min_stop_iters = 20; // Iterations, i.e 10ms.
+  constexpr int max_stop_iters = 300; // Iterations, i.e 10ms.
 
   double coeff = 1.0;
   bool is_robot_stopped = false;
@@ -95,6 +95,7 @@ double Robot::avoidOtherRobots()
     }
     else // If the robot is going backward
     {
+        //~ std::cout << "backward" << std::endl;
       if(point.r < detection::r1)
       {
           if ( point.theta > M_PI-detection::theta1
@@ -130,7 +131,6 @@ double Robot::avoidOtherRobots()
   //~ std::cout << "\r" << coeff << std::setw(10) << ": (" << detected_point.r
   //~           << ", " << detected_point.theta << ")" << std::endl;
 
-
   if (!is_robot_stopped && num_stop_iters > 0)
   {
       // Robot was stopped and is ready to start again.
@@ -161,6 +161,7 @@ double Robot::avoidOtherRobots()
       // Raise flag and end trajectory following.
       wasTrajectoryFollowingSuccessful_ = false;
       currentTrajectories_.clear();
+      std::cout << "Obstacle still present, canceling trajectory" << std::endl;
     }
   }
 

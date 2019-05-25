@@ -23,7 +23,7 @@
     const double MAX_DISTANCE = 2000.0; ///< Maximum distance for processing, in mm: points above that distance are discarded.
 
     const double BLOB_THICKNESS = 50.0;///< Distance between two adjacent points to consider that they belong to the same blob, in mm.
-    const double BLOB_MIN_SIZE = 40.0; ///< Minimum size of the blob to consider it as a robot.
+    const double BLOB_MIN_SIZE = 30.0; ///< Minimum size of the blob to consider it as a robot.
     const double BLOB_MAX_SIZE = 200.0; ///< Maximum size of the blob to consider it as a robot.
 
     const int BLOB_BREAK = 2;///< Number of points needed to consider that a block has come to an endMinimum number of points to be a valid obstacle.
@@ -31,7 +31,7 @@
     const int MIN_POINTS = 4;///< Minimum number of points inside a blob to be considered a robot.
                              ///< At 1.5m, 600rpm, 8ksamples/s, a circle of 70mm corresponds to 6 points.
 
-    const double ROBOT_TIMEOUT = 1.5 * 60 / LIDAR_RPM; ///< Timeout, in s, to remove a robot for the list of ostacle.
+    const double ROBOT_TIMEOUT = 1.25 * 60 / LIDAR_RPM; ///< Timeout, in s, to remove a robot for the list of ostacle.
                                                        ///  Corresponds to 1.5 theoretical lidar motion.
 
     /// \brief Structure representing a data point returned by the lidar.
@@ -39,25 +39,18 @@
     {
         LidarPoint():
             r(1000.0),
-            theta(2 * M_PI),
-            x(1000.0),
-            y(0),
-            blobNumber(0)
+            theta(2 * M_PI)
         {
         }
 
         LidarPoint(double const& rIn, double const& thetaIn):
             r(rIn),
-            theta(thetaIn),
-            x(rIn * std::cos(thetaIn)),
-            y(rIn * std::sin(thetaIn)),
-            blobNumber(0)
+            theta(thetaIn)
         {
             if (theta < 0)
                 theta += 2 * M_PI;
             if (theta > 2 * M_PI)
                 theta -= 2 * M_PI;
-
         }
 
         /// \brief Determine if the current point is older than the comparison point.
@@ -79,9 +72,6 @@
 
         double r;
         double theta;
-        double x;
-        double y;
-        int blobNumber; // For debugging only.
     };
 
 

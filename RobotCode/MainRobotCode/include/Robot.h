@@ -94,7 +94,7 @@
 
       // Zone angular width
       double constexpr theta1 = M_PI_2;
-      double constexpr theta2 = M_PI_4;
+      double constexpr theta2 = 0.65;
     }
 
     // Dimensions of the table

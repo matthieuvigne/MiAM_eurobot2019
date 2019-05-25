@@ -31,6 +31,9 @@
             /// \return Time since startTime, in seconds.
             double getElapsedTime();
 
+            /// \brief Reset the time target to remove delay catchup.
+            void resetLag();
+
         private:
             struct timespec startTime_; ///< The start time of the metronome (i.e. time when init was called).
             struct timespec targetTime_; ///< The target time to stop sleep: this is equal to startTime + n_iterations * nPeriod
