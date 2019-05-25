@@ -49,7 +49,7 @@ void loop()
         motor.run(FORWARD);
         digitalWrite(A0, HIGH);
         digitalWrite(A1, HIGH);
-        delay(22000);
+        delay(21500);
         motor.setSpeed(127);
         delay(2500);
         motor.run(RELEASE);

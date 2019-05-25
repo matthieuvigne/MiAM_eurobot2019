@@ -10,8 +10,8 @@ const double LOOP_PERIOD = 0.010;
 const int START_SWITCH = 21;
 
 // Potentiometer
-const int MIAM_POTENTIOMETER_LOW_VALUE = 810;
-const int MIAM_POTENTIOMETER_HIGH_VALUE = 550;
+const int MIAM_POTENTIOMETER_LOW_VALUE = 130;
+const int MIAM_POTENTIOMETER_HIGH_VALUE = 380;
 const int MIAM_RAIL_TOLERANCE = 10;
 
 const int MIAM_RAIL_SERVO_ZERO_VELOCITY = 1450;
@@ -382,7 +382,7 @@ void Robot::moveRail(double position)
     int nIter = 0;
     while (std::abs(error) > 8 && nIter < 120)
     {
-        int targetVelocity = PIDRail_.computeValue(error, 0.020);
+        int targetVelocity = -PIDRail_.computeValue(error, 0.020);
         targetVelocity = std::max(
             std::min(
                 MIAM_RAIL_SERVO_ZERO_VELOCITY + targetVelocity,

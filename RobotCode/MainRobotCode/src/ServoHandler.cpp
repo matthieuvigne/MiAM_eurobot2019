@@ -125,8 +125,8 @@ void ServoHandler::moveRail(int velocity)
 
 void ServoHandler::foldArms()
 {
-    maestro_.setPosition(5, 2000);
-    maestro_.setPosition(4, 1500);
+    maestro_.setPosition(5, 1950);
+    maestro_.setPosition(4, 2000);
 }
 
 
@@ -135,7 +135,7 @@ void ServoHandler::unfoldArms(bool isPlayingRightSide)
     if (isPlayingRightSide)
         maestro_.setPosition(5, 1250);
     else
-        maestro_.setPosition(4, 1500);
+        maestro_.setPosition(4, 1300);
 }
 
 void ServoHandler::raiseArms(bool isPlayingRightSide)
@@ -143,6 +143,6 @@ void ServoHandler::raiseArms(bool isPlayingRightSide)
     if (isPlayingRightSide)
         maestro_.setPosition(5, 1000);
     else
-        maestro_.setPosition(4, 1500);
+        maestro_.setPosition(4, 1000);
 }
 
