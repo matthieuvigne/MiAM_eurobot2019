@@ -10,7 +10,8 @@ AbstractRobot::AbstractRobot():
     newTrajectories_(),
     currentTrajectories_(),
     trajectoryStartTime_(0.0),
-    lastTrajectoryFollowingCallTime_(0.0)
+    lastTrajectoryFollowingCallTime_(0.0),
+    wasTrajectoryFollowingSuccessful_(true)
 {
     motorSpeed_.push_back(0.0);
     motorSpeed_.push_back(0.0);
@@ -47,6 +48,7 @@ void AbstractRobot::resetPosition(miam::RobotPosition const& resetPosition, bool
 void AbstractRobot::setTrajectoryToFollow(std::vector<std::shared_ptr<miam::trajectory::Trajectory>> const& trajectories)
 {
     newTrajectories_ = trajectories;
+    wasTrajectoryFollowingSuccessful_ = true;
 }
 
 
@@ -54,13 +56,13 @@ bool AbstractRobot::waitForTrajectoryFinished()
 {
     while(!isTrajectoryFinished())
         usleep(15000);
-    return true;
+    return wasTrajectoryFollowingSuccessful_;
 }
 
 
 bool AbstractRobot::isTrajectoryFinished()
 {
-    return (currentTrajectories_.size() == 0 && newTrajectories_.size() == 0);
+    return (currentTrajectories_.size() == 0 && newTrajectories_.size() == 0 && wasTrajectoryFollowingSuccessful_);
 }
 
 
@@ -69,4 +71,9 @@ void AbstractRobot::stopMotors()
     stepperMotors_.hardStop();
     usleep(50000);
     stepperMotors_.highZ();
+}
+
+bool AbstractRobot::wasTrajectoryFollowingSuccessful()
+{
+    return wasTrajectoryFollowingSuccessful_;
 }

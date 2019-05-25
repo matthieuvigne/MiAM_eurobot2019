@@ -57,7 +57,7 @@
         double const stepSize = 2 * M_PI / 600.0; ///< Size of a motor step, in rad.
 
         double const maxWheelSpeed = 600; ///< Maximum wheel speed, in mm/s.
-        double const maxWheelAcceleration = 800; ///< Maximum wheel acceleration, in mm/s^2.
+        double const maxWheelAcceleration = 3000; ///< Maximum wheel acceleration, in mm/s^2.
 
         double const maxWheelSpeedTrajectory = 400; ///< Maximum wheel speed, in mm/s, for trajectory generation.
         double const maxWheelAccelerationTrajectory = 400; ///< Maximum wheel acceleration, in mm/s^2, for trajectory generation.
@@ -90,7 +90,7 @@
 
       // Zone radius
       double constexpr r1 = 500;
-      double constexpr r2 = 1000;
+      double constexpr r2 = 750;
 
       // Zone angular width
       double constexpr theta1 = M_PI_2;
@@ -99,11 +99,13 @@
 
     // Dimensions of the table
     namespace table_dimensions {
-      double constexpr table_max_x = 3000;
-      double constexpr table_max_y = 2000;
-      double constexpr ramp_min_y = 1600;
-      double constexpr ramp_min_x = 375;
-      double constexpr ramp_max_y = 2550;
+      double constexpr table_max_x = 2900;
+      double constexpr table_max_y = 1900;
+      double constexpr table_min_x = 100;
+      double constexpr table_min_y = 100;
+      double constexpr ramp_min_x = 450;
+      double constexpr ramp_max_x = 2550;
+      double constexpr ramp_max_y = 450;
     } // namespace table dimensions
 
     class Robot : public AbstractRobot
@@ -153,7 +155,6 @@
             {
                 return isPlayingRightSide_;
             }
-
         private:
             /// \brief Update the logfile with current values.
             void updateLog();
@@ -229,6 +230,8 @@
 
             startupstatus startupStatus_; ///< Current startup status.
             int initMotorState_; ///< State of the motors during init.
+
+            double curvilinearAbscissa_;
     };
 
     extern Robot robot;    ///< The robot instance, representing the current robot.

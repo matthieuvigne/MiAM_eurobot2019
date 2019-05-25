@@ -31,7 +31,8 @@ Robot::Robot():
     score_(5),  // Initial score: 5, for the experiment.
     hasExperimentStarted_(false),
     experiment_(),
-    lidar_(M_PI_4)
+    lidar_(M_PI_4),
+    curvilinearAbscissa_(0.0)
 {
     kinematics_ = DrivetrainKinematics(robotdimensions::wheelRadius,
                                       robotdimensions::wheelSpacing,
@@ -63,6 +64,9 @@ Robot::Robot():
     currentPosition_.set(initialPosition);
     currentBaseSpeed_.linear = 0;
     currentBaseSpeed_.angular = 0;
+
+    motorVelocity_.push_back(0);
+    motorVelocity_.push_back(0);
 
     // Set PIDs.
     PIDLinear_ = miam::PID(controller::linearKp, controller::linearKd, controller::linearKi, 0.2);

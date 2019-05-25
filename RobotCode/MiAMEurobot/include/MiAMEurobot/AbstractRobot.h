@@ -64,6 +64,8 @@
             ///          It also logs everything in a log file.
             virtual void lowLevelLoop() = 0;
 
+            /// \brief Get status of last trajectory following.
+            bool wasTrajectoryFollowingSuccessful();
         protected:
             miam::L6470 stepperMotors_; ///< Robot driving motors.
             miam::ProtectedPosition currentPosition_; ///< Current robot position, thread-safe.
@@ -88,5 +90,7 @@
             bool isPlayingRightSide_; ///< True if robot is playing on the right (purple) side of the field.
             bool hasMatchStarted_;    ///< Boolean flag to indicate match status.
             double matchStartTime_;   ///< Start time of the match, for end timer.
+
+            bool wasTrajectoryFollowingSuccessful_; ///< Flag describing the success of the trajectory following process.
     };
  #endif
