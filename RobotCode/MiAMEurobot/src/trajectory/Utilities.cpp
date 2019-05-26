@@ -63,7 +63,7 @@ namespace miam{
             return angle;
         }
 
-        TrajectoryVector computeTrajectoryStaightLineToPoint(RobotPosition const& startPosition,
+        TrajectoryVector computeTrajectoryStraightLineToPoint(RobotPosition const& startPosition,
                                                              RobotPosition const& endPosition,
                                                              double const& endVelocity,
                                                              bool const& backward)
@@ -95,7 +95,7 @@ namespace miam{
             double transitionAngularVelocity = transitionLinearVelocity / (std::abs(radius) + config::robotWheelSpacing);
 
             // Compute first rotation to be aligned with second point.
-            TrajectoryVector straightLine = computeTrajectoryStaightLineToPoint(positions.at(0),
+            TrajectoryVector straightLine = computeTrajectoryStraightLineToPoint(positions.at(0),
                 positions.at(1),
                 transitionLinearVelocity);
             trajectories.push_back(straightLine[0]);

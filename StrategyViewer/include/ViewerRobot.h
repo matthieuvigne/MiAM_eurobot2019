@@ -46,8 +46,11 @@
 
             /// \brief Mock trajectory following.
             /// \details Returns true on succes, false if obstacle was encounterd.
-            bool followTrajectory(miam::trajectory::Trajectory * traj);
-            bool followTrajectory(std::vector<std::shared_ptr<miam::trajectory::Trajectory>>  trajectories);
+            bool setTrajectoryToFollow(std::vector<std::shared_ptr<miam::trajectory::Trajectory>>  trajectories);
+
+            /// \brief Mock trajectory following.
+            /// \details Returns true on succes, false if obstacle was encounterd.
+            bool waitForTrajectoryFinished();
 
             /// \brief Reset robot position (velocity is set to 0, this is mostly done for position reset and init).
             void resetPosition(RobotPosition const& resetPosition, bool const& resetX = true, bool const& resetY = true, bool const& resetTheta = true);
@@ -71,14 +74,26 @@
             ///< Increment robot score.
             void updateScore(int const& scoreIncrement);
 
+            ///< Reset robot score.
+            void clearScore();
+
+            ///< Robot is always playing on the right side.
+            bool isPlayingRightSide()
+            {
+                return true;
+            }
+
             std::vector<ViewerTrajectoryPoint> trajectory_;
         private:
+            bool followTrajectory(miam::trajectory::Trajectory * traj); ///< Perform actual trajectory following.
+
             Glib::RefPtr<Gdk::Pixbuf> image_;
 
             double r_;  ///< Trajectory color.
             double g_;  ///< Trajectory color.
             double b_;  ///< Trajectory color.
             int score_; ///< Current robot score.
+            bool trajectoryFollowingStatus_; ///< Status of last trajectory following.
     };
 
 #endif

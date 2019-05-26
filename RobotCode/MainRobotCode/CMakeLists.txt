@@ -8,7 +8,6 @@ set(PROJECT_DESCRIPTION "Code for the main robot for Eurobot")
 set(CMAKE_CXX_COMPILER "arm-linux-gnueabihf-g++")
 
 # Set C++ compiler flags.
-#~ set(CMAKE_CXX_FLAGS "-Wall -Wno-psabi -fdiagnostics-color -lpthread")
 set(CMAKE_CXX_FLAGS "-Wall -Wno-psabi -fdiagnostics-color -pthread")
 
 # Set build-type specific flags
@@ -24,7 +23,7 @@ endif (CMAKE_BUILD_TYPE STREQUAL "Debug")
 find_package(PkgConfig REQUIRED)
 # Look for external libraries, and link them to the project.
 unset(MIAMLIB_FOUND CACHE)
-pkg_search_module(MIAMLIB REQUIRED MiAMEurobot>=2.0)
+pkg_search_module(MIAMLIB REQUIRED MiAMEurobot>=2.3)
 message(STATUS "Found MiAMEurobot v." ${MIAMLIB_VERSION})
 pkg_search_module(RPLIDAR REQUIRED rplidar)
 

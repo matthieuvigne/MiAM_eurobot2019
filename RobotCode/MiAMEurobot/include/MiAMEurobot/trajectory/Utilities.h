@@ -73,7 +73,7 @@
             /// \param[in] endVelocity Final velocity.
             /// \param[in] backward If translation should be done backward.
             /// \return Vector of pointer toward two trajectories: rotation then translation.
-            TrajectoryVector computeTrajectoryStaightLineToPoint(RobotPosition const& startPosition,
+            TrajectoryVector computeTrajectoryStraightLineToPoint(RobotPosition const& startPosition,
                                                                                          RobotPosition const& endPosition,
                                                                                          double const& endVelocity = 0.0,
                                                                                          bool const& backward = false);

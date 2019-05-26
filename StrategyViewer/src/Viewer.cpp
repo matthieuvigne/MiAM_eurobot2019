@@ -30,8 +30,8 @@
 Viewer::Viewer(BaseObjectType* cobject, const Glib::RefPtr<Gtk::Builder>& refGlade) :
     Gtk::Window(cobject),
     obstacleSize_(200),
-    obstacleX_(0),
-    obstacleY_(0),
+    obstacleX_(-500),
+    obstacleY_(-500),
     mmToCairo_(1.0),
     originX_(0.0),
     originY_(0.0)
@@ -117,6 +117,7 @@ bool Viewer::redraw(const Cairo::RefPtr<Cairo::Context>& cr)
     {
         robot.draw(cr, mmToCairo_, currentTrajectoryIndex_);
         score += robot.trajectory_[currentTrajectoryIndex_].score;
+        std::cout << robot.trajectory_[currentTrajectoryIndex_].score << std::endl;
     }
 
     // Draw obstacle.

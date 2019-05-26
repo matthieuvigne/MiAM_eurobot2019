@@ -12,7 +12,8 @@ ViewerRobot::ViewerRobot(std::string const& imageFileName,
     r_(r),
     g_(g),
     b_(b),
-    score_(0)
+    score_(0),
+    trajectoryFollowingStatus_(true)
 {
     image_ = Gdk::Pixbuf::create_from_file(imageFileName, -1, -1);
 }
@@ -52,14 +53,19 @@ bool ViewerRobot::followTrajectory(miam::trajectory::Trajectory *traj)
 
 
 
-bool ViewerRobot::followTrajectory(std::vector<std::shared_ptr<miam::trajectory::Trajectory>>  trajectories)
+bool ViewerRobot::setTrajectoryToFollow(std::vector<std::shared_ptr<miam::trajectory::Trajectory>>  trajectories)
 {
+    trajectoryFollowingStatus_ = true;
     for(std::shared_ptr<miam::trajectory::Trajectory> t: trajectories)
         if(!followTrajectory(t.get()))
-            return false;
-    return true;
+            trajectoryFollowingStatus_ = false;
+    return trajectoryFollowingStatus_;
 }
 
+bool ViewerRobot::waitForTrajectoryFinished()
+{
+    return trajectoryFollowingStatus_;
+}
 
 void ViewerRobot::resetPosition(RobotPosition const& resetPosition, bool const& resetX, bool const& resetY, bool const& resetTheta)
 {
@@ -140,6 +146,11 @@ void ViewerRobot::padTrajectory(int const& desiredLength)
 ViewerTrajectoryPoint ViewerRobot::getViewerPoint(int const& index)
 {
     return trajectory_.at(index);
+}
+
+void ViewerRobot::clearScore()
+{
+    score_ = 0;
 }
 
 void ViewerRobot::updateScore(int const& scoreIncrement)
