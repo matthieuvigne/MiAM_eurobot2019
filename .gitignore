@@ -40,5 +40,12 @@ MANIFEST
 *.rules
 *-cache.lib
 
+
+# Kicad backup
+rescue-backup
+
 # Doxygen documentation directory.
 html/
+
+# Compressed files
+*.gz

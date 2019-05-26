@@ -11,5 +11,10 @@ See [MiAM website](https://www.miam-robotique.fr/) (in French).
 
 
 ### Contents
- - [**Code_BBB**](./Code_BBB): the robot C code, running on the robot Beaglebone Black processor.
+ - [**ArduinoFunnyAction**](./ArduinoFunnyAction) and [**ArduinoSlave**](./ArduinoSlave): arduino code for the funny action (experiment) and for the Raspberry pi slave
+ of the main robot.
+ - [**ConfigRPi**](./ConfigRPi): Inscruction for configuring a raspberry pi to have headless wifi connection and to run our code.
+ - [**Electronics**](./Electronics): wiring diagram and PCBs for the main robot.
+ - [**RobotCode**](./RobotCode): onboard C++ code, running on Beaglebone Black or Raspberry pi processor.
  - [**miam_py**](./miam_py): a python package for reading and plotting a log file from the robot.
+ - [**StrategyViewer**](./StrategyViewer): A GTK+-based viewer for the trajectories for the robots.

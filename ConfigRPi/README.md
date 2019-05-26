@@ -75,6 +75,8 @@ auth_algs=1
 
  - To connect back to another wifi, simply comment the config in /etc/dhcpcd.conf.
 
+## Image creation and usage.
+
 An image with this config was created (with default password, network RaspberryPi/password RaspberryPi) using the following command:
 sudo dd bs=4M if=/dev/mmcblk0 | gzip > 20180813-Raspbian4-14.img.gz
 To restore, use:
@@ -82,3 +84,45 @@ cat 20180813-Raspbian4-14.img.gz | gunzip | dd of=/dev/mmcblk0
 
 20190504-Raspbian4-19.img.gz : newer image, kernel updated to 4.19, GLIBC to 2.28.
 
+## Running match code at startup
+
+For Eurobot, we want our code to start automatically once the boot process is complete. To do that, we use systemd to
+launch a script that starts our code. More precisely, it will launch the file /home/pi/MatchCode on startup. If this file
+is not present, the boot process continues normally. Note that, once the code has started, it will conflit with
+a user-launched code from ssh: to kill it, use ```pkill MatchCode```
+
+ - Create a bash script StartMatchCode.sh to run our code, with the following content:
+ ```
+ #!/bin/bash
+sleep 1
+/home/pi/MatchCode
+ ```
+
+ - Make this file executable and store it in /etc/init.d directory:
+
+```
+ chmod +x StartMatchCode.sh
+ sudo cp StartMatchCode.sh /etc/init.d/
+```
+
+ - Create the service configuration file, named StartMatchCode.service:
+
+ ```
+[Unit]
+Description=Start match code
+After=multi-user.target
+[Service]
+Type=simple
+ExecStart=/etc/init.d/StartMatchCode.sh
+User=pi
+[Install]
+WantedBy=multi-user.target
+```
+
+ - Copy the file to systemd lookup directory, then enable the service:
+
+ ```
+sudo cp StartMatchCode.service /lib/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable StartMatchCode.service
+```

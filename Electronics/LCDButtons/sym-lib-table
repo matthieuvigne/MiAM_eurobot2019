@@ -1,0 +1,3 @@
+(sym_lib_table
+  (lib (name LCLDButtons-rescue)(type Legacy)(uri ${KIPRJMOD}/LCLDButtons-rescue.lib)(options "")(descr ""))
+)

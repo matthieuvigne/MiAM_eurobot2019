@@ -1,0 +1,4 @@
+(fp_lib_table
+  (lib (name MiAM)(type KiCad)(uri /home/matthieu/Documents/MiAM/eurobot2019/Electronics/library/MiAM.pretty)(options "")(descr ""))
+  (lib (name Molex_UltraFit)(type KiCad)(uri /home/matthieu/Documents/MiAM/eurobot2019/Electronics/library/Molex_UltraFit.pretty)(options "")(descr ""))
+)
