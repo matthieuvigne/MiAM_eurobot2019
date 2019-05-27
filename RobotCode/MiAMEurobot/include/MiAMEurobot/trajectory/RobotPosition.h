@@ -1,5 +1,7 @@
 /// \file trajectory/RobotPosition.h
 /// \brief Class representing the robot position (x,y, angle).
+/// \author MiAM Robotique, Matthieu Vigne
+/// \copyright GNU GPLv3
 #ifndef MIAM_ROBOT_POSITION
 #define MIAM_ROBOT_POSITION
 

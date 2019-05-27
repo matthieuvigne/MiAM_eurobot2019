@@ -5,6 +5,11 @@
 /// \details This header is included in all other source files. It defines a structure representing the physical robot
 ///          in the code. Note that these variables are directly available, unprotected: it is to the user to ensure
 ///          no race condition may occur, for instance when writing the current robot position.
+/// \author MiAM Robotique, Matthieu Vigne
+/// \author Rodolphe Dubois
+/// \author Quentin Chan-Wai-Nam
+/// \copyright GNU GPLv3
+
 #ifndef ROBOT_H
      #define ROBOT_H
 

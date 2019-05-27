@@ -9,6 +9,8 @@
 /// As a benchmark, I tried calling a funciton every 5ms for 100s:
 ///  - using g_timeout function call was accurate withing 10%, and we ended up doing only 18600 iterations (7% loss).
 ///  - using this metronome, function call was accurate withing 1%, and exactly 20000 iterations were performed.
+/// \author MiAM Robotique, Matthieu Vigne
+/// \copyright GNU GPLv3
 #ifndef METRONOME
 #define METRONOME
     #include <time.h>

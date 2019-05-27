@@ -4,6 +4,8 @@
 /// \details This file defines constants to easily access the exposed ports of the Beaglebone through the
 ///             BeagleboneCape. These constants map to output ports defined from the document BeagleboneCapeDoc below :
 /// \image html BeagleboneCapeDoc.svg
+/// \author MiAM Robotique, Matthieu Vigne
+/// \copyright GNU GPLv3
 #ifndef BBB_CAPE
 #define BBB_CAPE
 

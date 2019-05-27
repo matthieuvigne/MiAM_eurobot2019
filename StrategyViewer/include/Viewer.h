@@ -1,3 +1,7 @@
+/// \file ViewerRobot.h
+/// \brief The viewer window itself.
+/// \author Matthieu Vigne
+/// \copyright GNU GPLv3
 #ifndef SK_HANDLER
 #define SK_HANDLER
 

@@ -4,6 +4,8 @@
 ///          a RobotPosition object. It's velocity contains two composants, a linear and an angular velocity.
 ///          This class implements the direct (motor velocity to drivetrain velocity) and indirect (linear/angular
 ///          velocity to motor velocity) kinematics, as well
+/// \author MiAM Robotique, Matthieu Vigne
+/// \copyright GNU GPLv3
 #ifndef MIAM_DRIVETRAIN_KINEMATICS
 #define MIAM_DRIVETRAIN_KINEMATICS
 

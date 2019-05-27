@@ -3,6 +3,8 @@
 ///
 /// \details This helper enables easy opening of a UART port.
 ///    \note     All functions in this header should be prefixed with uart_.
+/// \author MiAM Robotique, Matthieu Vigne
+/// \copyright GNU GPLv3
 #ifndef UART_WRAPPER
     #define UART_WRAPPER
 

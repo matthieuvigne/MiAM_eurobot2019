@@ -1,4 +1,7 @@
-// Test the USB LCD screen.
+/// \file USBLCDTest.cpp
+/// \brief Test the USB LCD screen.
+/// \author MiAM Robotique, Matthieu Vigne
+/// \copyright GNU GPLv3
 #include <MiAMEurobot/drivers/USBLCDDriver.h>
 #include <iostream>
 #include <unistd.h>

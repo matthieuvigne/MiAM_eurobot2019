@@ -1,3 +1,5 @@
+/// \author MiAM Robotique, Matthieu Vigne
+/// \copyright GNU GPLv3
 #include "MiAMEurobot/raspberry_pi/RPiGPIO.h"
 
 #include <fcntl.h>

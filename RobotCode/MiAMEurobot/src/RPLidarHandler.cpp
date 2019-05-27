@@ -1,3 +1,5 @@
+/// \author MiAM Robotique, Matthieu Vigne
+/// \copyright GNU GPLv3
 #include "MiAMEurobot/RPLidarHandler.h"
 #include "MiAMEurobot/trajectory/Utilities.h"
 #include <stdio.h>

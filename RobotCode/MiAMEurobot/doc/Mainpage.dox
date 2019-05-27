@@ -10,7 +10,7 @@ Doxygen main page
 /// Historically, this library was written in C, but has now been extended to C++ (though many C parts remain).
 ///
 ///
-/// The code is separated in four folders:
+/// The code is separated in several folders:
 ///	- beaglebone: subfolder containing files specific to the Beaglebone Black: serial port definition, GPIO access.
 ///	- raspberry_pi: subfolder containing files specific to the Raspberry Pi: serial port definition, GPIO access.
 ///	- drivers: sensor and motor drivers. Helpers for I2C and serial communication are also included.

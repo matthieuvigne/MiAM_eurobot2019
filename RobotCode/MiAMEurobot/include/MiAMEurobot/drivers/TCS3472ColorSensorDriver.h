@@ -5,6 +5,8 @@
 ///          This code will also work for TCS34727 - for TCS34721 and TCS34723 slave address must be changed
 ///          from 0x29 to 0x39 in the source code.
 ///    \note     All functions in this header should be prefixed with colorSensor_.
+/// \author MiAM Robotique, Matthieu Vigne
+/// \copyright GNU GPLv3
 #ifndef TCS3472_DRIVER
     #define TCS3472_DRIVER
     #include "MiAMEurobot/drivers/I2C-Wrapper.h"

@@ -8,6 +8,8 @@
 ///          BLOB_BREAK consecutive points are not added, the current blob is considered terminated. If its width matches
 ///          a robot beacon, the corresponding position is stored. In any case, a new blob is created by the current point.
 
+/// \author MiAM Robotique, Matthieu Vigne
+/// \copyright GNU GPLv3
 #ifndef RPLIDAR_HANDLER
 #define RPLIDAR_HANDLER
     #include <rplidar.h>

@@ -23,7 +23,7 @@ endif (CMAKE_BUILD_TYPE STREQUAL "Debug")
 find_package(PkgConfig REQUIRED)
 # Look for external libraries, and link them to the project.
 unset(MIAMLIB_FOUND CACHE)
-pkg_search_module(MIAMLIB REQUIRED MiAMEurobot>=2.3)
+pkg_search_module(MIAMLIB REQUIRED MiAMEurobot>=2.4)
 message(STATUS "Found MiAMEurobot v." ${MIAMLIB_VERSION})
 pkg_search_module(RPLIDAR REQUIRED rplidar)
 

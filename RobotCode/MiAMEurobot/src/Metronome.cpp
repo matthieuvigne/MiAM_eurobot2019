@@ -1,3 +1,5 @@
+/// \author MiAM Robotique, Matthieu Vigne
+/// \copyright GNU GPLv3
 #include "MiAMEurobot/Metronome.h"
 
 #include <math.h>

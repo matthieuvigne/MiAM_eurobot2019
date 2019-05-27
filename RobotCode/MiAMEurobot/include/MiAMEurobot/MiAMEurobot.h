@@ -3,6 +3,8 @@
 ///
 /// \details This header simply includes all the other headers from the library, as well as the glib header,
 ///          in order to ease library loading.
+/// \author MiAM Robotique, Matthieu Vigne
+/// \copyright GNU GPLv3
 #ifndef MIAM_EUROBOT
 #define MIAM_EUROBOT
 

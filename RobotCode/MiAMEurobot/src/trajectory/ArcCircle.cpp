@@ -1,3 +1,5 @@
+/// \author MiAM Robotique, Matthieu Vigne
+/// \copyright GNU GPLv3
 #include "MiAMEurobot/trajectory/ArcCircle.h"
 #include "MiAMEurobot/trajectory/Utilities.h"
 

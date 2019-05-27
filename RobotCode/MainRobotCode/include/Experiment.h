@@ -1,5 +1,7 @@
 /// \file Experiment.h
 /// \brief Bluetooth communciation with experiment.
+/// \author MiAM Robotique, Matthieu Vigne
+/// \copyright GNU GPLv3
 
 #ifndef EXPERIMENT_H
      #define EXPERIMENT_H

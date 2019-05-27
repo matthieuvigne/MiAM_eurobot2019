@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0)
 
 #Configure project
-project(MiAMEurobot VERSION 2.3.0)
+project(MiAMEurobot VERSION 2.4.0)
 set(PROJECT_DESCRIPTION "C++ utility library to use a Beaglebone Black / Raspberry Pi for Eurobot - low-level drivers and some higher level utilities")
 
 # Option to choose between cross-compiling or compiling for local computer.

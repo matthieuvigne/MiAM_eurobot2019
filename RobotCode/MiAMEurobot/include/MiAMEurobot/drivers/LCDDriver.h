@@ -3,6 +3,8 @@
 ///
 /// \details This shield is made of an MCP23017 I2C IO expander, wired to an HD44780-compatible LCD screen.
 ///    \note     All functions in this header should be prefixed with lcd_.
+/// \author MiAM Robotique, Matthieu Vigne
+/// \copyright GNU GPLv3
 #ifndef LCD_DRIVER_H
     #define LCD_DRIVER_H
     #include "MiAMEurobot/drivers/MPC23017Driver.h"

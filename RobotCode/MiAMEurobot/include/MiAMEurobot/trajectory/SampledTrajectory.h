@@ -1,5 +1,7 @@
 /// \file trajectory/SampledTrajectory.h
 /// \brief A trajectory defined by a set of TrajectoryPoints & linear interpolation between points.
+/// \author MiAM Robotique, Matthieu Vigne
+/// \copyright GNU GPLv3
 #ifndef MIAM_TRAJECTORY_SAMPLED_TRAJECTORY
 #define MIAM_TRAJECTORY_SAMPLED_TRAJECTORY
 

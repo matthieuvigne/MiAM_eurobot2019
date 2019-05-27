@@ -1,3 +1,6 @@
+/// \author Rodolphe Dubois
+/// \author MiAM Robotique, Matthieu Vigne
+/// \copyright GNU GPLv3
 #include "Robot.h"
 
 /// Function OK for robot playing right

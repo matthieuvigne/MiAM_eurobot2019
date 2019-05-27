@@ -1,5 +1,7 @@
 /// \file trajectory/ArcCircle.h
 /// \brief A circular arc trajectory.
+/// \author MiAM Robotique, Matthieu Vigne
+/// \copyright GNU GPLv3
 #ifndef MIAM_TRAJECTORY_ARC_CIRCLE
 #define MIAM_TRAJECTORY_ARC_CIRCLE
 

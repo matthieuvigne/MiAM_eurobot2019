@@ -6,6 +6,8 @@
 ///    \warning As several threads may require bus access at the same time, it is important that all I2C access
 ///             are done with these functions only.
 ///    \note     All functions in this header should be prefixed with i2c_.
+/// \author MiAM Robotique, Matthieu Vigne
+/// \copyright GNU GPLv3
 #ifndef I2C_WRAPPER
 #define I2C_WRAPPER
     #include <string>

@@ -3,6 +3,8 @@
 ///
 /// \details This file implements all the functions to work with the led driver.
 ///    \note     All functions in this header should be prefixed with ledDriver_.
+/// \author MiAM Robotique, Matthieu Vigne
+/// \copyright GNU GPLv3
 #ifndef PCA9635_DRIVER
     #define PCA9635_DRIVER
     #include "MiAMEurobot/drivers/I2C-Wrapper.h"

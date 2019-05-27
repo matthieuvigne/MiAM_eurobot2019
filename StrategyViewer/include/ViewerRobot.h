@@ -1,5 +1,7 @@
-// ViewerRobot.h
-// Represent a robot in the viewer, following a trajectory.
+/// \file ViewerRobot.h
+/// \brief Represent a robot in the viewer, following a trajectory.
+/// \author Matthieu Vigne
+/// \copyright GNU GPLv3
 
 #ifndef VIEWER_ROBOT_H
     #define VIEWER_ROBOT_H

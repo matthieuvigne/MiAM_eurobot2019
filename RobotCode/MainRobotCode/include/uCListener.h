@@ -5,6 +5,8 @@
 ///          port, update the value as needed and makes it available through a specific data structure.
 ///
 ///    \note     All functions in this header should be prefixed with uCListener_.
+/// \author MiAM Robotique, Matthieu Vigne
+/// \copyright GNU GPLv3
 #ifndef ARDUINOSLAVE_H
      #define ARDUINOSLAVE_H
 

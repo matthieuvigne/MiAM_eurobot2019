@@ -5,6 +5,8 @@
 ///             The functions is this file are named to emulate Arduino IO operations.
 ///             The interrupt functionnality of the MPC are not implemented.
 ///    \note     All functions in this header should be prefixed with mpc_.
+/// \author MiAM Robotique, Matthieu Vigne
+/// \copyright GNU GPLv3
 #ifndef MPC_DRIVER_H
     #define MPC_DRIVER_H
     #include "MiAMEurobot/drivers/I2C-Wrapper.h"

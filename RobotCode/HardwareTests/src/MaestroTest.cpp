@@ -1,3 +1,5 @@
+/// \author MiAM Robotique, Matthieu Vigne
+/// \copyright GNU GPLv3
 // Test the Maestro servo driver.
 #include <MiAMEurobot/MiAMEurobot.h>
 #include <iostream>

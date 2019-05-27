@@ -1,3 +1,7 @@
+/// \author MiAM Robotique, Matthieu Vigne
+/// \author Rodolphe Dubois
+/// \author Quentin Chan-Wai-Nam
+/// \copyright GNU GPLv3
 #include <unistd.h>
 #include <thread>
 #include <iomanip>

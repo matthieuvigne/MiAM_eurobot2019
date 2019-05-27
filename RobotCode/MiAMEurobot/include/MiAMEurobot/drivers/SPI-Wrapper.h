@@ -5,6 +5,8 @@
 ///             but it should probably be there instead of in each driver (L6470 and ADNS9800 implement it separately for
 ///             now).
 ///    \note     All functions in this header should be prefixed with spi_.
+/// \author MiAM Robotique, Matthieu Vigne
+/// \copyright GNU GPLv3
 #ifndef SPI_WRAPPER
 #define SPI_WRAPPER
     #include <string>

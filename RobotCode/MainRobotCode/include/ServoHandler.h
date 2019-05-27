@@ -1,5 +1,7 @@
 /// \file ServoConfig.h
 /// \brief Configuration for the main robot servos.
+/// \author MiAM Robotique, Matthieu Vigne
+/// \copyright GNU GPLv3
 
 #ifndef SERVO_CONFIG_H
     #define SERVO_CONFIG_H

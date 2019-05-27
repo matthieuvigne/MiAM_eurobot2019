@@ -8,6 +8,8 @@
 ///          In order to prevent messing up with serial port configuration, only GPIOs 4 to 26 are available.
 ///          Note that GPIOs 7-11 are used for SPI and 14-15 for UART: setting them as GPIOs would disable the
 ///          corresponding port.
+/// \author MiAM Robotique, Matthieu Vigne
+/// \copyright GNU GPLv3
 #ifndef RPI_GPIO
 #define RPI_GPIO
 

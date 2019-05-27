@@ -1,5 +1,7 @@
 /// \file AbstractRobot.h
 /// \brief Abstract class representing a robot (mostly its drivetrain), to give a common structure to both robot code.
+/// \author MiAM Robotique, Matthieu Vigne
+/// \copyright GNU GPLv3
 #ifndef ABSTRACT_ROBOT_H
      #define ABSTRACT_ROBOT_H
 

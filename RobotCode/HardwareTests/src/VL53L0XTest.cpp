@@ -1,4 +1,7 @@
-// Test the USB LCD screen.
+/// \file VL53L0XTest.cpp
+/// \brief Test the VL53L0X range sensor.
+/// \author MiAM Robotique, Matthieu Vigne
+/// \copyright GNU GPLv3
 #include <MiAMEurobot/raspberry_pi/RaspberryPi.h>
 #include <MiAMEurobot/MiAMEurobot.h>
 #include <iostream>

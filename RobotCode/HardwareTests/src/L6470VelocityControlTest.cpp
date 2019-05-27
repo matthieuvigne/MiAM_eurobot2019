@@ -1,3 +1,5 @@
+/// \author MiAM Robotique, Matthieu Vigne
+/// \copyright GNU GPLv3
 // Test the velocity control scheme of the L6470
 // to improve it and understand where the drift comes from.
 

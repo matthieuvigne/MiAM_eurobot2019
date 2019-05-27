@@ -1,3 +1,5 @@
+/// \author MiAM Robotique, Matthieu Vigne
+/// \copyright GNU GPLv3
 #include "MiAMEurobot/trajectory/Utilities.h"
 #include "MiAMEurobot/trajectory/StraightLine.h"
 #include "MiAMEurobot/trajectory/PointTurn.h"

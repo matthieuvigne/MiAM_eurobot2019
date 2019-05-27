@@ -1,5 +1,7 @@
 /// \file trajectory/StraightLine.h
 /// \brief A trajectory going in a straight line from two points, along a velocity trapezoid.
+/// \author MiAM Robotique, Matthieu Vigne
+/// \copyright GNU GPLv3
 #ifndef MIAM_TRAJECTORY_STRAIGHT_LINE
 #define MIAM_TRAJECTORY_STRAIGHT_LINE
 

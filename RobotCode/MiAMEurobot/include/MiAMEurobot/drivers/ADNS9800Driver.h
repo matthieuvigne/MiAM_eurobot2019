@@ -4,6 +4,8 @@
 /// \details This file implements all the functions to talk to the stepper motor controller.
 ///          It is adapted from Sparkfun's driver for Arduino. All functions are thread-safe.
 ///    \note     All functions in this header should be prefixed with ANDS9800_.
+/// \author MiAM Robotique, Matthieu Vigne
+/// \copyright GNU GPLv3
 #ifndef ADNS9800_DRIVER
 #define ADNS9800_DRIVER
 

@@ -1,5 +1,7 @@
 /// \file trajectory/Utilities.h
 /// \brief Utility functions for trajectory generation.
+/// \author MiAM Robotique, Matthieu Vigne
+/// \copyright GNU GPLv3
 #ifndef MIAM_TRAJECTORY_UTILITIES
 #define MIAM_TRAJECTORY_UTILITIES
 

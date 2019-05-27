@@ -1,3 +1,5 @@
+/// \author Matthieu Vigne
+/// \copyright GNU GPLv3
 #include "ViewerRobot.h"
 #include <string>
 

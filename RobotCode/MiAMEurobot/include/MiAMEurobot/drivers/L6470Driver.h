@@ -6,6 +6,10 @@
 ///          The API is targetted toward driving a robot chassis, thus constraining some symmetry
 ///          between both drivers. All functions are thread-safe.
 ///    \note     All functions in this header should be prefixed with dualL6470_.
+/// \author MiAM Robotique, Matthieu Vigne
+/// \copyright GNU GPLv3
+/// \author MiAM Robotique, Matthieu Vigne
+/// \copyright GNU GPLv3
 #ifndef dualL6470_DRIVER
 #define dualL6470_DRIVER
 

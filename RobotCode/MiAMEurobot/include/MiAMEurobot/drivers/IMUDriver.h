@@ -5,6 +5,8 @@
 ///             with the IMU, via I2C.
 ///    \note     All functions in this header should be prefixed with imu_.
 ///    \note     Sensor precision setting is hardcoded, see source code directly.
+/// \author MiAM Robotique, Matthieu Vigne
+/// \copyright GNU GPLv3
 #ifndef IMU_DRIVER_H
     #define IMU_DRIVER_H
     #include "MiAMEurobot/drivers/I2C-Wrapper.h"

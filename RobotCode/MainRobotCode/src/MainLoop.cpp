@@ -1,6 +1,8 @@
 /// \file MainLoop.c
 /// \brief This file implements the main function, as well as several other features.
 ///
+/// \author MiAM Robotique, Matthieu Vigne
+/// \copyright GNU GPLv3
 
 #include "Robot.h"
 

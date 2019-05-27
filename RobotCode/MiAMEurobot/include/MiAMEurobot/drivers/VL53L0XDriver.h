@@ -3,6 +3,8 @@
 ///
 /// \details This driver is a simplified transcript of the code presented by pololu at
 ///          https://github.com/pololu/vl53l0x-arduino
+/// \author MiAM Robotique, Matthieu Vigne
+/// \copyright GNU GPLv3
 #ifndef VL53L0X_DRIVER_H
     #define VL53L0X_DRIVER_H
     #include "MiAMEurobot/drivers/I2C-Wrapper.h"

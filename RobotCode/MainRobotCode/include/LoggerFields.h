@@ -1,5 +1,10 @@
 /// \file LoggerFields.h
 /// \brief Declaration of the log fields and related function.
+/// \author MiAM Robotique, Matthieu Vigne
+/// \author Rodolphe Dubois
+/// \author Quentin Chan-Wai-Nam
+/// \copyright GNU GPLv3
+
 #ifndef LOGGER_FIELDS_H
      #define LOGGER_FIELDS_H
 

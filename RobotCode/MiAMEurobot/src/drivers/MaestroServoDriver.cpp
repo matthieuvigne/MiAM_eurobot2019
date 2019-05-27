@@ -1,3 +1,5 @@
+/// \author MiAM Robotique, Matthieu Vigne
+/// \copyright GNU GPLv3
 #include "MiAMEurobot/drivers/MaestroServoDriver.h"
 #include "MiAMEurobot/drivers/UART-Wrapper.h"
 

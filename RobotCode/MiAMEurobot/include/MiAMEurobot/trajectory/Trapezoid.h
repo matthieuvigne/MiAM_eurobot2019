@@ -1,5 +1,7 @@
 /// \file trajectory/Trapezoid.h
 /// \brief Define a generic velocity trapezoid, use to parametrize other curves.
+/// \author MiAM Robotique, Matthieu Vigne
+/// \copyright GNU GPLv3
 #ifndef MIAM_TRAJECTORY_TRAPEZOID
 #define MIAM_TRAJECTORY_TRAPEZOID
     #include "MiAMEurobot/trajectory/Trajectory.h"

@@ -1,5 +1,7 @@
 /// \file PID.h
 /// \brief Implementation of a PID controller
+/// \author MiAM Robotique, Matthieu Vigne
+/// \copyright GNU GPLv3
 #ifndef MIAM_PID
 #define MIAM_PID
 

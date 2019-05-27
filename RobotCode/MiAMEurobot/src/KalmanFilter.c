@@ -1,3 +1,5 @@
+/// \author MiAM Robotique, Matthieu Vigne
+/// \copyright GNU GPLv3
 #include "MiAMEurobot/KalmanFilter.h"
 
 void kalman_init(Kalman *k, double angle)

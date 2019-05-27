@@ -1,3 +1,5 @@
+/// \author MiAM Robotique, Matthieu Vigne
+/// \copyright GNU GPLv3
 // Test the RPLidar interface.
 #include <MiAMEurobot/drivers/USBLCDDriver.h>
 #include "MiAMEurobot/RPLidarHandler.h"

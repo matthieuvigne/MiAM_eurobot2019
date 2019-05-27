@@ -1,3 +1,5 @@
+/// \author MiAM Robotique, Matthieu Vigne
+/// \copyright GNU GPLv3
 // Test the L6470 stepper motor drivers.
 #include <MiAMEurobot/MiAMEurobot.h>
 #include <MiAMEurobot/raspberry_pi/RaspberryPi.h>

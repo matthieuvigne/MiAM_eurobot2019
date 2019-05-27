@@ -1,5 +1,7 @@
 /// \file trajectory/PointTurn.h
 /// \brief In-place rotation of the robot.
+/// \author MiAM Robotique, Matthieu Vigne
+/// \copyright GNU GPLv3
 #ifndef MIAM_TRAJECTORY_POINT_TURN
 #define MIAM_TRAJECTORY_POINT_TURN
 

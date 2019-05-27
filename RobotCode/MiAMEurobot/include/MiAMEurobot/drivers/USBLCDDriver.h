@@ -4,6 +4,8 @@
 /// \details The physical board is a modified version of Adafruit USB LCD shield (https://www.adafruit.com/product/782)
 ///          with three added buttons and LEDs. The firmware was modified to include the extra sensors. Note that
 ///          the serial interface was dissabled to support these features.
+/// \author MiAM Robotique, Matthieu Vigne
+/// \copyright GNU GPLv3
 #ifndef USBLCD_DRIVER_H
     #define USBLCD_DRIVER_H
 

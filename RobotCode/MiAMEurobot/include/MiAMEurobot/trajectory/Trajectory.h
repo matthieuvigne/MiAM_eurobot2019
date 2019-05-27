@@ -4,6 +4,8 @@
 /// \details What we call a trajectory is an object along wich we can servo the robot. It thus groups together the
 ///          notion of path (i.e. curve on the table, including robot angle), and of time parametrization (in order
 ///          to allow trajectory tracking in itself).
+/// \author MiAM Robotique, Matthieu Vigne
+/// \copyright GNU GPLv3
 #ifndef MIAM_TRAJECTORY_TRAJECTORY
 #define MIAM_TRAJECTORY_TRAJECTORY
 

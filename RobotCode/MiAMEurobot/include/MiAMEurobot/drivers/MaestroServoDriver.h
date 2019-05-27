@@ -3,6 +3,8 @@
 ///
 /// \details For now only target setting via pololu protocol is supported.
 ///    \note     All functions in this header should be prefixed with maestro_.
+/// \author MiAM Robotique, Matthieu Vigne
+/// \copyright GNU GPLv3
 #ifndef MAESTROSERVO_DRIVER
     #define MAESTROSERVO_DRIVER
 

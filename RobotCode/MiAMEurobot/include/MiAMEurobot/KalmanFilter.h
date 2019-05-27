@@ -17,7 +17,8 @@
 ///             approach also means no matrix inversion (S is of dimension 1).
 ///             If we have the time, it might be worth testing a more classical approach and compare both results.
 ///    \note     All functions in this header should be prefixed with kalman_.
-
+/// \author MiAM Robotique, Matthieu Vigne
+/// \copyright GNU GPLv3
 #ifndef KALMAN_H
     #define KALMAN_H
 

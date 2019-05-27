@@ -1,3 +1,5 @@
+/// \author MiAM Robotique, Matthieu Vigne
+/// \copyright GNU GPLv3
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/socket.h>

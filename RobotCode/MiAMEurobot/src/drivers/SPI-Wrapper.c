@@ -1,4 +1,6 @@
-#include "MiAMEurobot/drivers/SPI-Wrapper.h"
+/// \author MiAM Robotique, Matthieu Vigne
+/// \copyright GNU GPLv3
+ #include "MiAMEurobot/drivers/SPI-Wrapper.h"
 #include <sys/ioctl.h>
 #include <linux/spi/spidev.h>
 #include <stdio.h>

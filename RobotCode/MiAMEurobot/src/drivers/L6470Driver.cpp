@@ -1,3 +1,5 @@
+/// \author MiAM Robotique, Matthieu Vigne
+/// \copyright GNU GPLv3
 #include "MiAMEurobot/drivers/L6470Driver.h"
 #include "MiAMEurobot/drivers/SPI-Wrapper.h"
 

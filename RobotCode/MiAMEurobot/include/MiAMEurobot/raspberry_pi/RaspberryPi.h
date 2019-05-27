@@ -2,6 +2,8 @@
 /// \brief Master header file for Raspberry Pi.
 ///
 /// \details This header declares Raspberry Pi serial ports and GPIOs, and include functions to access them.
+/// \author MiAM Robotique, Matthieu Vigne
+/// \copyright GNU GPLv3
 #ifndef RPI_EUROBOT_DRIVER
 #define RPI_EUROBOT_DRIVER
     #include "MiAMEurobot/drivers/I2C-Wrapper.h"

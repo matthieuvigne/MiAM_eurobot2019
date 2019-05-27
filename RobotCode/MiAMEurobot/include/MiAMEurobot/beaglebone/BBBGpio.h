@@ -3,6 +3,8 @@
 ///
 /// \details This file allows configuration and interface to the Beaglebone GPIOs.
 ///    \note     All functions in this header should be prefixed with gpio_.
+/// \author MiAM Robotique, Matthieu Vigne
+/// \copyright GNU GPLv3
 #ifndef BBBGPIO_H
 #define BBBGPIO_H
 
