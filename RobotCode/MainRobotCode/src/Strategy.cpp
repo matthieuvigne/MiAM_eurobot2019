@@ -127,7 +127,7 @@ void matchStrategy()
     targetPosition.x = 600;
     targetPosition.y = 700;
     positions.push_back(targetPosition);
-    targetPosition.y = 510 + CHASSIS_FRONT;
+    targetPosition.y = 520 + CHASSIS_FRONT;
     positions.push_back(targetPosition);
     traj = miam::trajectory::computeTrajectoryRoundedCorner(positions, 100.0, 0.05);
     robot.setTrajectoryToFollow(traj);
@@ -176,6 +176,125 @@ void matchStrategy()
     robot.setTrajectoryToFollow(traj);
     robot.waitForTrajectoryFinished();
 
+
+    //**********************************************************
+    // Push things from the chaos zone
+    //**********************************************************
+    targetPosition = robot.getCurrentPosition();
+    positions.clear();
+    positions.push_back(targetPosition);
+    targetPosition.x = 1350;
+    targetPosition.y = 1300;
+    positions.push_back(targetPosition);
+    targetPosition.y = 950;
+    positions.push_back(targetPosition);
+    targetPosition.x = 500;
+    positions.push_back(targetPosition);
+    traj = miam::trajectory::computeTrajectoryRoundedCorner(positions, 100.0, 0.05);
+    robot.setTrajectoryToFollow(traj);
+    wasMoveSuccessful = robot.waitForTrajectoryFinished();
+    if (wasMoveSuccessful)
+        robot.updateScore(9);   // 4 atoms pushed, one of the right color.
+
+    //**********************************************************
+    // Get the last three set of atoms.
+    //**********************************************************
+    if (wasMoveSuccessful)
+    {
+        targetPosition = robot.getCurrentPosition();
+        traj = miam::trajectory::computeTrajectoryStraightLine(targetPosition, -150);
+        robot.setTrajectoryToFollow(traj);
+        robot.waitForTrajectoryFinished();
+    }
+    targetPosition = robot.getCurrentPosition();
+    positions.clear();
+    positions.push_back(targetPosition);
+    targetPosition.x = 900;
+    targetPosition.y = 950;
+    positions.push_back(targetPosition);
+    targetPosition.y = 520 + CHASSIS_FRONT;
+    positions.push_back(targetPosition);
+    traj = miam::trajectory::computeTrajectoryRoundedCorner(positions, 100.0, 0.05);
+    robot.setTrajectoryToFollow(traj);
+    wasMoveSuccessful = robot.waitForTrajectoryFinished();
+
+    // Grab atoms.
+    if (wasMoveSuccessful)
+    {
+        getAtoms();
+        // Go put the atoms in the right zone.
+        if (robot.isPlayingRightSide())
+        {
+            suctionOrder[0] = 0;
+            suctionOrder[1] = 0;
+            suctionOrder[2] = 1;
+        }
+        else
+        {
+            suctionOrder[0] = 2;
+            suctionOrder[1] = 0;
+            suctionOrder[2] = 1;
+        }
+
+        // Move to blue zone.
+        targetPosition = robot.getCurrentPosition();
+        targetPosition.y = 950;
+        traj = miam::trajectory::computeTrajectoryStraightLineToPoint(robot.getCurrentPosition(), targetPosition, 0, true);
+        endPosition = targetPosition;
+        endPosition.x = 450 + CHASSIS_FRONT;
+        traj = traj + miam::trajectory::computeTrajectoryStraightLineToPoint(targetPosition, endPosition);
+        robot.setTrajectoryToFollow(traj);
+        wasMoveSuccessful = robot.waitForTrajectoryFinished();
+        robot.moveRail(0.3);
+        robot.servos_.moveSuction(false);
+        bool wasBlueDropped = false;
+        if (wasMoveSuccessful)
+        {
+            // Drop blue atom.
+            wasBlueDropped = true;
+
+            robot.servos_.tapOpen();
+            robot.servos_.openTube(suctionOrder[0]);
+            usleep(300000);
+            robot.servos_.tapClose();
+            robot.servos_.closeTube(suctionOrder[0]);
+            robot.updateScore(6);   // One correct drop.
+            targetPosition = robot.getCurrentPosition();
+            traj = miam::trajectory::computeTrajectoryStraightLine(targetPosition, -150);
+            robot.setTrajectoryToFollow(traj);
+            robot.waitForTrajectoryFinished();
+        }
+
+        // Go drop green and red atom.
+        targetPosition = robot.getCurrentPosition();
+        positions.clear();
+        positions.push_back(targetPosition);
+        targetPosition.x = 750;
+        targetPosition.y = 1400;
+        positions.push_back(targetPosition);
+        targetPosition.x = 450 + CHASSIS_FRONT;
+        positions.push_back(targetPosition);
+        traj = miam::trajectory::computeTrajectoryRoundedCorner(positions, 150.0, 0.05);
+        robot.setTrajectoryToFollow(traj);
+        wasMoveSuccessful = robot.waitForTrajectoryFinished();
+
+        // Drop everything.
+        robot.servos_.tapOpen();
+        robot.servos_.openTube(0);
+        robot.servos_.openTube(1);
+        robot.servos_.openTube(2);
+        robot.updateScore(6);   // One correct drop.
+        usleep(500000);
+        // Update score if needed.
+        if (!wasBlueDropped)
+            robot.updateScore(1);
+        targetPosition = robot.getCurrentPosition();
+        traj = miam::trajectory::computeTrajectoryStraightLine(targetPosition, -80);
+        robot.setTrajectoryToFollow(traj);
+        robot.waitForTrajectoryFinished();
+    }
+
+
     //**********************************************************
     // Drop the blue atom in the particle accelerator.
     //**********************************************************
@@ -185,9 +304,9 @@ void matchStrategy()
     targetPosition.x = 1300;
     positions.push_back(targetPosition);
     targetPosition.x = 1600;
-    targetPosition.y = 2000 - CHASSIS_WIDTH - 130;
+    targetPosition.y = 2000 - CHASSIS_WIDTH - 145;
     positions.push_back(targetPosition);
-    targetPosition.x = 1620;
+    targetPosition.x = 1625;
     positions.push_back(targetPosition);
     traj = miam::trajectory::computeTrajectoryRoundedCorner(positions, 80.0, 0.1);
     robot.setTrajectoryToFollow(traj);
@@ -222,6 +341,7 @@ void matchStrategy()
         traj = traj + miam::trajectory::computeTrajectoryStraightLineToPoint(targetPosition, endPosition);
         robot.setTrajectoryToFollow(traj);
         wasMoveSuccessful = robot.waitForTrajectoryFinished();
+        robot.servos_.foldArms();
 
         if (wasMoveSuccessful)
         {
@@ -246,151 +366,7 @@ void matchStrategy()
             robot.waitForTrajectoryFinished();
             robot.updateScore(20); // 20 pts for goldium drop.
             robot.servos_.openTube(2);
-        }
-    }
-
-
-    //**********************************************************
-    // Push things from the chaos zone
-    //**********************************************************
-    targetPosition = robot.getCurrentPosition();
-    positions.clear();
-    positions.push_back(targetPosition);
-    targetPosition.x = 1200;
-    targetPosition.y = 950;
-    positions.push_back(targetPosition);
-    targetPosition.x = 500;
-    positions.push_back(targetPosition);
-    traj = miam::trajectory::computeTrajectoryRoundedCorner(positions, 100.0, 0.05);
-    robot.setTrajectoryToFollow(traj);
-    wasMoveSuccessful = robot.waitForTrajectoryFinished();
-    if (wasMoveSuccessful)
-        robot.updateScore(9);   // 4 atoms pushed, one of the right color.
-
-    //**********************************************************
-    // Get the last three set of atoms.
-    //**********************************************************
-    if (wasMoveSuccessful)
-    {
-        targetPosition = robot.getCurrentPosition();
-        traj = miam::trajectory::computeTrajectoryStraightLine(targetPosition, -150);
-        robot.setTrajectoryToFollow(traj);
-        robot.waitForTrajectoryFinished();
-    }
-    targetPosition = robot.getCurrentPosition();
-    positions.clear();
-    positions.push_back(targetPosition);
-    targetPosition.x = 900;
-    targetPosition.y = 950;
-    positions.push_back(targetPosition);
-    targetPosition.y = 510 + CHASSIS_FRONT;;
-    positions.push_back(targetPosition);
-    traj = miam::trajectory::computeTrajectoryRoundedCorner(positions, 100.0, 0.05);
-    robot.setTrajectoryToFollow(traj);
-    wasMoveSuccessful = robot.waitForTrajectoryFinished();
-
-    // Grab atoms.
-    if (wasMoveSuccessful)
-    {
-        getAtoms();
-        // Go put the atoms in the right zone.
-        if (robot.isPlayingRightSide())
-        {
-            suctionOrder[0] = 0;
-            suctionOrder[1] = 0;
-            suctionOrder[2] = 1;
-        }
-        else
-        {
-            suctionOrder[0] = 2;
-            suctionOrder[1] = 0;
-            suctionOrder[2] = 1;
-        }
-
-        // Move to blue zone.
-        targetPosition = robot.getCurrentPosition();
-        targetPosition.y = 950;
-        traj = miam::trajectory::computeTrajectoryStraightLineToPoint(robot.getCurrentPosition(), targetPosition, 0, true);
-        endPosition = targetPosition;
-        endPosition.x = 450 + CHASSIS_FRONT;
-        traj = traj + miam::trajectory::computeTrajectoryStraightLineToPoint(targetPosition, endPosition);
-        robot.setTrajectoryToFollow(traj);
-        wasMoveSuccessful = robot.waitForTrajectoryFinished();
-        robot.moveRail(0.3);
-        robot.servos_.moveSuction(true);
-        bool wasBlueDropped = false;
-        if (wasMoveSuccessful)
-        {
-            // Drop blue atom.
-            wasBlueDropped = true;
-
             robot.servos_.tapOpen();
-            robot.servos_.openTube(suctionOrder[0]);
-            usleep(300000);
-            robot.servos_.tapClose();
-            robot.servos_.closeTube(suctionOrder[0]);
-            robot.updateScore(6);   // One correct drop.
-            targetPosition = robot.getCurrentPosition();
-            traj = miam::trajectory::computeTrajectoryStraightLine(targetPosition, -150);
-            robot.setTrajectoryToFollow(traj);
-            robot.waitForTrajectoryFinished();
-        }
-
-        // Go drop green atom.
-        targetPosition = robot.getCurrentPosition();
-        positions.clear();
-        positions.push_back(targetPosition);
-        targetPosition.x = 750;
-        targetPosition.y = 1250;
-        positions.push_back(targetPosition);
-        targetPosition.x = 450 + CHASSIS_FRONT;
-        positions.push_back(targetPosition);
-        traj = miam::trajectory::computeTrajectoryRoundedCorner(positions, 150.0, 0.05);
-        robot.setTrajectoryToFollow(traj);
-        wasMoveSuccessful = robot.waitForTrajectoryFinished();
-        bool wasGreenDropped = false;
-        if (wasMoveSuccessful)
-        {
-            // Drop green atom.
-            wasGreenDropped = true;
-
-            robot.servos_.tapOpen();
-            robot.servos_.openTube(suctionOrder[1]);
-            usleep(300000);
-            robot.servos_.tapClose();
-            robot.servos_.closeTube(suctionOrder[1]);
-            robot.updateScore(6);   // One correct drop.
-            targetPosition = robot.getCurrentPosition();
-            traj = miam::trajectory::computeTrajectoryStraightLine(targetPosition, -150);
-            robot.setTrajectoryToFollow(traj);
-            robot.waitForTrajectoryFinished();
-        }
-
-        // Finally, go drop red atom.
-        targetPosition = robot.getCurrentPosition();
-        positions.clear();
-        positions.push_back(targetPosition);
-        targetPosition.x = 750;
-        targetPosition.y = 1550;
-        positions.push_back(targetPosition);
-        targetPosition.x = 450 + CHASSIS_FRONT;
-        positions.push_back(targetPosition);
-        traj = miam::trajectory::computeTrajectoryRoundedCorner(positions, 150.0, 0.05);
-        robot.setTrajectoryToFollow(traj);
-        wasMoveSuccessful = robot.waitForTrajectoryFinished();
-        if (wasMoveSuccessful)
-        {
-            // Drop everything.
-            robot.servos_.tapOpen();
-            robot.servos_.openTube(0);
-            robot.servos_.openTube(1);
-            robot.servos_.openTube(2);
-            robot.updateScore(6);   // One correct drop.
-            // Update score if needed.
-            if (!wasBlueDropped)
-                robot.updateScore(1);
-            if (!wasGreenDropped)
-                robot.updateScore(1);
         }
     }
 

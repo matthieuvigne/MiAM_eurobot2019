@@ -244,42 +244,32 @@ namespace miam
             if((status[i] & dSPIN_STATUS_NOTPERF_CMD) != 0)
             {
                 error |= dSPIN_ERR_NOEXEC;
-                #ifdef DEBUG
-                    errorMessage += "Cmd no exec ";
-                #endif
+                errorMessage += "Cmd no exec ";
             }
 
             // Wrong cmd is active high, not active low.
             if((status[i] & dSPIN_STATUS_WRONG_CMD) != 0)
             {
                 error |= dSPIN_ERR_BADCMD;
-                #ifdef DEBUG
-                    errorMessage += "Bad cmd ";
-                #endif
+                errorMessage += "Bad cmd ";
             }
 
             if((status[i] & dSPIN_STATUS_UVLO) == 0)
             {
                 error |= dSPIN_ERR_UVLO;
-                #ifdef DEBUG
-                    errorMessage += "Undervoltage ";
-                #endif
+                errorMessage += "Undervoltage ";
             }
 
             if((status[i] & dSPIN_STATUS_TH_SD) == 0)
             {
                 error |= dSPIN_ERR_THSHTD;
-                #ifdef DEBUG
-                    errorMessage += "Thermal shutdown ";
-                #endif
+                errorMessage += "Thermal shutdown ";
             }
 
             if((status[i] & dSPIN_STATUS_OCD) == 0)
             {
                 error |= dSPIN_ERR_OVERC;
-                #ifdef DEBUG
-                    errorMessage += "Overcurrent ";
-                #endif
+                errorMessage += "Overcurrent ";
             }
 
             if((status[i] & dSPIN_STATUS_STEP_LOSS_A) == 0)
@@ -297,10 +287,8 @@ namespace miam
             }
 
 
-            #ifdef DEBUG
-                if(errorMessage.length() > 0)
-                    std::cout <<  "dualL6470: " << i << " controller error: " << errorMessage << std::endl;
-            #endif
+            if(errorMessage.length() > 0)
+                std::cout <<  "dualL6470: " << i << " controller error: " << errorMessage << std::endl;
             errors.push_back(error);
         }
         return errors;
