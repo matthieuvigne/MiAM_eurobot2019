@@ -56,7 +56,6 @@ void matchStrategy()
 {
     std::cout << "Strategy thread started." << std::endl;
 
-
     // Update config.
     miam::trajectory::setTrajectoryGenerationConfig(robotdimensions::maxWheelSpeedTrajectory,
                                                     robotdimensions::maxWheelAccelerationTrajectory,

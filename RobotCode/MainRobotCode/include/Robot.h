@@ -78,7 +78,7 @@
         double const linearKd = 0.0;
         double const linearKi = 0.1;
 
-        double const transverseKp = 0.0;
+        double const transverseKp = 0.005;
 
         double const rotationKp = 10.0;
         //~ double const rotationKp = 0.0;

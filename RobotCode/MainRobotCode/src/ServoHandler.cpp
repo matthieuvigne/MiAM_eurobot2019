@@ -135,7 +135,7 @@ void ServoHandler::foldArms()
 void ServoHandler::unfoldArms(bool isPlayingRightSide)
 {
     if (isPlayingRightSide)
-        maestro_.setPosition(5, 1250);
+        maestro_.setPosition(5, 1315);
     else
         maestro_.setPosition(4, 1300);
 }

@@ -28,7 +28,7 @@ bool Robot::isLidarPointWithinTable(LidarPoint const& point)
         and T_x_fi > table_dimensions::ramp_min_x
         and T_x_fi < table_dimensions::ramp_max_x)
             return false;
-    std::cout <<  T_x_fi << " " << T_y_fi << "r" << point.r << " theta" << point.theta << "np" << lastNumberOfPoints << std::endl;
+    //~ std::cout <<  T_x_fi << " " << T_y_fi << "r" << point.r << " theta" << point.theta << "np" << lastNumberOfPoints << std::endl;
     return true;
   }
 

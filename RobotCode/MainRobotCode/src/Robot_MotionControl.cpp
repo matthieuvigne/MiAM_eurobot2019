@@ -58,8 +58,12 @@ bool Robot::followTrajectory(Trajectory *traj, double const& curvilinearAbscissa
 
     // Modify angular PID target based on transverse error, if we are going fast enough.
     double angularPIDError = trackingAngleError_;
+    double transverseCorrection = 0.0;
     if(std::abs(trajectoryPoint_.linearVelocity) > 0.1 * robotdimensions::maxWheelSpeed)
-        angularPIDError += controller::transverseKp * trajectoryPoint_.linearVelocity / robotdimensions::maxWheelSpeed * trackingTransverseError_;
+        transverseCorrection = controller::transverseKp * trajectoryPoint_.linearVelocity / robotdimensions::maxWheelSpeed * trackingTransverseError_;
+    if (trajectoryPoint_.linearVelocity < 0)
+        transverseCorrection = - transverseCorrection;
+    angularPIDError += transverseCorrection;
 
     // Use PID if a trajectory velocity is present.
     if(std::abs(trajectoryPoint_.linearVelocity) > 0.1 || std::abs(trajectoryPoint_.angularVelocity) > 0.005 )
