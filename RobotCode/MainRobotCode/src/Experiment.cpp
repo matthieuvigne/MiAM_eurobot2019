@@ -141,50 +141,77 @@ void Experiment::loop()
 
      // Hard-coded destination.
     char dest[18] = "98:D3:71:F9:87:3E";
-    // Create socket struct.
-    struct sockaddr_rc addr = { 0 };
-    addr.rc_family = AF_BLUETOOTH;
-    addr.rc_channel = (uint8_t) 1;
-    str2ba( dest, &addr.rc_bdaddr );
 
-    // Create socket and try to connect with timeout.
-    port_ = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
-
-    int flags = fcntl(port_, F_GETFL, 0);
-    fcntl(port_, F_SETFL, flags | O_NONBLOCK);
-
-    // Try to connect with a 100s timeout
-    int status = connect(port_, (struct sockaddr *)&addr, sizeof(addr));
-    if (status < 0)
+    // Loop while connection is not ok.
+    while(port_ == -1)
     {
-        if (errno == EINPROGRESS || errno == EBUSY)
-        {
-            struct timeval timeout;
-            timeout.tv_sec = 100;
-            timeout.tv_usec = 0;
-            fd_set set;
-            FD_ZERO(&set);
-            FD_SET(port_, &set);
+        std::cout << "trying to connect" << std::endl;
 
-            if(select(port_ + 1, NULL, &set, NULL, &timeout) > 0)
+        // Create socket struct.
+        struct sockaddr_rc addr = { 0 };
+        addr.rc_family = AF_BLUETOOTH;
+        addr.rc_channel = (uint8_t) 1;
+        str2ba( dest, &addr.rc_bdaddr );
+
+        // Create socket and try to connect with timeout.
+        port_ = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
+
+        int flags = fcntl(port_, F_GETFL, 0);
+        fcntl(port_, F_SETFL, flags | O_NONBLOCK);
+
+        // Try to connect with a 3s timeout
+        int status = connect(port_, (struct sockaddr *)&addr, sizeof(addr));
+        if (status < 0)
+        {
+            if (errno == EINPROGRESS || errno == EBUSY)
             {
-                // Check that there was no connection error.
-                socklen_t lon = sizeof(int);
-                int valopt = sizeof(int);
-                getsockopt(port_, SOL_SOCKET, SO_ERROR, (void*)(&valopt), &lon);
-                if (valopt)
+                struct timeval timeout;
+                timeout.tv_sec = 3;
+                timeout.tv_usec = 0;
+                fd_set set;
+                FD_ZERO(&set);
+                FD_SET(port_, &set);
+
+                if(select(port_ + 1, NULL, &set, NULL, &timeout) > 0)
+                {
+                    // Set blocking mode again.
+                    flags = fcntl(port_, F_GETFL, 0);
+                    fcntl(port_, F_SETFL, flags & ~O_NONBLOCK);
+                    // Check that there was no connection error.
+                    socklen_t lon = sizeof(int);
+                    int valopt = sizeof(int);
+                    getsockopt(port_, SOL_SOCKET, SO_ERROR, (void*)(&valopt), &lon);
+                    if (valopt)
+                    {
+                        close(port_);
+                        port_ = -1;
+                    }
+                }
+                else
+                {
+                    close(port_);
                     port_ = -1;
+                }
             }
             else
+            {
+                close(port_);
                 port_ = -1;
+            }
         }
-        else
-            port_ = -1;
-    }
+        std::cout << "Bluetooth error:" << errno << std::endl;
 
-    // Set blocking mode again.
-    flags = fcntl(port_, F_GETFL, 0);
-    fcntl(port_, F_SETFL, flags & ~O_NONBLOCK);
+
+        // Set blocking mode again.
+        flags = fcntl(port_, F_GETFL, 0);
+        fcntl(port_, F_SETFL, flags & ~O_NONBLOCK);
+        if (port_ > -1)
+        {
+            flags = fcntl(port_, F_GETFL, 0);
+            fcntl(port_, F_SETFL, flags & ~O_NONBLOCK);
+        }
+    }
+    std::cout << "Experiment connected" << std::endl;
 
     // Main loop
     while(true)
