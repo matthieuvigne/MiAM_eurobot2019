@@ -75,12 +75,32 @@ void RPLidarHandler::addPointToBlob(LidarPoint *point)
 }
 
 
-void RPLidarHandler::update()
+int RPLidarHandler::update()
 {
     // Get pending data from the lidar.
     size_t nPoint = 8000;
     rplidar_response_measurement_node_hq_t data[nPoint];
-    lidar->getScanDataWithIntervalHq(data, nPoint);
+    int result = lidar->getScanDataWithIntervalHq(data, nPoint);
+
+    if (result == RESULT_OPERATION_TIMEOUT || nPoint == 8000)
+        return 0;
+
+    // Remove any robot that was added more than TIMEOUT ago.
+    // Element in the queue will be sorted by ascending addition time, so we just need to pop the elements.
+    bool wasElementRemoved = true;
+    double time = timeHandler_.getElapsedTime();
+    while (wasElementRemoved)
+    {
+        wasElementRemoved = false;
+        if (!detectedRobots_.empty())
+        {
+            if (detectedRobots_.front().addedTime < time - ROBOT_TIMEOUT)
+            {
+                detectedRobots_.pop_front();
+                wasElementRemoved = true;
+            }
+        }
+    }
 
     for(int i = 0; i < nPoint; i++)
     {
@@ -135,30 +155,11 @@ void RPLidarHandler::update()
                 addPointToBlob(&newPoint);
             }
         }
-
-        // Remove any robot that was added more than TIMEOUT ago.
-        // Element in the queue will be sorted by ascending addition time, so we just need to pop the elements.
-        bool wasElementRemoved = true;
-        double time = timeHandler_.getElapsedTime();
-        while (wasElementRemoved)
-        {
-            wasElementRemoved = false;
-            if (!detectedRobots_.empty())
-            {
-                if (detectedRobots_.front().addedTime < time - ROBOT_TIMEOUT)
-                {
-                    detectedRobots_.pop_front();
-                    wasElementRemoved = true;
-                }
-            }
-        }
-
-
         // Add new point to debugging buffer.
         debuggingBuffer_[debuggingBufferPosition_] = newPoint;
         debuggingBufferPosition_ = (debuggingBufferPosition_ + 1) % DEBUGGING_BUFFER_LENGTH;
     }
-
+    return nPoint;
 }
 
 void RPLidarHandler::stop()

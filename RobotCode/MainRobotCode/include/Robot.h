@@ -239,6 +239,7 @@
             int initMotorState_; ///< State of the motors during init.
 
             double curvilinearAbscissa_;
+            int nLidarPoints_;  ///< Number of points read by the lidar.
     };
 
     extern Robot robot;    ///< The robot instance, representing the current robot.

@@ -63,9 +63,9 @@ Robot::Robot():
 
     // Set initial positon.
     RobotPosition initialPosition;
-    initialPosition.x = 0;
-    initialPosition.y = 0;
-    initialPosition.theta = 0;
+    initialPosition.x = 150 + 75;
+    initialPosition.y = 1100 + 150 + 30;
+    initialPosition.theta = -M_PI_2;
     currentPosition_.set(initialPosition);
     currentBaseSpeed_.linear = 0;
     currentBaseSpeed_.angular = 0;
@@ -339,6 +339,19 @@ void Robot::lowLevelLoop()
         // Update motor position.
         motorPosition_ = stepperMotors_.getPosition();
 
+        // Update the lidar
+        nLidarPoints_ = lidar_.update();
+        coeff_ = avoidOtherRobots();
+        // Update leds.
+        if (coeff_ == 0)
+            screen_.turnOnLED(lcd::LEFT_LED);
+        else
+            screen_.turnOffLED(lcd::LEFT_LED);
+        if (coeff_ < 1.0)
+            screen_.turnOnLED(lcd::MIDDLE_LED);
+        else
+            screen_.turnOffLED(lcd::MIDDLE_LED);
+
         // Update position and perform tracking only after match start.
         if (hasMatchStarted_)
         {
@@ -346,20 +359,6 @@ void Robot::lowLevelLoop()
             RobotPosition currentPosition = currentPosition_.get();
             kinematics_.integratePosition(encoderIncrement, currentPosition);
             currentPosition_.set(currentPosition);
-
-            // Update the lidar
-            lidar_.update();
-            coeff_ = avoidOtherRobots();
-            // Update leds.
-            if (coeff_ == 0)
-                screen_.turnOnLED(lcd::LEFT_LED);
-            else
-                screen_.turnOffLED(lcd::LEFT_LED);
-            if (coeff_ < 1.0)
-                screen_.turnOnLED(lcd::MIDDLE_LED);
-            else
-                screen_.turnOffLED(lcd::MIDDLE_LED);
-            //~ std::cout << "[Robot.cpp l.315]: " << coeff_ << std::endl;
 
             // Perform trajectory tracking.
             updateTrajectoryFollowingTarget(dt);
@@ -456,6 +455,7 @@ void Robot::updateLog()
     logger_.setData(LOGGER_ANGULAR_P_I_D_CORRECTION, PIDAngular_.getCorrection());
     logger_.setData(LOGGER_RAIL_P_I_D_CORRECTION, PIDRail_.getCorrection());
     logger_.setData(LOGGER_DETECTION_COEFF, this->coeff_);
+    logger_.setData(LOGGER_LIDAR_N_POINTS, nLidarPoints_);
     logger_.writeLine();
 }
 

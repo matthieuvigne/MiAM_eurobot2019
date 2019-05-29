@@ -126,7 +126,8 @@
 
             /// \brief Update sensor data.
             /// \details This function should be called frequently in a loop.
-            void update();
+            /// \return Number of points recieved.
+            int update();
 
             // For debugging - display of the last scan data.
             LidarPoint debuggingBuffer_[DEBUGGING_BUFFER_LENGTH];

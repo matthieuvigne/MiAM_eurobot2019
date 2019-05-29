@@ -165,7 +165,7 @@ void matchStrategy()
     positions.clear();
     targetPosition = robot.getCurrentPosition();
     positions.push_back(targetPosition);
-    targetPosition.y = 1470; // Go a bit below the red zone to prevent pushing the atom too far away.
+    targetPosition.y = 1480; // Go a bit below the red zone to prevent pushing the atom too far away.
     positions.push_back(targetPosition);
     targetPosition.x = 450;
     positions.push_back(targetPosition);
@@ -295,7 +295,7 @@ void matchStrategy()
         robot.servos_.openTube(0);
         robot.servos_.openTube(1);
         robot.servos_.openTube(2);
-        robot.updateScore(6);   // One correct drop.
+        robot.updateScore(12);   // Two correct drop.
         usleep(500000);
         // Update score if needed.
         if (!wasBlueDropped)
@@ -316,7 +316,7 @@ void matchStrategy()
     targetPosition.x = 1300;
     positions.push_back(targetPosition);
     targetPosition.x = 1600;
-    targetPosition.y = 2000 - CHASSIS_WIDTH - 145;
+    targetPosition.y = 2000 - CHASSIS_WIDTH - 110;
     positions.push_back(targetPosition);
     targetPosition.x = 1625;
     positions.push_back(targetPosition);
@@ -346,7 +346,7 @@ void matchStrategy()
         robot.servos_.moveSuction(true);
         targetPosition = robot.getCurrentPosition();
         targetPosition.x = 3000 - 770;
-        targetPosition.y = 2000 - CHASSIS_WIDTH - 110;
+        targetPosition.y = 1640;
         traj = miam::trajectory::computeTrajectoryStraightLineToPoint(robot.getCurrentPosition(), targetPosition);
         endPosition = targetPosition;
         endPosition.y = 2000 - CHASSIS_FRONT - 100;

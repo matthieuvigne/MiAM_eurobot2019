@@ -132,6 +132,10 @@ double Robot::avoidOtherRobots()
     }
   }
 
+  // Before match: just return coeff, don't trigger memory.
+  if (!hasMatchStarted_)
+    return coeff;
+
   if(detected_point.theta > M_PI) detected_point.theta = detected_point.theta - 2*M_PI;
   //~ std::cout << "\r" << coeff << std::setw(10) << ": (" << detected_point.r
   //~           << ", " << detected_point.theta << ")" << std::endl;
