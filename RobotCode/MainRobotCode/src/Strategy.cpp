@@ -25,7 +25,9 @@ void getAtoms(double moveAmount = 50, bool moveSuction=true)
         robot.servos_.openTube(i);
     usleep(200000);
 
-    // Move
+    // Move, ignore detection for small small motion.
+    if (moveAmount < 60)
+        robot.ignoreDetection_ = true;
     RobotPosition targetPosition = robot.getCurrentPosition();
     TrajectoryVector traj = miam::trajectory::computeTrajectoryStraightLine(targetPosition, moveAmount);
     robot.setTrajectoryToFollow(traj);
@@ -45,11 +47,15 @@ void getAtoms(double moveAmount = 50, bool moveSuction=true)
     robot.setTrajectoryToFollow(traj);
     robot.waitForTrajectoryFinished();
     robot.servos_.turnOffPump();
+
+    // Reset detection
+    robot.ignoreDetection_ = false;
 }
 
 void matchStrategy()
 {
     std::cout << "Strategy thread started." << std::endl;
+
 
     // Update config.
     miam::trajectory::setTrajectoryGenerationConfig(robotdimensions::maxWheelSpeedTrajectory,
@@ -72,9 +78,13 @@ void matchStrategy()
     //**********************************************************
     // Go get first atoms.
     //**********************************************************
-    targetPosition.y = CHASSIS_FRONT + 50;
+    targetPosition.y = CHASSIS_FRONT + 70;
     traj = miam::trajectory::computeTrajectoryStraightLineToPoint(robot.getCurrentPosition(), targetPosition);
     robot.setTrajectoryToFollow(traj);
+    // Ignore detection for first second, to prevent being stuck in starting zone.
+    robot.ignoreDetection_ = true;
+    usleep(1000000);
+    robot.ignoreDetection_ = false;
     wasMoveSuccessful = robot.waitForTrajectoryFinished();
 
     getAtoms();
@@ -129,7 +139,7 @@ void matchStrategy()
     targetPosition.x = 600;
     targetPosition.y = 700;
     positions.push_back(targetPosition);
-    targetPosition.y = 520 + CHASSIS_FRONT;
+    targetPosition.y = 450 + 70 + CHASSIS_FRONT;
     positions.push_back(targetPosition);
     traj = miam::trajectory::computeTrajectoryRoundedCorner(positions, 100.0, 0.05);
     robot.setTrajectoryToFollow(traj);
@@ -155,7 +165,7 @@ void matchStrategy()
     positions.clear();
     targetPosition = robot.getCurrentPosition();
     positions.push_back(targetPosition);
-    targetPosition.y = 1550;
+    targetPosition.y = 1470; // Go a bit below the red zone to prevent pushing the atom too far away.
     positions.push_back(targetPosition);
     targetPosition.x = 450;
     positions.push_back(targetPosition);
@@ -214,7 +224,7 @@ void matchStrategy()
     targetPosition.x = 900;
     targetPosition.y = 950;
     positions.push_back(targetPosition);
-    targetPosition.y = 520 + CHASSIS_FRONT;
+    targetPosition.y = 450 + 70 + CHASSIS_FRONT;
     positions.push_back(targetPosition);
     traj = miam::trajectory::computeTrajectoryRoundedCorner(positions, 100.0, 0.05);
     robot.setTrajectoryToFollow(traj);
@@ -336,7 +346,7 @@ void matchStrategy()
         robot.servos_.moveSuction(true);
         targetPosition = robot.getCurrentPosition();
         targetPosition.x = 3000 - 770;
-        targetPosition.y = 1650;
+        targetPosition.y = 2000 - CHASSIS_WIDTH - 110;
         traj = miam::trajectory::computeTrajectoryStraightLineToPoint(robot.getCurrentPosition(), targetPosition);
         endPosition = targetPosition;
         endPosition.y = 2000 - CHASSIS_FRONT - 100;
@@ -371,6 +381,7 @@ void matchStrategy()
             robot.servos_.tapOpen();
         }
     }
+    robot.servos_.turnOffPump();
 
     std::cout << "Strategy thread ended" << std::endl;
 }

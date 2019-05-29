@@ -160,6 +160,8 @@
             {
                 return isPlayingRightSide_;
             }
+
+            bool ignoreDetection_; ///<< Turn off detection in some very specific instants.
         private:
             /// \brief Update the logfile with current values.
             void updateLog();

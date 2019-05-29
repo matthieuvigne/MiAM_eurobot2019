@@ -93,7 +93,7 @@ void RPLidarHandler::update()
         lastPointAngle_ = newPoint.theta;
 
         // Determine if the current point is to be added to the blob or not.
-        if(newPoint.r < MAX_DISTANCE && std::abs(lastPointAddedToBlobDistance_ - newPoint.r) < BLOB_THICKNESS)
+        if(newPoint.r < MAX_DISTANCE && std::abs(lastPointAddedToBlobDistance_ - newPoint.r) < BLOB_THICKNESS && newPoint.r > MIN_DISTANCE)
         {
             addPointToBlob(&newPoint);
         }
@@ -121,7 +121,7 @@ void RPLidarHandler::update()
                         double blobAngle = modulo(a.theta - arcAngle / 2.0);
 
                         LidarPoint robot(blobDistance, blobAngle);
-                        detectedRobots_.push_back(DetectedRobot(robot, timeHandler_.getElapsedTime()));
+                        detectedRobots_.push_back(DetectedRobot(robot, timeHandler_.getElapsedTime(), nPoints));
                     }
                 }
                 // Clear blob.

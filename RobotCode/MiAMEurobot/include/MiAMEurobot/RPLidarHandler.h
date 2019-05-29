@@ -23,6 +23,7 @@
 
     const double LIDAR_RPM = 600.0;    ///< Lidar velocity, in rpm.
     const double MAX_DISTANCE = 1700.0; ///< Maximum distance for processing, in mm: points above that distance are discarded.
+    const double MIN_DISTANCE = 50.0; ///< Minimum distance for processing, in mm: points below that distance are discarded.
 
     const double BLOB_THICKNESS = 50.0;///< Distance between two adjacent points to consider that they belong to the same blob, in mm.
     const double BLOB_MIN_SIZE = 30.0; ///< Minimum size of the blob to consider it as a robot.
@@ -86,14 +87,16 @@
         {
         }
 
-        DetectedRobot(LidarPoint const& p, double const& t):
+        DetectedRobot(LidarPoint const& p, double const& t, int n = 0):
             point(p),
-            addedTime(t)
+            addedTime(t),
+            nPoints(n)
         {
         }
 
         LidarPoint point; ///< Robot position.
         double addedTime; ///< Absolute time at which the robot was detected.
+        int nPoints;    ///< Number of points in the blob.
     };
 
 

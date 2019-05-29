@@ -36,7 +36,8 @@ Robot::Robot():
     hasExperimentStarted_(false),
     experiment_(),
     lidar_(M_PI_4),
-    curvilinearAbscissa_(0.0)
+    curvilinearAbscissa_(0.0),
+    ignoreDetection_(false)
 {
     kinematics_ = DrivetrainKinematics(robotdimensions::wheelRadius,
                                       robotdimensions::wheelSpacing,
@@ -51,14 +52,14 @@ Robot::Robot():
     std::time_t t = std::time(nullptr);
     char timestamp[100];
     std::strftime(timestamp, sizeof(timestamp), "%Y%m%dT%H%M%SZ", std::localtime(&t));
-    std::string filename = "/tmp/log" + std::string(timestamp) + ".csv";
+    std::string filename = "logs/log" + std::string(timestamp) + ".csv";
     std::string headers = getHeaderStringList();
     // Log robot dimensions in header.
     std::string info = "wheelRadius:" + std::to_string(robotdimensions::wheelRadius) + \
                         "_wheelSpacing:" + std::to_string(robotdimensions::wheelSpacing) + \
                         "_stepSize:" + std::to_string(robotdimensions::stepSize);
 
-    logger_ = Logger(filename, "Drivetrain test robot", info, getHeaderStringList());
+    logger_ = Logger(filename, "Match code", info, getHeaderStringList());
 
     // Set initial positon.
     RobotPosition initialPosition;
@@ -349,6 +350,15 @@ void Robot::lowLevelLoop()
             // Update the lidar
             lidar_.update();
             coeff_ = avoidOtherRobots();
+            // Update leds.
+            if (coeff_ == 0)
+                screen_.turnOnLED(lcd::LEFT_LED);
+            else
+                screen_.turnOffLED(lcd::LEFT_LED);
+            if (coeff_ < 1.0)
+                screen_.turnOnLED(lcd::MIDDLE_LED);
+            else
+                screen_.turnOffLED(lcd::MIDDLE_LED);
             //~ std::cout << "[Robot.cpp l.315]: " << coeff_ << std::endl;
 
             // Perform trajectory tracking.

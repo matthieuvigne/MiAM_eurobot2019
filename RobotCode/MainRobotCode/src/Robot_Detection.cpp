@@ -3,6 +3,8 @@
 /// \copyright GNU GPLv3
 #include "Robot.h"
 
+int lastNumberOfPoints = 0;
+
 /// Function OK for robot playing right
 bool Robot::isLidarPointWithinTable(LidarPoint const& point)
 {
@@ -21,13 +23,12 @@ bool Robot::isLidarPointWithinTable(LidarPoint const& point)
   if(T_x_fi < table_dimensions::table_max_x and T_x_fi > table_dimensions::table_min_x
     and T_y_fi < table_dimensions::table_max_y and T_y_fi > table_dimensions::table_min_y )
   {
-    //~ std::cout <<  T_x_fi << " " << T_y_fi << std::endl;
-
       // Remove ramp.
       if(T_y_fi < table_dimensions::ramp_max_y
         and T_x_fi > table_dimensions::ramp_min_x
         and T_x_fi < table_dimensions::ramp_max_x)
             return false;
+    std::cout <<  T_x_fi << " " << T_y_fi << "r" << point.r << " theta" << point.theta << "np" << lastNumberOfPoints << std::endl;
     return true;
   }
 
@@ -60,8 +61,9 @@ double Robot::avoidOtherRobots()
   {
     // Get the Lidar Point, symeterize it if needed and check its projection
     LidarPoint const point = this->isPlayingRightSide_
-      ? LidarPoint(robot.point.r, 2*M_PI-robot.point.theta)
+      ? LidarPoint(robot.point.r, -robot.point.theta)
       : LidarPoint(robot.point.r, robot.point.theta);
+    lastNumberOfPoints = robot.nPoints;
     if(!this->isLidarPointWithinTable(point)) continue;
 
     if(forward_) // If the robot is going forward
