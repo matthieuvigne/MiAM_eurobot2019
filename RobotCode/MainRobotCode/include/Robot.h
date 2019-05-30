@@ -220,7 +220,6 @@
 
             // Kinematics
             DrivetrainKinematics kinematics_;
-            bool forward_ = true;
             double coeff_ = 1.0;
 
             // Init variables.

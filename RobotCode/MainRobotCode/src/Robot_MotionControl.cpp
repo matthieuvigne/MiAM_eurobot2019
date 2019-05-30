@@ -9,7 +9,6 @@ bool Robot::followTrajectory(Trajectory *traj, double const& curvilinearAbscissa
 {
     // Get current trajectory state.
     trajectoryPoint_ = traj->getCurrentPoint(curvilinearAbscissa_);
-    forward_ = (trajectoryPoint_.linearVelocity >= 0);
 
     // Update trajectory velocity based on lidar coeff.
     trajectoryPoint_.linearVelocity *= coeff_;
@@ -107,7 +106,10 @@ void Robot::updateTrajectoryFollowingTarget(double const& dt)
         // Load first trajectory, look if we are done following it.
         Trajectory *traj = currentTrajectories_.at(0).get();
         // Look if first trajectory is done.
-        //~ double curvilinearAbscissa_ = currentTime_ - trajectoryStartTime_;
+        // No avoidance if point turn.
+        if (traj->getCurrentPoint(curvilinearAbscissa_).linearVelocity == 0)
+            coeff_ = 1.0;
+
         curvilinearAbscissa_ += coeff_ * dt;
         if(curvilinearAbscissa_ > traj->getDuration())
         {

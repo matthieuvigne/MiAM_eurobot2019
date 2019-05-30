@@ -172,14 +172,37 @@ void matchStrategy()
     robot.setTrajectoryToFollow(traj);
     wasMoveSuccessful = robot.waitForTrajectoryFinished();
 
+    if (!wasMoveSuccessful)
+    {
+        // Could not go to red zone: try to go to green zone instead.
+        targetPosition = robot.getCurrentPosition();
+        targetPosition.y = 1250;
+        traj = miam::trajectory::computeTrajectoryStraightLineToPoint(robot.getCurrentPosition(), targetPosition, 0, true);
+        robot.setTrajectoryToFollow(traj);
+        robot.waitForTrajectoryFinished();
+        targetPosition = robot.getCurrentPosition();
+        targetPosition.x = 750;
+        traj = miam::trajectory::computeTrajectoryStraightLineToPoint(robot.getCurrentPosition(), targetPosition);
+        robot.setTrajectoryToFollow(traj);
+        robot.waitForTrajectoryFinished();
+    }
+
     robot.servos_.tapOpen();
     robot.servos_.openTube(0);
     robot.servos_.openTube(1);
     robot.servos_.openTube(2);
     if (wasMoveSuccessful)
+    {
         robot.updateScore(13); // Three atoms pushed in the zone, two of the right color.
-    if (hasAtoms)
-        robot.updateScore(13); // Three atoms dropped in the zone, two of the right color.
+        if (hasAtoms)
+            robot.updateScore(13); // Three atoms dropped in the zone, two of the right color.
+    }
+    else
+    {
+        robot.updateScore(7); // Two atoms pushed in the zone, one of the right color.
+        if (hasAtoms)
+            robot.updateScore(8); // Three atoms dropped in the zone, one of the right color.
+    }
 
     // Move back
     targetPosition = robot.getCurrentPosition();
@@ -289,12 +312,30 @@ void matchStrategy()
         robot.setTrajectoryToFollow(traj);
         wasMoveSuccessful = robot.waitForTrajectoryFinished();
 
+        if (!wasMoveSuccessful)
+        {
+            // Could not go to red zone: try to go to green zone instead.
+            targetPosition = robot.getCurrentPosition();
+            targetPosition.y = 1250;
+            traj = miam::trajectory::computeTrajectoryStraightLineToPoint(robot.getCurrentPosition(), targetPosition, 0, true);
+            robot.setTrajectoryToFollow(traj);
+            robot.waitForTrajectoryFinished();
+            targetPosition = robot.getCurrentPosition();
+            targetPosition.x = 750;
+            traj = miam::trajectory::computeTrajectoryStraightLineToPoint(robot.getCurrentPosition(), targetPosition);
+            robot.setTrajectoryToFollow(traj);
+            robot.waitForTrajectoryFinished();
+        }
+
         // Drop everything.
         robot.servos_.tapOpen();
         robot.servos_.openTube(0);
         robot.servos_.openTube(1);
         robot.servos_.openTube(2);
-        robot.updateScore(12);   // Two correct drop.
+        if (wasMoveSuccessful)
+            robot.updateScore(12);   // Two correct drop.
+        else
+            robot.updateScore(7);   // Two correct drop.
         usleep(500000);
         // Update score if needed.
         if (!wasBlueDropped)
@@ -310,11 +351,12 @@ void matchStrategy()
     // Drop the blue atom in the particle accelerator.
     //**********************************************************
     targetPosition = robot.getCurrentPosition();
-    positions.clear();
-    positions.push_back(targetPosition);
     targetPosition.x = 1500;
+    traj = miam::trajectory::computeTrajectoryStraightLineToPoint(robot.getCurrentPosition(), targetPosition, 0, true);
+    robot.setTrajectoryToFollow(traj);
+    wasMoveSuccessful = robot.waitForTrajectoryFinished();
+    targetPosition = robot.getCurrentPosition();
     targetPosition.y = 2000 - CHASSIS_WIDTH - 120;
-    positions.push_back(targetPosition);
     traj = miam::trajectory::computeTrajectoryStraightLineToPoint(robot.getCurrentPosition(), targetPosition, 0, true);
     robot.setTrajectoryToFollow(traj);
     wasMoveSuccessful = robot.waitForTrajectoryFinished();

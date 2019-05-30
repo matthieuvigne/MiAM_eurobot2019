@@ -49,12 +49,12 @@ double Robot::avoidOtherRobots()
   detected_point.r = 1e6;
   detected_point.theta = 0.;
 
-  // If the robot was previously stopped
-  // Ensure it stays stopped for a minimum number of iterations
-  if(num_stop_iters > 0 and num_stop_iters < min_stop_iters)
+  // Update trajectory.
+  bool forward = true;
+  if (!currentTrajectories_.empty())
   {
-    num_stop_iters += 1;
-    return 0.;
+    miam::trajectory::TrajectoryPoint trajectoryPoint = currentTrajectories_.at(0)->getCurrentPoint(curvilinearAbscissa_);
+    forward = (trajectoryPoint.linearVelocity >= 0);
   }
 
   for(const DetectedRobot& robot : lidar_.detectedRobots_)
@@ -66,7 +66,7 @@ double Robot::avoidOtherRobots()
     lastNumberOfPoints = robot.nPoints;
     if(!this->isLidarPointWithinTable(point)) continue;
 
-    if(forward_) // If the robot is going forward
+    if(forward) // If the robot is going forward
     {
       if(point.r < detection::r1)
       {
@@ -133,12 +133,19 @@ double Robot::avoidOtherRobots()
   }
 
   // Before match: just return coeff, don't trigger memory.
-  if (!hasMatchStarted_)
+  if (!hasMatchStarted_ || currentTrajectories_.size() == 0)
+  {
+    num_stop_iters = 0;
     return coeff;
+  }
 
-  if(detected_point.theta > M_PI) detected_point.theta = detected_point.theta - 2*M_PI;
-  //~ std::cout << "\r" << coeff << std::setw(10) << ": (" << detected_point.r
-  //~           << ", " << detected_point.theta << ")" << std::endl;
+  // If the robot was previously stopped
+  // Ensure it stays stopped for a minimum number of iterations
+  if(num_stop_iters > 0 and num_stop_iters < min_stop_iters)
+  {
+    num_stop_iters ++;
+    return 0.;
+  }
 
   if (!is_robot_stopped && num_stop_iters > 0)
   {
@@ -151,7 +158,6 @@ double Robot::avoidOtherRobots()
       }
      num_stop_iters = 0;
   }
-
 
   if(is_robot_stopped)
   {
