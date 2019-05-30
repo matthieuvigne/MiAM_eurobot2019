@@ -126,7 +126,7 @@ void Robot::updateTrajectoryFollowingTarget(double const& dt)
         }
         // If we are more than 1 second after the end of the trajectory, stop it anyway.
         // We hope to have servoed the robot is less than that anyway.
-        if(curvilinearAbscissa_ - 1.0 >  traj->getDuration())
+        if(curvilinearAbscissa_ - 0.1 >  traj->getDuration())
         {
             std::cout << "Timeout on trajectory following" << std::endl;
             currentTrajectories_.erase(currentTrajectories_.begin());
