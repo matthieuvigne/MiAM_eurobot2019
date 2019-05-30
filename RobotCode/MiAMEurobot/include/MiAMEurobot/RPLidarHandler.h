@@ -25,17 +25,17 @@
     const double MAX_DISTANCE = 1700.0; ///< Maximum distance for processing, in mm: points above that distance are discarded.
     const double MIN_DISTANCE = 50.0; ///< Minimum distance for processing, in mm: points below that distance are discarded.
 
-    const double BLOB_THICKNESS = 50.0;///< Distance between two adjacent points to consider that they belong to the same blob, in mm.
-    const double BLOB_MIN_SIZE = 30.0; ///< Minimum size of the blob to consider it as a robot.
+    const double BLOB_THICKNESS = 40.0;///< Distance between two adjacent points to consider that they belong to the same blob, in mm.
+    const double BLOB_MIN_SIZE = 40.0; ///< Minimum size of the blob to consider it as a robot.
     const double BLOB_MAX_SIZE = 200.0; ///< Maximum size of the blob to consider it as a robot.
 
     const int BLOB_BREAK = 2;///< Number of points needed to consider that a block has come to an endMinimum number of points to be a valid obstacle.
 
-    const int MIN_POINTS = 6;///< Minimum number of points inside a blob to be considered a robot.
+    const int MIN_POINTS = 9;///< Minimum number of points inside a blob to be considered a robot.
                              ///< At 1.5m, 600rpm, 8ksamples/s, a circle of 70mm corresponds to 6 points.
 
-    const double ROBOT_TIMEOUT = 1.25 * 60 / LIDAR_RPM; ///< Timeout, in s, to remove a robot for the list of ostacle.
-                                                       ///  Corresponds to 1.5 theoretical lidar motion.
+    const double ROBOT_TIMEOUT = 1.2 * 60 / LIDAR_RPM; ///< Timeout, in s, to remove a robot for the list of ostacle.
+                                                       ///  Corresponds to 1.2 theoretical lidar motion.
 
     /// \brief Structure representing a data point returned by the lidar.
     struct LidarPoint
