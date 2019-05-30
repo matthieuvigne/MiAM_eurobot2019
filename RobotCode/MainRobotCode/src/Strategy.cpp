@@ -119,6 +119,9 @@ void matchStrategy()
         robot.updateScore(18); // 3 atoms with the right color inside the zone.
     robot.moveRail(0.3);
     robot.servos_.moveSuction(true);
+    robot.servos_.openTube(0);
+    robot.servos_.openTube(1);
+    robot.servos_.openTube(2);
 
 
     //**********************************************************
@@ -336,10 +339,10 @@ void matchStrategy()
             robot.updateScore(12);   // Two correct drop.
         else
             robot.updateScore(7);   // Two correct drop.
-        usleep(500000);
         // Update score if needed.
         if (!wasBlueDropped)
             robot.updateScore(1);
+        usleep(500000);
         targetPosition = robot.getCurrentPosition();
         traj = miam::trajectory::computeTrajectoryStraightLine(targetPosition, -80);
         robot.setTrajectoryToFollow(traj);
@@ -415,6 +418,7 @@ void matchStrategy()
             robot.servos_.openTube(1);
             robot.servos_.closeTube(2);
             robot.servos_.turnOnPump();
+            robot.updateScore(20); // 20 pts for goldium drop.
             usleep(500000);
             targetPosition = robot.getCurrentPosition();
             traj = miam::trajectory::computeTrajectoryStraightLine(targetPosition, 40);
@@ -429,12 +433,11 @@ void matchStrategy()
             traj = miam::trajectory::computeTrajectoryStraightLine(targetPosition, -200);
             robot.setTrajectoryToFollow(traj);
             robot.waitForTrajectoryFinished();
-            robot.updateScore(20); // 20 pts for goldium drop.
             robot.servos_.openTube(2);
             robot.servos_.tapOpen();
         }
     }
     robot.servos_.turnOffPump();
 
-    std::cout << "Strategy thread ended" << std::endl;
+    std::cout << "Strategy thread ended" << robot.getMatchTime() << std::endl;
 }

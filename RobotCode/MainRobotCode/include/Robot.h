@@ -94,12 +94,17 @@
     namespace detection {
 
       // Zone radius
-      double constexpr r1 = 500;
-      double constexpr r2 = 750;
+      double constexpr r1 = 400;
+      double constexpr r2 = 700;
 
       // Zone angular width
       double constexpr theta1 = M_PI_2;
-      double constexpr theta2 = 0.65;
+      double constexpr theta2 = 0.70;
+
+      double const x_max = 500;
+      double const y_max = 300;
+      double const xfar_max = 700;
+      double const yfar_max = 500;
     }
 
     // Dimensions of the table
@@ -160,6 +165,11 @@
             {
                 return isPlayingRightSide_;
             }
+
+            /// \brief Get time in current match.
+            /// \return Time since start of the match, or 0 if not started.
+            double getMatchTime();
+
             void performPositionReset(miam::RobotPosition const& resetPosition, bool const& resetX, bool const& resetY, bool const& resetTheta);
 
             bool ignoreDetection_; ///<< Turn off detection in some very specific instants.

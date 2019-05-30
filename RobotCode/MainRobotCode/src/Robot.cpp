@@ -479,6 +479,13 @@ void Robot::updateLog()
     logger_.writeLine();
 }
 
+double Robot::getMatchTime()
+{
+    if (!hasMatchStarted_)
+        return 0;
+    return currentTime_ - matchStartTime_;
+}
+
 void Robot::updateScore(int scoreIncrement)
 {
     mutex_.lock();

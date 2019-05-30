@@ -66,69 +66,37 @@ double Robot::avoidOtherRobots()
     lastNumberOfPoints = robot.nPoints;
     if(!this->isLidarPointWithinTable(point)) continue;
 
-    if(forward) // If the robot is going forward
-    {
-      if(point.r < detection::r1)
-      {
-        if ( point.theta < detection::theta1
-              or point.theta > 2*M_PI - detection::theta1 )
-          {
-            coeff = 0.0;
-            motorSpeed_[0] = 0.0;
-            motorSpeed_[1] = 0.0;
-            is_robot_stopped = true;
-            detected_point = point;
-          }
-      }
-      else if(point.r < detection::r2)
-      {
-        const double theta_max = detection::theta1
-          - (point.r - detection::r1) / (detection::r2 - detection::r1)
-            * (detection::theta1 - detection::theta2);
+    double x = point.r * std::cos(point.theta + (forward ? 0: M_PI));
+    double y = point.r * std::sin(point.theta + (forward ? 0: M_PI));
 
-        if(point.theta < theta_max or point.theta > 2*M_PI-theta_max)
-        {
-          const double current_coeff = std::max(0.2, (point.r - detection::r1)
-            / (detection::r2 - detection::r1));
-          if(current_coeff < coeff)
-          {
-            coeff = current_coeff;
-            detected_point = point;
-          }
-        }
-      }
-    }
-    else // If the robot is going backward
+    if (x > 0)
     {
-        //~ std::cout << "backward" << std::endl;
-      if(point.r < detection::r1)
-      {
-          if ( point.theta > M_PI-detection::theta1
-               and point.theta < M_PI+detection::theta1 )
-          {
-            coeff = 0.0;
-            motorSpeed_[0] = 0.0;
-            motorSpeed_[1] = 0.0;
-            is_robot_stopped = true;
-          }
-      }
-      else if(point.r < detection::r2)
-      {
-        const double theta_max =
-          detection::theta1 - (point.r - detection::r1) / (detection::r2 - detection::r1)
-            * (detection::theta1 - detection::theta2);
-
-        if(point.theta > M_PI-theta_max and point.theta < M_PI+theta_max)
+        if (x < detection::x_max)
         {
-          const double current_coeff = std::max(0.2, (point.r - detection::r1)
-            / (detection::r2 - detection::r1));
-          if(current_coeff < coeff)
-          {
-            coeff = current_coeff;
-            detected_point = point;
-          }
+            if (std::abs(y) < detection::y_max)
+            {
+                // Stop robot.
+                coeff = 0.0;
+                motorSpeed_[0] = 0.0;
+                motorSpeed_[1] = 0.0;
+                is_robot_stopped = true;
+                detected_point = point;
+            }
         }
-      }
+        else if (x < detection::xfar_max)
+        {
+            double maximumY = detection::y_max + (x - detection::x_max) / (detection::xfar_max - detection::x_max) * (detection::yfar_max - detection::y_max);
+            if (std::abs(y) < maximumY)
+            {
+                const double current_coeff = std::min(1.0, std::max(0.2, (point.r - detection::r1)
+                    / (detection::r2 - detection::r1)));
+                if(current_coeff < coeff)
+                {
+                    coeff = current_coeff;
+                    detected_point = point;
+                }
+            }
+        }
     }
   }
 
