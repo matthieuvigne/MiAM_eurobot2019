@@ -37,7 +37,8 @@ Robot::Robot():
     experiment_(),
     lidar_(M_PI_4),
     curvilinearAbscissa_(0.0),
-    ignoreDetection_(false)
+    ignoreDetection_(false),
+    askedForReset_(false)
 {
     kinematics_ = DrivetrainKinematics(robotdimensions::wheelRadius,
                                       robotdimensions::wheelSpacing,
@@ -271,6 +272,19 @@ bool Robot::setupBeforeMatchStart()
 }
 
 
+void Robot::performPositionReset(miam::RobotPosition const& resetPosition, bool const& resetX, bool const& resetY, bool const& resetTheta)
+{
+    reset_ = currentPosition_.get();
+    if(resetX)
+        reset_.x = resetPosition.x;
+    if(resetY)
+        reset_.y = resetPosition.y;
+    if(resetTheta)
+        reset_.theta = resetPosition.theta;
+    askedForReset_ = true;
+    usleep(20000);
+}
+
 void Robot::lowLevelLoop()
 {
     std::cout << "Low-level loop started." << std::endl;
@@ -301,6 +315,12 @@ void Robot::lowLevelLoop()
                 robot.screen_.turnOnLED(lcd::RIGHT_LED);
             else
                 robot.screen_.turnOffLED(lcd::RIGHT_LED);
+        }
+
+        if (askedForReset_)
+        {
+            askedForReset_ = false;
+            currentPosition_.set(reset_);
         }
 
         // If match hasn't started, look at switch value to see if it has.

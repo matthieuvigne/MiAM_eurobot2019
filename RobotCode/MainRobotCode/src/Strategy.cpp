@@ -77,7 +77,7 @@ void matchStrategy()
     //**********************************************************
     // Go get first atoms.
     //**********************************************************
-    targetPosition.y = CHASSIS_FRONT + 70;
+    targetPosition.y = CHASSIS_FRONT + 60;
     traj = miam::trajectory::computeTrajectoryStraightLineToPoint(robot.getCurrentPosition(), targetPosition);
     robot.setTrajectoryToFollow(traj);
     // Ignore detection for first second, to prevent being stuck in starting zone.
@@ -312,27 +312,39 @@ void matchStrategy()
     targetPosition = robot.getCurrentPosition();
     positions.clear();
     positions.push_back(targetPosition);
-    targetPosition.x = 1300;
+    targetPosition.x = 1500;
+    targetPosition.y = 2000 - CHASSIS_WIDTH - 120;
     positions.push_back(targetPosition);
-    targetPosition.x = 1600;
-    targetPosition.y = 2000 - CHASSIS_WIDTH - 110;
-    positions.push_back(targetPosition);
-    targetPosition.x = 1625;
-    positions.push_back(targetPosition);
-    traj = miam::trajectory::computeTrajectoryRoundedCorner(positions, 80.0, 0.1);
+    traj = miam::trajectory::computeTrajectoryStraightLineToPoint(robot.getCurrentPosition(), targetPosition, 0, true);
     robot.setTrajectoryToFollow(traj);
-    usleep(100000);
-    while (!robot.isTrajectoryFinished())
+    wasMoveSuccessful = robot.waitForTrajectoryFinished();
+    if (wasMoveSuccessful)
     {
         targetPosition = robot.getCurrentPosition();
-        if (targetPosition.x > 1250)
+        targetPosition.y = 2000 - CHASSIS_BACK;
+        traj = miam::trajectory::computeTrajectoryStraightLineToPoint(robot.getCurrentPosition(), targetPosition, 0, true);
+        robot.setTrajectoryToFollow(traj);
+        wasMoveSuccessful = robot.waitForTrajectoryFinished();
+
+        if (wasMoveSuccessful)
         {
-            robot.servos_.unfoldArms(robot.isPlayingRightSide());
-            break;
+            targetPosition.y = 2000 - CHASSIS_BACK - 30;
+            robot.performPositionReset(targetPosition, false, true, false);
+            targetPosition = robot.getCurrentPosition();
+            traj = miam::trajectory::computeTrajectoryStraightLine(targetPosition, 90);
+            robot.setTrajectoryToFollow(traj);
+            wasMoveSuccessful = robot.waitForTrajectoryFinished();
+            if (wasMoveSuccessful)
+            {
+                robot.servos_.unfoldArms(robot.isPlayingRightSide());
+                targetPosition = robot.getCurrentPosition();
+                targetPosition.x = 1780;
+                traj = miam::trajectory::computeTrajectoryStraightLineToPoint(robot.getCurrentPosition(), targetPosition, 0, true);
+                robot.setTrajectoryToFollow(traj);
+                wasMoveSuccessful = robot.waitForTrajectoryFinished();
+            }
         }
     }
-    robot.waitForTrajectoryFinished();
-    wasMoveSuccessful = robot.wasTrajectoryFollowingSuccessful();
     robot.servos_.raiseArms(robot.isPlayingRightSide());
     if (wasMoveSuccessful)
     {
@@ -346,7 +358,7 @@ void matchStrategy()
         targetPosition = robot.getCurrentPosition();
         targetPosition.x = 3000 - 770;
         targetPosition.y = 1640;
-        traj = miam::trajectory::computeTrajectoryStraightLineToPoint(robot.getCurrentPosition(), targetPosition);
+        traj = miam::trajectory::computeTrajectoryStraightLineToPoint(robot.getCurrentPosition(), targetPosition, 0, true);
         endPosition = targetPosition;
         endPosition.y = 2000 - CHASSIS_FRONT - 100;
         traj = traj + miam::trajectory::computeTrajectoryStraightLineToPoint(targetPosition, endPosition);
@@ -372,7 +384,7 @@ void matchStrategy()
             usleep(500000);
             robot.servos_.turnOffPump();
             usleep(500000);
-            traj = miam::trajectory::computeTrajectoryStraightLine(targetPosition, -150);
+            traj = miam::trajectory::computeTrajectoryStraightLine(targetPosition, -200);
             robot.setTrajectoryToFollow(traj);
             robot.waitForTrajectoryFinished();
             robot.updateScore(20); // 20 pts for goldium drop.

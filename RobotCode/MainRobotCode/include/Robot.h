@@ -160,6 +160,7 @@
             {
                 return isPlayingRightSide_;
             }
+            void performPositionReset(miam::RobotPosition const& resetPosition, bool const& resetX, bool const& resetY, bool const& resetTheta);
 
             bool ignoreDetection_; ///<< Turn off detection in some very specific instants.
         private:
@@ -240,6 +241,9 @@
 
             double curvilinearAbscissa_;
             int nLidarPoints_;  ///< Number of points read by the lidar.
+
+            RobotPosition reset_;
+            bool askedForReset_;
     };
 
     extern Robot robot;    ///< The robot instance, representing the current robot.

@@ -64,7 +64,7 @@ bool AbstractRobot::waitForTrajectoryFinished()
 
 bool AbstractRobot::isTrajectoryFinished()
 {
-    return (currentTrajectories_.size() == 0 && newTrajectories_.size() == 0 && wasTrajectoryFollowingSuccessful_);
+    return (currentTrajectories_.size() == 0 && newTrajectories_.size() == 0);
 }
 
 
