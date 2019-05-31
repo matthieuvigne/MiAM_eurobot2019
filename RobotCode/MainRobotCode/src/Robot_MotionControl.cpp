@@ -149,9 +149,9 @@ void Robot::updateTrajectoryFollowingTarget(double const& dt)
         }
     }
 
-    // Send target to motors.
-    stepperMotors_.setSpeed(motorSpeed_);
     // Read and clear error
     stepperMotors_.getError();
+    // Send target to motors.
+    stepperMotors_.setSpeed(motorSpeed_);
 }
 

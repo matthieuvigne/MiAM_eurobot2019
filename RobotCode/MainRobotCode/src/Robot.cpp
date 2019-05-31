@@ -201,6 +201,17 @@ bool Robot::setupBeforeMatchStart()
             for (int i = 0; i < 3; i++)
                 servos_.openTube(i);
             servos_.foldArms();
+            // Test motors.
+            std::cout << "here" << std::endl;
+            robot.stepperMotors_.getError();
+            std::vector<double> speed;
+            motorSpeed_[0] = 150;
+            motorSpeed_[1] = 150;
+            stepperMotors_.setSpeed(motorSpeed_);
+            usleep(300000);
+            motorSpeed_[0] = 0;
+            motorSpeed_[1] = 0;
+            stepperMotors_.setSpeed(motorSpeed_);
         }
     }
     else if (startupStatus_ == startupstatus::WAITING_FOR_CABLE)
