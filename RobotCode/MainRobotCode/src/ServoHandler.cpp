@@ -148,3 +148,11 @@ void ServoHandler::raiseArms(bool isPlayingRightSide)
         maestro_.setPosition(4, 1000);
 }
 
+void ServoHandler::moveArmForDrop(bool isPlayingRightSide)
+{
+    if (!isPlayingRightSide)
+        maestro_.setPosition(5, 1185);
+    else
+        maestro_.setPosition(4, 1170);
+}
+

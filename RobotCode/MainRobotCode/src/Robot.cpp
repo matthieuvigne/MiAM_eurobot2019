@@ -31,7 +31,7 @@ Robot::Robot():
     isArduinoInit_(false),
     isLidarInit_(false),
     startupStatus_(startupstatus::INIT),
-    initMotorState_(0),
+    initMotorState_(1),
     score_(5),  // Initial score: 5, for the experiment.
     hasExperimentStarted_(false),
     experiment_(),

@@ -39,6 +39,7 @@
                 void foldArms();
                 void unfoldArms(bool isPlayingRightSide);
                 void raiseArms(bool isPlayingRightSide);
+                void moveArmForDrop(bool isPlayingRightSide);
             private:
                 MaestroDriver maestro_;
         };
