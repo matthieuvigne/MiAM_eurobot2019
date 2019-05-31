@@ -350,11 +350,6 @@ void matchStrategy()
     traj = miam::trajectory::computeTrajectoryStraightLineToPoint(robot.getCurrentPosition(), targetPosition, 0, true);
     robot.setTrajectoryToFollow(traj);
     wasMoveSuccessful = robot.waitForTrajectoryFinished();
-    targetPosition = robot.getCurrentPosition();
-    targetPosition.y = 2000 - CHASSIS_WIDTH - 120;
-    traj = miam::trajectory::computeTrajectoryStraightLineToPoint(robot.getCurrentPosition(), targetPosition, 0, true);
-    robot.setTrajectoryToFollow(traj);
-    wasMoveSuccessful = robot.waitForTrajectoryFinished();
     if (wasMoveSuccessful)
     {
         targetPosition = robot.getCurrentPosition();

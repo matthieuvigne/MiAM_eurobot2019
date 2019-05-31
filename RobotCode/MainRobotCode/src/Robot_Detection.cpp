@@ -3,8 +3,6 @@
 /// \copyright GNU GPLv3
 #include "Robot.h"
 
-int lastNumberOfPoints = 0;
-
 /// Function OK for robot playing right
 bool Robot::isLidarPointWithinTable(LidarPoint const& point)
 {
@@ -39,8 +37,9 @@ double Robot::avoidOtherRobots()
 {
   // Handle robot stops
   static int num_stop_iters = 0.;
-  constexpr int min_stop_iters = 20; // Iterations, i.e 10ms.
-  constexpr int max_stop_iters = 300; // Iterations, i.e 10ms.
+  constexpr int min_stop_iters = 12; // Minimum number of iterations to stop, i.e 10ms.
+  constexpr int min_restart_iter = 20; // Minimum number of iterations to restart, i.e 10ms.
+  constexpr int max_stop_iters = 250; // Iterations, i.e 10ms.
 
   double coeff = 1.0;
   bool is_robot_stopped = false;
@@ -63,7 +62,7 @@ double Robot::avoidOtherRobots()
     LidarPoint const point = this->isPlayingRightSide_
       ? LidarPoint(robot.point.r, -robot.point.theta)
       : LidarPoint(robot.point.r, robot.point.theta);
-    lastNumberOfPoints = robot.nPoints;
+
     if(!this->isLidarPointWithinTable(point)) continue;
 
     double x = point.r * std::cos(point.theta + (forward ? 0: M_PI));
@@ -107,30 +106,22 @@ double Robot::avoidOtherRobots()
     return coeff;
   }
 
-  // If the robot was previously stopped
-  // Ensure it stays stopped for a minimum number of iterations
-  if(num_stop_iters > 0 and num_stop_iters < min_stop_iters)
-  {
-    num_stop_iters ++;
-    return 0.;
-  }
+    if (num_stop_iters >= min_stop_iters &&  num_stop_iters < min_restart_iter)
+    {
+        num_stop_iters++;
+        // Not ready to restart, just stop
+        return 0.0;
+    }
 
-  if (!is_robot_stopped && num_stop_iters > 0)
-  {
-      // Robot was stopped and is ready to start again.
-      // Replan and retry trajectory.
-      if (!currentTrajectories_.empty())
-      {
-          currentTrajectories_.at(0)->replanify(curvilinearAbscissa_);
-          curvilinearAbscissa_ = 0;
-      }
-     num_stop_iters = 0;
-  }
-
-  if(is_robot_stopped)
+  if (is_robot_stopped)
   {
     num_stop_iters++;
-    if(num_stop_iters > max_stop_iters)
+    if (num_stop_iters < min_stop_iters)
+    {
+        // Not enough time spend, just slow down.
+        coeff_ = 0.2;
+    }
+    else if(num_stop_iters > max_stop_iters)
     {
       // Proceed avoidance
       // Search for the closest point along trajectory out of red zone
@@ -147,8 +138,20 @@ double Robot::avoidOtherRobots()
       std::cout << "Obstacle still present, canceling trajectory" << std::endl;
     }
   }
-
-  //~ std::cout << "[Robot.cpp l.479]: " << coeff << std::endl;
+  else
+  {
+      if (num_stop_iters >= min_restart_iter)
+      {
+          // Robot was stopped and is ready to start again.
+          // Replan and retry trajectory.
+          if (!currentTrajectories_.empty())
+          {
+              currentTrajectories_.at(0)->replanify(curvilinearAbscissa_);
+              curvilinearAbscissa_ = 0;
+          }
+      }
+      num_stop_iters = 0;
+  }
 
   return coeff;
 }
