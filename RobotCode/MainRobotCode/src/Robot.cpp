@@ -38,7 +38,8 @@ Robot::Robot():
     lidar_(M_PI_4),
     curvilinearAbscissa_(0.0),
     ignoreDetection_(false),
-    askedForReset_(false)
+    askedForReset_(false),
+    avoidanceTimeout_(250)
 {
     kinematics_ = DrivetrainKinematics(robotdimensions::wheelRadius,
                                       robotdimensions::wheelSpacing,

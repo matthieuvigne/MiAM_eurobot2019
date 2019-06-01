@@ -39,7 +39,6 @@ double Robot::avoidOtherRobots()
   static int num_stop_iters = 0.;
   constexpr int min_stop_iters = 12; // Minimum number of iterations to stop, i.e 10ms.
   constexpr int min_restart_iter = 20; // Minimum number of iterations to restart, i.e 10ms.
-  constexpr int max_stop_iters = 250; // Iterations, i.e 10ms.
 
   double coeff = 1.0;
   bool is_robot_stopped = false;
@@ -121,7 +120,7 @@ double Robot::avoidOtherRobots()
         // Not enough time spend, just slow down.
         coeff_ = 0.2;
     }
-    else if(num_stop_iters > max_stop_iters)
+    else if(num_stop_iters > avoidanceTimeout_)
     {
       // Proceed avoidance
       // Search for the closest point along trajectory out of red zone
